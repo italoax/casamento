@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    // ECMAScript Target
+    "target": "ES2017",                    // Compatibilidade: Node.js 12+
+    "lib": ["dom", "dom.iterable", "esnext"],
+    
+    // Module Resolution
+    "allowJs": true,                       // Permite imports de .js junto com .ts
+    "skipLibCheck": true,                  // Pula type checking de bibliotecas (mais rápido)
+    "strict": true,                        // Modo strict: detecta mais erros
+    "noEmit": true,                        // Next.js emite o código, não nós
+    "esModuleInterop": true,               // Compatibilidade com módulos CommonJS
+    "module": "esnext",                    // Mantém imports ES6 (Next.js resolve depois)
+    "moduleResolution": "bundler",         // Estratégia de resolução moderna
+    "resolveJsonModule": true,             // Permite import de .json
+    "isolatedModules": true,               // Cada arquivo é módulo isolado
+    "jsx": "react-jsx",                    // React 18+: nova JSX transform
+    "incremental": true,                   // Compilation cache (mais rápido)
+    
+    // Next.js Plugin
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    
+    // Path Aliases - permite usar @/* em vez de caminho relativo
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}

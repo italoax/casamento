@@ -1,0 +1,15 @@
+body.login-page, body { background: var(--cor-superficie, #f7f4ef); }
+.login-card { max-width: 380px; margin: 12vh auto; background: #fff; border-radius: 18px; box-shadow: var(--sombra, 0 14px 40px rgba(0,0,0,.08)); padding: 30px; border: 1px solid rgba(184,142,93,.18); }
+.login-card h2 { margin: 0 0 22px; text-align: center; color: var(--cor-dourado, #b88e5d); font-family: var(--fonte-titulo, serif); }
+.grupo-input { margin-bottom: 16px; display: grid; gap: 7px; }
+.grupo-input label { font-weight: 700; color: var(--cor-texto, #443a31); }
+.grupo-input input { border: 1px solid rgba(184,142,93,.28); border-radius: 10px; padding: 12px; font: inherit; }
+.erro-msg { background: #fff0f0; border: 1px solid #ffd2d2; color: #9b2c2c; border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; }
+.erro-msg--modal { margin-top: 12px; }
+.botao[disabled] { opacity: .7; cursor: wait; }
+.modal-2fa-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(42, 34, 27, .48); backdrop-filter: blur(3px); }
+.modal-2fa-card { position: relative; width: min(390px, 100%); background: #fff; border-radius: 18px; box-shadow: 0 24px 80px rgba(58, 46, 35, .28); border: 1px solid rgba(184,142,93,.22); padding: 30px; animation: modal-2fa-in .18s ease-out; }
+.modal-2fa-card h3 { margin: 0 0 8px; text-align: center; color: var(--cor-dourado, #b88e5d); font-family: var(--fonte-titulo, serif); font-size: 2rem; }
+.modal-2fa-card p { margin: 0 0 18px; text-align: center; color: var(--cor-texto-suave, #7c6f63); }
+.modal-2fa-close { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border: 0; border-radius: 999px; background: #f7efe4; color: var(--cor-dourado, #b88e5d); font-size: 23px; line-height: 1; cursor: pointer; }
+@keyframes modal-2fa-in { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }

@@ -1,0 +1,2594 @@
+/* ===============================
+   Ajuste da Home no computador
+   A Home ocupa a primeira tela inteira; "O Casal" só aparece ao rolar.
+   =============================== */
+@media (min-width: 1024px) {
+  .destaque {
+    min-height: 100dvh;
+    align-items: center;
+    padding-top: 100px;
+    padding-bottom: 60px;
+  }
+
+  .rotulo-rd,
+  .local-rd {
+    font-size: 1rem;
+  }
+
+  .titulo-destaque {
+    font-size: clamp(7rem, 8vw, 9rem);
+  }
+
+  .data-destaque {
+    font-size: 2.2rem;
+  }
+
+  .titulo-contagem-hero {
+    font-size: 3.8rem;
+  }
+
+  .cartao-contagem span:first-child {
+    font-size: 2.65rem;
+  }
+
+  .cartao-contagem .rotulo {
+    font-size: 0.78rem;
+  }
+
+  .botoes-destaque .botao {
+    font-size: 1.02rem;
+  }
+
+  /* Padrão maior para as outras seções no computador */
+  .secao-conteudo {
+    font-size: 1.08rem;
+  }
+
+  .secao-conteudo h2,
+  .titulo-confirmacao,
+  .titulo-recados {
+    font-size: clamp(2.65rem, 4vw, 3.7rem);
+  }
+
+  .intro-secao,
+  p.intro-secao,
+  #intro-presentes,
+  #intro-confirmacao,
+  #intro-cerimonia,
+  #texto-casal,
+  .casal-texto,
+  .texto-evento,
+  .confirmacao-texto,
+  .recado-texto {
+    font-size: 1.32rem;
+    line-height: 1.9;
+  }
+
+  .item-evento p,
+  .cartao-presente p,
+  .cartao-recado p {
+    font-size: 1.18rem;
+    line-height: 1.75;
+  }
+
+  .item-evento h3,
+  .cartao-presente h3,
+  .presente.center-block h3,
+  .presente.center-block .nome-presente,
+  .presente.center-block .titulo-presente {
+    font-size: 1.28rem;
+    line-height: 1.35;
+  }
+
+  /* Cards de presentes no modelo da referência, mantendo a paleta do site. */
+  .cartao-presente,
+  .presente.center-block {
+    width: 240px;
+    max-width: 240px;
+    height: 420px;
+    min-height: 420px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid rgba(194, 168, 120, 0.35);
+    border-radius: 8px;
+    box-shadow: 0 8px 18px rgba(84, 75, 69, 0.06);
+  }
+
+  .cartao-presente img,
+  .presente.center-block img {
+    height: 190px;
+    border: none;
+    border-radius: 7px;
+    background: #fff;
+    object-fit: contain;
+  }
+
+  .cartao-presente h3,
+  .presente.center-block h3,
+  .presente.center-block .nome-presente,
+  .presente.center-block .titulo-presente {
+    font-size: 16px;
+    line-height: 1.18;
+    font-weight: 600;
+    color: var(--cor-primaria);
+    margin: 16px 0 8px;
+    min-height: 78px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cartao-presente .card-presente__preco,
+  .presente.center-block .preco-presente,
+  .presente.center-block .preco,
+  .presente.center-block [class*="preco"] {
+    font-size: 20px;
+    line-height: 1.15;
+    font-weight: 800;
+    color: var(--cor-primaria);
+    margin: 0 0 20px;
+  }
+
+  .cartao-presente .btn-add-presente,
+  .cartao-presente .btn-add-presente--indisponivel,
+  .presente.center-block .btn-add-presente,
+  .presente.center-block .btn-add-presente--indisponivel,
+  .presente.center-block .btn,
+  .presente.center-block > .botao,
+  .presente.center-block > button,
+  .presente.center-block > a {
+    width: 174px;
+    min-height: 50px;
+    margin: auto auto 0;
+    border-radius: 7px;
+    background: var(--cor-secundaria);
+    border-color: var(--cor-secundaria);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .cartao-presente .btn-add-presente--indisponivel,
+  .presente.center-block .btn-add-presente--indisponivel {
+    opacity: 1;
+    pointer-events: none;
+  }
+
+  .cartao-presente .btn-add-presente:hover,
+  .presente.center-block .btn-add-presente:hover,
+  .presente.center-block .btn:hover,
+  .presente.center-block > .botao:hover,
+  .presente.center-block > button:hover,
+  .presente.center-block > a:hover {
+    background: #b49b6e;
+    border-color: #b49b6e;
+    color: #fff;
+  }
+
+  .cartao-presente .btn-add-presente--indisponivel:hover,
+  .presente.center-block .btn-add-presente--indisponivel:hover {
+    background: var(--cor-secundaria);
+    border-color: var(--cor-secundaria);
+    color: #fff;
+  }
+
+  .botao:not(.botoes-destaque .botao),
+  .entrada-confirmacao,
+  .input-checkout,
+  .textarea-checkout,
+  .entrada-recado,
+  .guest-field input,
+  .guest-field select {
+    font-size: 1.04rem;
+  }
+
+  .menu-nav a {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .cartao-presente .btn-add-presente,
+  .cartao-presente .btn-add-presente--indisponivel,
+  .presente.center-block .btn-add-presente,
+  .presente.center-block .btn-add-presente--indisponivel,
+  .presente.center-block > .botao,
+  .presente.center-block > button,
+  .presente.center-block > a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: keep-all;
+    line-height: 1.1;
+    font-size: clamp(0.78rem, 3.7vw, 0.95rem);
+    padding-left: 0.45rem;
+    padding-right: 0.45rem;
+  }
+}
+
+/* ===============================
+   Experimento visual da Home
+   Fundo mais premium, moldura sutil e contagem mais delicada.
+   Para reverter, remover este bloco.
+   =============================== */
+.reserve-a-data.destaque {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 252, 247, 0.96) 0 26%, rgba(247, 244, 239, 0.78) 48%, rgba(239, 231, 220, 0.62) 100%),
+    linear-gradient(135deg, #fbf8f2 0%, var(--cor-fundo) 48%, #f1e9dc 100%);
+}
+
+.reserve-a-data.destaque::before,
+.reserve-a-data.destaque::after {
+  display: none;
+}
+
+.reserve-a-data .conteudo-destaque {
+  position: relative;
+  width: min(1380px, 98vw);
+  max-width: none;
+  padding: 54px 96px 58px;
+  border: 1px solid rgba(194, 168, 120, 0.16);
+  border-radius: 42px;
+  background: rgba(255, 252, 247, 0.34);
+  box-shadow:
+    0 28px 80px rgba(84, 75, 69, 0.055),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(1px);
+}
+
+.reserve-a-data .conteudo-destaque::before,
+.reserve-a-data .conteudo-destaque::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 120px;
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, rgba(194, 168, 120, 0.62), transparent);
+}
+
+.reserve-a-data .conteudo-destaque::before {
+  top: 18px;
+}
+
+.reserve-a-data .conteudo-destaque::after {
+  bottom: 18px;
+}
+
+.reserve-a-data .titulo-destaque {
+  max-width: 100%;
+  white-space: nowrap;
+  font-size: clamp(5.4rem, 5.9vw, 8.2rem);
+  text-shadow: 0 10px 26px rgba(84, 75, 69, 0.08);
+}
+
+.reserve-a-data .data-destaque {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 4px;
+}
+
+.reserve-a-data .data-destaque::before,
+.reserve-a-data .data-destaque::after {
+  content: "";
+  width: 42px;
+  height: 1px;
+  background: rgba(194, 168, 120, 0.55);
+}
+
+.reserve-a-data .titulo-contagem-hero {
+  margin-top: 1.1rem;
+}
+
+.reserve-a-data .container-contagem {
+  margin-top: 0.75rem;
+  margin-bottom: 1.55rem;
+}
+
+.reserve-a-data .cartao-contagem {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(194, 168, 120, 0.36);
+  box-shadow: 0 12px 28px rgba(84, 75, 69, 0.08);
+}
+
+.reserve-a-data .cartao-contagem span:first-child {
+  color: #4f4640;
+}
+
+@media (max-width: 768px) {
+  .reserve-a-data.destaque {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .reserve-a-data.destaque::before,
+  .reserve-a-data.destaque::after {
+    width: 280px;
+    opacity: 0.28;
+  }
+
+  .reserve-a-data .conteudo-destaque {
+    width: 100%;
+    max-width: none;
+    padding: 0 6px 22px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .reserve-a-data .conteudo-destaque::before,
+  .reserve-a-data .conteudo-destaque::after {
+    display: none;
+  }
+
+  .reserve-a-data .titulo-destaque {
+    white-space: nowrap;
+    font-size: clamp(2.5rem, 12.3vw, 4.35rem);
+    line-height: 1.04;
+  }
+
+  .reserve-a-data .data-destaque {
+    gap: 0.45rem;
+    font-size: clamp(1.45rem, 6.4vw, 1.8rem);
+    letter-spacing: 0.16em;
+  }
+
+  .reserve-a-data .data-destaque::before,
+  .reserve-a-data .data-destaque::after {
+    width: 18px;
+  }
+}
+
+/* ===============================
+   Padrão de cor dos botões do site
+   Usa o mesmo dourado/champagne dos botões de presente.
+   =============================== */
+.botao,
+.botao-primario,
+.botao-secundario,
+.botao-pilula-destaque,
+.botao-pequeno,
+.resultado-acao.botao-pequeno,
+.lista-presentes__retry,
+.botao-secundario-destaque,
+.pix-copiar-btn,
+.pix-atualizar-btn,
+.cartoes-seta,
+.btn-ia,
+.carrinho-resumo {
+  background: var(--cor-secundaria) !important;
+  background-color: var(--cor-secundaria) !important;
+  border-color: var(--cor-secundaria) !important;
+  color: #fff !important;
+}
+
+.botao:hover,
+.botao-primario:hover,
+.botao-secundario:hover,
+.botao-pilula-destaque:hover,
+.botao-pequeno:hover,
+.resultado-acao.botao-pequeno:hover,
+.lista-presentes__retry:hover,
+.botao-secundario-destaque:hover,
+.pix-copiar-btn:hover,
+.pix-atualizar-btn:hover:not(:disabled),
+.cartoes-seta:hover,
+.btn-ia:hover,
+.carrinho-resumo:hover {
+  background: #b49b6e !important;
+  background-color: #b49b6e !important;
+  border-color: #b49b6e !important;
+  color: #fff !important;
+}
+
+.botao:disabled,
+.botao[disabled],
+.botao-pequeno.confirmado,
+.resultado-acao.botao-pequeno.confirmado,
+.cartoes-seta:disabled,
+.pix-atualizar-btn:disabled {
+  background: var(--cor-secundaria) !important;
+  background-color: var(--cor-secundaria) !important;
+  border-color: var(--cor-secundaria) !important;
+  color: #fff !important;
+  opacity: 0.72;
+}
+
+/* Hero: mesmo padrão de cor dos botões finais do checkout. */
+.botoes-destaque #btn-hero-primario {
+  background: var(--cor-primaria) !important;
+  background-color: var(--cor-primaria) !important;
+  border-color: var(--cor-primaria) !important;
+  color: #fff !important;
+}
+
+.botoes-destaque #btn-hero-primario:hover {
+  background: #433b36 !important;
+  background-color: #433b36 !important;
+  border-color: #433b36 !important;
+  color: #fff !important;
+}
+
+.botoes-destaque #btn-hero-secundario {
+  background: var(--cor-secundaria) !important;
+  background-color: var(--cor-secundaria) !important;
+  border-color: var(--cor-secundaria) !important;
+  color: #fff !important;
+}
+
+.botoes-destaque #btn-hero-secundario:hover {
+  background: #b49b6e !important;
+  background-color: #b49b6e !important;
+  border-color: #b49b6e !important;
+  color: #fff !important;
+}
+
+.pix-acoes .botao-secundario {
+  text-align: center;
+  padding-left: 0.8rem;
+}
+
+/* Setas do carrossel de cartões no checkout: referência com círculo escuro nas laterais. */
+.checkout-box .cartoes-carrossel {
+  gap: 0;
+  padding: 0 8px;
+}
+
+.checkout-box .cartoes-seta {
+  position: relative;
+  z-index: 2;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px;
+  border-radius: 999px !important;
+  background: #626b70 !important;
+  background-color: #626b70 !important;
+  border-color: #626b70 !important;
+  color: #fff !important;
+  box-shadow: 0 7px 16px rgba(0, 0, 0, 0.22) !important;
+}
+
+.checkout-box .cartoes-seta--esq {
+  margin-right: -16px;
+}
+
+.checkout-box .cartoes-seta--dir {
+  margin-left: -16px;
+}
+
+.checkout-box .cartoes-seta:hover:not(:disabled) {
+  background: #4f585d !important;
+  background-color: #4f585d !important;
+  border-color: #4f585d !important;
+  transform: translateY(-1px);
+}
+
+.checkout-box .cartoes-seta:disabled {
+  opacity: 0.35;
+  cursor: default;
+  transform: none;
+}
+
+.checkout-box .cartoes-seta svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Carrinho no modelo da referência: botão secundário escuro e finalizar em champagne. */
+.acoes-carrinho #btn-adicionar-mais {
+  background: var(--cor-primaria) !important;
+  background-color: var(--cor-primaria) !important;
+  border-color: var(--cor-primaria) !important;
+  color: #fff !important;
+}
+
+.acoes-carrinho #btn-adicionar-mais:hover {
+  background: #433b36 !important;
+  background-color: #433b36 !important;
+  border-color: #433b36 !important;
+  color: #fff !important;
+}
+
+.acoes-carrinho #btn-continuar-compra {
+  background: var(--cor-secundaria) !important;
+  background-color: var(--cor-secundaria) !important;
+  border-color: var(--cor-secundaria) !important;
+  color: #fff !important;
+}
+
+.acoes-carrinho #btn-continuar-compra:hover {
+  background: #b49b6e !important;
+  background-color: #b49b6e !important;
+  border-color: #b49b6e !important;
+  color: #fff !important;
+}
+
+/* Botões finais do checkout no modelo lado a lado. */
+.checkout-acoes {
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+}
+
+#btn-voltar-carrinho-checkout,
+#btn-concluir-checkout {
+  width: auto;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 6px;
+  border-width: 1px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  box-shadow: none;
+}
+
+#btn-voltar-carrinho-checkout {
+  background: var(--cor-primaria) !important;
+  background-color: var(--cor-primaria) !important;
+  border-color: var(--cor-primaria) !important;
+  color: #fff !important;
+}
+
+#btn-concluir-checkout {
+  background: var(--cor-secundaria) !important;
+  background-color: var(--cor-secundaria) !important;
+  border-color: var(--cor-secundaria) !important;
+  color: #fff !important;
+}
+
+#btn-voltar-carrinho-checkout:hover {
+  background: #47403a !important;
+  background-color: #47403a !important;
+  border-color: #47403a !important;
+  color: #fff !important;
+}
+
+#btn-concluir-checkout:hover {
+  background: #b49b6e !important;
+  background-color: #b49b6e !important;
+  border-color: #b49b6e !important;
+  color: #fff !important;
+}
+
+/* Resumo do checkout quando o cartão postal é removido. */
+.checkout-box .resumo-compra .resumo-linha {
+  color: #13233a;
+}
+
+.checkout-box .resumo-compra .resumo-subtotal {
+  margin-top: 2px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid rgba(84, 75, 69, 0.12);
+}
+
+.checkout-box .resumo-compra .resumo-cartao-removido {
+  margin-top: 12px;
+  color: #ff003b;
+}
+
+.checkout-box .resumo-compra .resumo-cartao-removido strong {
+  color: #ff003b;
+  font-weight: 400;
+}
+
+.checkout-box .resumo-compra .total-destaque {
+  border-top: none;
+  color: #d86a90;
+  font-size: 0.95rem;
+  margin-top: 8px;
+  padding-top: 0;
+}
+
+.checkout-box .resumo-compra .total-destaque span:last-child {
+  font-weight: 700;
+}
+
+/* ===============================
+   Modal de forma de pagamento no modelo da referência.
+   Afeta apenas o modal de escolha Pix/cartão.
+   =============================== */
+.modal-pagamento-overlay {
+  padding: 1.5rem 1rem !important;
+}
+
+.modal-pagamento-box {
+  width: min(560px, calc(100vw - 48px)) !important;
+  max-width: 560px !important;
+  min-width: 0 !important;
+  min-height: auto !important;
+  padding: 32px 38px 38px !important;
+  border-radius: 4px !important;
+  background: #fff !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.16) !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-pagamento-box h3 {
+  width: 100%;
+  margin: 0 0 1.9rem !important;
+  text-align: left !important;
+  font-family: var(--fonte-sans) !important;
+  font-size: 1.45rem !important;
+  line-height: 1.2;
+  font-weight: 400 !important;
+  color: #8f8172 !important;
+}
+
+.modal-pagamento-grid {
+  display: flex !important;
+  flex: 0 0 auto;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 1.45rem !important;
+  margin: 0 !important;
+}
+
+.modal-pagamento-card {
+  min-height: 112px !important;
+  width: 100% !important;
+  padding: 18px 72px 18px 74px !important;
+  border: 1px solid rgba(194, 168, 120, 0.18) !important;
+  border-radius: 14px !important;
+  background: rgba(248, 244, 238, 0.7) !important;
+  box-shadow: 0 10px 26px rgba(84, 75, 69, 0.045) !important;
+  position: relative;
+  color: #6f6760 !important;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.modal-pagamento-card:hover {
+  background: #fffaf2 !important;
+  border-color: rgba(194, 168, 120, 0.44) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 14px 30px rgba(84, 75, 69, 0.09) !important;
+}
+
+.modal-pagamento-card.ativo {
+  background: linear-gradient(135deg, #fff8ec 0%, #f8ead3 100%) !important;
+  border-color: #c2a878 !important;
+  box-shadow: 0 16px 32px rgba(194, 168, 120, 0.22) !important;
+}
+
+.modal-pagamento-card strong {
+  margin: 0 0 0.18rem !important;
+  font-family: var(--fonte-sans) !important;
+  font-size: 1.48rem !important;
+  line-height: 1.12;
+  font-weight: 400 !important;
+  color: #4f4740 !important;
+}
+
+.modal-pagamento-card p {
+  max-width: 360px;
+  margin: 0 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.35;
+  color: #7b7168 !important;
+}
+
+.modal-pagamento-logo-inline {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px !important;
+  height: 40px !important;
+  margin: 0 !important;
+}
+
+.modal-pagamento-card[data-opcao="cartao"]::before {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 28px;
+  border: 2px solid rgba(194, 168, 120, 0.46);
+  border-radius: 4px;
+  background: #fffdf9;
+  box-sizing: border-box;
+}
+
+.modal-pagamento-card[data-opcao="cartao"]::after {
+  content: "";
+  position: absolute;
+  left: 25px;
+  top: calc(50% - 4px);
+  width: 28px;
+  height: 3px;
+  background: rgba(194, 168, 120, 0.46);
+  box-shadow: 0 8px 0 rgba(194, 168, 120, 0.18);
+}
+
+.modal-pagamento-badge {
+  top: 18px !important;
+  right: 18px !important;
+  padding: 0.42rem 0.8rem !important;
+  border-radius: 3px !important;
+  background: #c2a878 !important;
+  font-family: var(--fonte-sans) !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  color: #fff !important;
+}
+
+.modal-pagamento-bandeiras {
+  margin-top: 0.35rem !important;
+  gap: 9px !important;
+}
+
+.modal-pagamento-bandeiras img {
+  width: 18px !important;
+  height: 12px !important;
+  border: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+@media (max-width: 520px) {
+  .modal-pagamento-overlay {
+    padding: 0.75rem 0.6rem calc(0.75rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .modal-pagamento-box {
+    width: calc(100vw - 20px) !important;
+    max-width: none !important;
+    min-height: auto !important;
+    max-height: calc(100dvh - 1.5rem - env(safe-area-inset-bottom)) !important;
+    overflow-y: auto;
+    padding: 26px 16px 22px !important;
+  }
+
+  .modal-pagamento-box h3 {
+    font-size: 1.25rem !important;
+    margin-bottom: 2rem !important;
+  }
+
+  .modal-pagamento-grid {
+    gap: 1rem !important;
+  }
+
+  .modal-pagamento-card {
+    min-height: 96px !important;
+    padding: 16px 16px 16px 64px !important;
+  }
+
+  .modal-pagamento-logo-inline {
+    left: 16px;
+    top: 28px;
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .modal-pagamento-card[data-opcao="cartao"]::before {
+    left: 16px;
+    top: 30px;
+    width: 34px;
+    height: 25px;
+  }
+
+  .modal-pagamento-card[data-opcao="cartao"]::after {
+    left: 20px;
+    top: 39px;
+    width: 26px;
+    height: 3px;
+  }
+
+  .modal-pagamento-badge {
+    top: 14px !important;
+    right: 14px !important;
+    font-size: 0.68rem !important;
+    padding: 0.34rem 0.62rem !important;
+  }
+
+  .modal-pagamento-card strong {
+    font-size: 1.25rem !important;
+  }
+
+  .modal-pagamento-card p {
+    font-size: 0.86rem !important;
+  }
+}
+
+/* ===============================
+   Modal Pix no estilo da referência, mantendo a paleta do site
+   =============================== */
+#modal-pix-dados-overlay .modal-pix-form {
+  width: min(600px, calc(100vw - 48px)) !important;
+  max-width: 600px !important;
+  min-height: min(760px, calc(100dvh - 40px)) !important;
+  max-height: calc(100dvh - 40px) !important;
+  overflow-y: auto;
+  padding: 38px 20px 34px !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.16) !important;
+}
+
+#modal-pix-dados-overlay .pagamento-titulo {
+  margin: 0 0 1.85rem !important;
+  font-family: var(--fonte-sans) !important;
+  font-size: 1.55rem !important;
+  line-height: 1.14 !important;
+  font-weight: 700 !important;
+  color: #c2a878 !important;
+}
+
+#modal-pix-dados-overlay .pagamento-info {
+  margin: 0 0 1.5rem !important;
+  color: #5f6875 !important;
+  font-size: 0.9rem !important;
+}
+
+#modal-pix-dados-overlay .pix-campos {
+  gap: 0 !important;
+}
+
+#modal-pix-dados-overlay .pix-campos label {
+  margin: 0 0 0.35rem !important;
+  font-size: 1.2rem !important;
+  line-height: 1.15 !important;
+  font-weight: 700 !important;
+  color: #c2a878 !important;
+}
+
+#modal-pix-dados-overlay .pix-campos small {
+  display: block;
+  margin: -0.18rem 0 0.5rem !important;
+  color: rgba(84, 75, 69, 0.5) !important;
+  font-size: 0.9rem !important;
+}
+
+#modal-pix-dados-overlay .entrada-confirmacao {
+  width: 100% !important;
+  min-height: 46px !important;
+  margin: 0 0 1.05rem !important;
+  padding: 0.65rem 0.78rem !important;
+  border: 1px solid rgba(84, 75, 69, 0.25) !important;
+  border-radius: 5px !important;
+  background: #fff !important;
+  font-size: 1rem !important;
+  color: #4f4740 !important;
+}
+
+#modal-pix-dados-overlay .entrada-confirmacao:focus {
+  border-color: #c2a878 !important;
+  box-shadow: 0 0 0 3px rgba(194, 168, 120, 0.16) !important;
+  outline: none !important;
+}
+
+#modal-pix-dados-overlay .pix-termo {
+  margin: 0.3rem 0 1.05rem !important;
+  align-items: flex-start !important;
+  gap: 0.65rem !important;
+}
+
+#modal-pix-dados-overlay .pix-termo input {
+  width: 18px !important;
+  height: 18px !important;
+  margin-top: 0.1rem !important;
+}
+
+#modal-pix-dados-overlay .pix-termo label {
+  font-size: 0.9rem !important;
+  line-height: 1.35 !important;
+  color: #6f6760 !important;
+}
+
+#modal-pix-dados-overlay .pix-termo a {
+  color: #9f8659 !important;
+  font-weight: 600 !important;
+}
+
+#modal-pix-dados-overlay .pix-valor {
+  margin: 0.2rem 0 1rem !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #c2a878 !important;
+}
+
+#modal-pix-dados-overlay .pix-seguro--form {
+  display: none !important;
+}
+
+#modal-pix-dados-overlay .pix-acoes {
+  display: grid !important;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem !important;
+  margin-top: auto !important;
+  align-items: stretch;
+}
+
+#modal-pix-dados-overlay .pix-acoes .botao {
+  width: 100% !important;
+  min-height: 48px !important;
+  border-radius: 5px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+}
+
+/* Botão "Voltar" (secundário) compacto e consistente nas modais de pagamento. */
+#modal-pix-dados-overlay .pix-acoes .botao-secundario,
+#modal-cartao-pessoal-overlay .pix-acoes .botao-secundario,
+#modal-cartao-dados-overlay .pix-acoes .botao-secundario {
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  #modal-pix-dados-overlay .modal-pix-form {
+    width: calc(100vw - 20px) !important;
+    min-height: auto !important;
+    max-height: calc(100dvh - 1.5rem - env(safe-area-inset-bottom)) !important;
+    padding: 30px 16px 22px !important;
+  }
+
+  #modal-pix-dados-overlay .pagamento-titulo {
+    font-size: 1.28rem !important;
+  }
+
+  #modal-pix-dados-overlay .pix-campos label {
+    font-size: 1.05rem !important;
+  }
+
+  #modal-pix-dados-overlay .pix-acoes {
+    grid-template-columns: auto 1fr;
+  }
+}
+
+/* ===============================
+   Modais do cartão no mesmo estilo do Pix
+   =============================== */
+#modal-cartao-pessoal-overlay .modal-cartao-form,
+#modal-cartao-dados-overlay .modal-cartao-form {
+  width: min(600px, calc(100vw - 48px)) !important;
+  max-width: 600px !important;
+  min-height: min(760px, calc(100dvh - 40px)) !important;
+  max-height: calc(100dvh - 40px) !important;
+  overflow-y: auto;
+  padding: 38px 20px 34px !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.16) !important;
+}
+
+#modal-cartao-pessoal-overlay .pagamento-titulo,
+#modal-cartao-dados-overlay .pagamento-titulo {
+  margin: 0 0 1.85rem !important;
+  font-family: var(--fonte-sans) !important;
+  font-size: 1.55rem !important;
+  line-height: 1.14 !important;
+  font-weight: 700 !important;
+  color: #c2a878 !important;
+}
+
+#modal-cartao-pessoal-overlay .pagamento-info,
+#modal-cartao-dados-overlay .pagamento-info {
+  margin: 0 0 1.5rem !important;
+  color: #5f6875 !important;
+  font-size: 0.9rem !important;
+}
+
+#modal-cartao-pessoal-overlay .pix-campos,
+#modal-cartao-dados-overlay .pix-campos {
+  gap: 0 !important;
+}
+
+#modal-cartao-pessoal-overlay .pix-campos label,
+#modal-cartao-dados-overlay .pix-campos label {
+  margin: 0 0 0.35rem !important;
+  font-size: 1.2rem !important;
+  line-height: 1.15 !important;
+  font-weight: 700 !important;
+  color: #c2a878 !important;
+}
+
+#modal-cartao-pessoal-overlay .entrada-confirmacao,
+#modal-cartao-dados-overlay .entrada-confirmacao {
+  width: 100% !important;
+  min-height: 46px !important;
+  margin: 0 0 1.05rem !important;
+  padding: 0.65rem 0.78rem !important;
+  border: 1px solid rgba(84, 75, 69, 0.25) !important;
+  border-radius: 5px !important;
+  background: #fff !important;
+  font-size: 1rem !important;
+  color: #4f4740 !important;
+}
+
+#modal-cartao-pessoal-overlay .entrada-confirmacao:focus,
+#modal-cartao-dados-overlay .entrada-confirmacao:focus {
+  border-color: #c2a878 !important;
+  box-shadow: 0 0 0 3px rgba(194, 168, 120, 0.16) !important;
+  outline: none !important;
+}
+
+#modal-cartao-pessoal-overlay .pix-termo,
+#modal-cartao-dados-overlay .pix-termo {
+  margin: 0.3rem 0 1.05rem !important;
+  align-items: flex-start !important;
+  gap: 0.65rem !important;
+}
+
+#modal-cartao-pessoal-overlay .pix-termo input,
+#modal-cartao-dados-overlay .pix-termo input {
+  width: 18px !important;
+  height: 18px !important;
+  margin-top: 0.1rem !important;
+}
+
+#modal-cartao-pessoal-overlay .pix-termo label,
+#modal-cartao-dados-overlay .pix-termo label {
+  font-size: 0.9rem !important;
+  line-height: 1.35 !important;
+  color: #6f6760 !important;
+}
+
+#modal-cartao-pessoal-overlay .pix-termo a,
+#modal-cartao-dados-overlay .pix-termo a {
+  color: #9f8659 !important;
+  font-weight: 600 !important;
+}
+
+#modal-cartao-dados-overlay .pix-valor {
+  margin: 0.2rem 0 1rem !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #c2a878 !important;
+}
+
+#modal-cartao-dados-overlay .pix-seguro--form {
+  display: none !important;
+}
+
+#modal-cartao-pessoal-overlay .pix-acoes,
+#modal-cartao-dados-overlay .pix-acoes {
+  display: grid !important;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem !important;
+  margin-top: auto !important;
+  align-items: stretch;
+}
+
+#modal-cartao-pessoal-overlay .pix-acoes .botao,
+#modal-cartao-dados-overlay .pix-acoes .botao {
+  width: 100% !important;
+  min-height: 48px !important;
+  border-radius: 5px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 520px) {
+  #modal-cartao-pessoal-overlay .modal-cartao-form,
+  #modal-cartao-dados-overlay .modal-cartao-form {
+    width: calc(100vw - 20px) !important;
+    min-height: auto !important;
+    max-height: calc(100dvh - 1.5rem - env(safe-area-inset-bottom)) !important;
+    padding: 30px 16px 22px !important;
+  }
+
+  #modal-cartao-pessoal-overlay .pagamento-titulo,
+  #modal-cartao-dados-overlay .pagamento-titulo {
+    font-size: 1.28rem !important;
+  }
+
+  #modal-cartao-pessoal-overlay .pix-campos label,
+  #modal-cartao-dados-overlay .pix-campos label {
+    font-size: 1.05rem !important;
+  }
+
+  #modal-cartao-pessoal-overlay .pix-acoes,
+  #modal-cartao-dados-overlay .pix-acoes {
+    grid-template-columns: auto 1fr;
+  }
+}
+
+@media print {
+  .cabecalho-principal {
+    position: absolute !important;
+  }
+
+  .destaque {
+    min-height: 100vh !important;
+    align-items: center !important;
+    padding: 28mm 12mm 16mm !important;
+  }
+}
+
+/* ===============================
+   Footer Compartilhado
+   =============================== */
+.rodape-principal {
+  position: relative;
+  background: linear-gradient(180deg, #4a423d 0%, #3b3430 100%);
+  color: #f3eee7;
+  padding: 0.6rem 0 calc(0.55rem + env(safe-area-inset-bottom, 12px));
+  margin-top: auto;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.rodape-principal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(194, 168, 120, 0.22),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(230, 199, 194, 0.2),
+      transparent 50%
+    );
+  pointer-events: none;
+}
+
+.rodape-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rodape-topo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  text-align: center;
+}
+
+.rodape-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.rodape-nomes {
+  font-family: "Great Vibes", cursive;
+  font-size: 2.15rem;
+  font-weight: 400;
+  margin: 0;
+  color: #f8f2ea;
+}
+
+.rodape-identidade {
+  max-width: 720px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  text-align: center;
+}
+
+.rodape-mensagem {
+  color: rgba(243, 238, 231, 0.8);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  max-width: 520px;
+  margin: 0;
+}
+
+.nav-rodape {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.7rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.nav-rodape a {
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+  color: rgba(243, 238, 231, 0.86);
+  text-decoration: none;
+  font-size: 0.76rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  justify-content: center;
+  line-height: 1.2;
+}
+
+.nav-rodape a:hover {
+  color: #f1d7a7;
+  transform: translateY(-1px);
+}
+
+.rodape-payments {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.rodape-payments-img {
+  display: block;
+  width: min(96vw, 380px);
+  height: auto;
+  opacity: 0.96;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.14));
+}
+
+.credito-rodape {
+  margin: 0;
+}
+
+.credito-rodape--destaque {
+  text-align: center;
+  color: rgba(243, 238, 231, 0.82);
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+
+.rodape-base {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+  color: rgba(243, 238, 231, 0.7);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.recaptcha-info {
+  font-size: 0.7rem;
+  color: rgba(243, 238, 231, 0.6);
+}
+
+.recaptcha-info a {
+  color: rgba(243, 238, 231, 0.85);
+  text-decoration: none;
+}
+
+.recaptcha-info a:visited {
+  color: rgba(243, 238, 231, 0.85);
+}
+
+.recaptcha-info a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .rodape-principal {
+    padding: 0.65rem 0 calc(0.6rem + env(safe-area-inset-bottom, 12px));
+  }
+
+  .rodape-container {
+    gap: 0.4rem;
+  }
+
+  .rodape-nomes {
+    font-size: 2.25rem;
+  }
+
+  .rodape-payments-img {
+    width: min(94vw, 340px);
+  }
+
+  .nav-rodape a {
+    font-size: 0.84rem;
+  }
+
+  .rodape-base {
+    font-size: 0.74rem;
+    line-height: 1.25;
+    flex-direction: column;
+  }
+
+  .recaptcha-info {
+    font-size: 0.68rem;
+    line-height: 1.15;
+    opacity: 0.9;
+  }
+
+  .credito-rodape,
+  .recaptcha-info {
+    display: block;
+  }
+}
+
+/* ===============================
+   O Grande Dia: card mais elegante e mapa corrigido
+   Mantém a paleta do site e melhora a leitura do bloco de cerimônia.
+   =============================== */
+.secao-grande-dia .detalhes-evento {
+  position: relative;
+  overflow: hidden;
+  grid-template-columns: minmax(320px, 0.92fr) minmax(420px, 1.08fr);
+  gap: clamp(1.8rem, 3vw, 3.2rem);
+  align-items: stretch;
+  padding: clamp(1.6rem, 3vw, 2.65rem);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 9% 12%, rgba(194, 168, 120, 0.12), transparent 32%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(250, 247, 242, 0.98) 100%);
+  border: 1px solid rgba(194, 168, 120, 0.24);
+  box-shadow: 0 24px 58px rgba(84, 75, 69, 0.13);
+}
+
+.secao-grande-dia .detalhes-evento::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px solid rgba(194, 168, 120, 0.12);
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+.secao-grande-dia .info-evento {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.secao-grande-dia .info-evento h3 {
+  margin: 0 0 1.15rem;
+  font-size: clamp(1.6rem, 2.2vw, 2.05rem);
+  letter-spacing: 0.075em;
+}
+
+.secao-grande-dia .item-evento {
+  position: relative;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem 1.05rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(194, 168, 120, 0.22);
+  box-shadow: 0 10px 24px rgba(84, 75, 69, 0.055);
+}
+
+.secao-grande-dia .item-evento:last-child {
+  flex: 1;
+  align-items: center;
+  margin-bottom: 0;
+  padding-top: 1.15rem;
+  padding-bottom: 1.15rem;
+}
+
+.secao-grande-dia .icone-evento {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fffaf1 0%, #f1e5d3 100%);
+  color: var(--cor-secundaria);
+  box-shadow:
+    inset 0 0 0 1px rgba(194, 168, 120, 0.28),
+    0 8px 16px rgba(194, 168, 120, 0.13);
+}
+
+.secao-grande-dia .icone-evento svg {
+  width: 28px;
+  height: 28px;
+}
+
+.secao-grande-dia .texto-evento strong {
+  margin-bottom: 0.26rem;
+  font-size: 1.18rem;
+  line-height: 1.1;
+}
+
+.secao-grande-dia .texto-evento span,
+.secao-grande-dia #endereco-local-evento {
+  color: #8b8178;
+  font-size: 0.98rem !important;
+  line-height: 1.58;
+}
+
+.secao-grande-dia #nome-local-evento {
+  display: inline-block;
+  margin-bottom: 0.22rem;
+  color: #6d6259;
+  font-weight: 600;
+}
+
+.secao-grande-dia .acao-local {
+  margin-top: 1rem;
+}
+
+.secao-grande-dia #link-local-evento {
+  min-height: 34px;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  box-shadow: 0 10px 18px rgba(194, 168, 120, 0.18);
+}
+
+.secao-grande-dia .mapa-evento {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  min-height: 420px;
+  height: auto;
+  border-radius: 22px;
+  border: 1px solid rgba(194, 168, 120, 0.24);
+  background:
+    linear-gradient(135deg, rgba(244, 237, 229, 0.9), rgba(255, 255, 255, 0.78)),
+    #f7f2ed;
+  box-shadow: 0 18px 42px rgba(84, 75, 69, 0.12);
+}
+
+.secao-grande-dia .mapa-evento iframe {
+  min-height: 420px;
+  background: #f7f2ed;
+}
+
+@media (max-width: 899px) {
+  .secao-grande-dia .detalhes-evento {
+    grid-template-columns: 1fr;
+    padding: 1.2rem;
+    border-radius: 20px;
+  }
+
+  .secao-grande-dia .detalhes-evento::before {
+    inset: 8px;
+    border-radius: 16px;
+  }
+
+  .secao-grande-dia .item-evento:last-child {
+    flex: initial;
+  }
+
+  .secao-grande-dia .mapa-evento,
+  .secao-grande-dia .mapa-evento iframe {
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 520px) {
+  .secao-grande-dia .info-evento h3 {
+    text-align: center;
+  }
+
+  .secao-grande-dia .item-evento {
+    padding: 0.9rem;
+  }
+
+  .secao-grande-dia .icone-evento {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* ===============================
+   O Grande Dia: informações mais bonitas e legíveis
+   Apenas os cards de Data, Horário e Local.
+   =============================== */
+.secao-grande-dia .info-evento {
+  gap: 1.05rem;
+}
+
+.secao-grande-dia .item-evento {
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 0;
+  padding: 1.25rem 1.35rem;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(255, 251, 245, 0.86)),
+    radial-gradient(circle at 12% 20%, rgba(194, 168, 120, 0.12), transparent 42%);
+  border-color: rgba(194, 168, 120, 0.26);
+  box-shadow:
+    0 14px 30px rgba(84, 75, 69, 0.07),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.62);
+}
+
+.secao-grande-dia .item-evento:hover {
+  transform: translateY(-1px);
+  border-color: rgba(194, 168, 120, 0.42);
+  box-shadow:
+    0 18px 34px rgba(84, 75, 69, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+
+.secao-grande-dia .item-evento:last-child {
+  align-items: center;
+  padding-top: 1.35rem;
+  padding-bottom: 1.35rem;
+}
+
+.secao-grande-dia .icone-evento {
+  flex: 0 0 auto;
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+}
+
+.secao-grande-dia .icone-evento svg {
+  width: 30px;
+  height: 30px;
+}
+
+.secao-grande-dia .texto-evento {
+  min-width: 0;
+}
+
+.secao-grande-dia .texto-evento strong {
+  margin-bottom: 0.36rem;
+  font-size: clamp(1.32rem, 1.35vw, 1.55rem);
+  line-height: 1.12;
+  color: #544b45;
+  letter-spacing: -0.01em;
+}
+
+.secao-grande-dia .texto-evento span,
+.secao-grande-dia #endereco-local-evento {
+  font-size: clamp(1.08rem, 1.1vw, 1.22rem) !important;
+  line-height: 1.62;
+  color: #766d65;
+}
+
+.secao-grande-dia #nome-local-evento {
+  margin-bottom: 0.34rem;
+  font-size: clamp(1.1rem, 1.15vw, 1.28rem) !important;
+  line-height: 1.35;
+  color: #5f554e;
+  font-weight: 700;
+}
+
+.secao-grande-dia #link-local-evento {
+  min-height: 40px;
+  padding: 0.62rem 1.15rem;
+  font-size: 0.94rem;
+  box-shadow: 0 12px 22px rgba(194, 168, 120, 0.22);
+}
+
+@media (max-width: 520px) {
+  .secao-grande-dia .info-evento {
+    gap: 0.85rem;
+  }
+
+  .secao-grande-dia .item-evento {
+    gap: 0.9rem;
+    padding: 1rem;
+  }
+
+  .secao-grande-dia .icone-evento {
+    width: 44px;
+    height: 44px;
+  }
+
+  .secao-grande-dia .texto-evento strong {
+    font-size: 1.2rem;
+  }
+
+  .secao-grande-dia .texto-evento span,
+  .secao-grande-dia #nome-local-evento,
+  .secao-grande-dia #endereco-local-evento {
+    font-size: 1rem !important;
+  }
+}
+
+/* ===============================
+   O Grande Dia: informações em linha única sem quebrar o Local
+   Data e horário ficam na mesma linha; Local mantém hierarquia legível.
+   =============================== */
+.secao-grande-dia .texto-evento {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.secao-grande-dia .texto-evento strong {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
+.secao-grande-dia .item-evento:not(:last-child) .texto-evento span {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.secao-grande-dia .item-evento:last-child {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.95rem;
+  padding: 0.72rem 1rem;
+}
+
+.secao-grande-dia .item-evento:last-child .icone-evento {
+  margin-top: 0;
+}
+
+.secao-grande-dia .item-evento:last-child .texto-evento {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.85rem;
+  row-gap: 0.08rem;
+  align-items: baseline;
+}
+
+.secao-grande-dia .item-evento:last-child .texto-evento strong {
+  display: block;
+  grid-column: 1;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.secao-grande-dia .item-evento:last-child .texto-evento br {
+  display: none;
+}
+
+.secao-grande-dia #nome-local-evento {
+  display: block;
+  grid-column: 2;
+  margin: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.secao-grande-dia #endereco-local-evento {
+  display: block;
+  grid-column: 2;
+  max-width: 100%;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.35 !important;
+}
+
+.secao-grande-dia .acao-local {
+  grid-column: 2;
+  width: 100%;
+  margin-top: 0.02rem;
+}
+
+.secao-grande-dia #link-local-evento {
+  position: static;
+  display: inline-flex;
+  width: auto;
+  min-width: 140px;
+  max-width: 100%;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.38rem 0.96rem;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  line-height: 1.1;
+}
+
+@media (min-width: 1024px) {
+  .secao-grande-dia .detalhes-evento {
+    grid-template-columns: minmax(440px, 1fr) minmax(460px, 1.02fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .secao-grande-dia .texto-evento {
+    display: block;
+  }
+
+  .secao-grande-dia .item-evento:last-child .texto-evento {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 0.65rem;
+    row-gap: 0.4rem;
+  }
+
+  .secao-grande-dia .item-evento:last-child .icone-evento {
+    margin-top: 0;
+  }
+
+  .secao-grande-dia .texto-evento strong,
+  .secao-grande-dia .texto-evento span,
+  .secao-grande-dia #nome-local-evento,
+  .secao-grande-dia #endereco-local-evento {
+    white-space: normal;
+  }
+}
+
+/* ===============================
+   Padrão de botões dos modais de pagamento
+   Mesmo modelo do checkout: Voltar escuro + ação em champagne.
+   =============================== */
+#modal-pix-dados-overlay #btn-voltar-pix,
+#modal-cartao-pessoal-overlay #btn-voltar-cartao-pessoal,
+#modal-cartao-dados-overlay #btn-voltar-cartao {
+  background: var(--cor-primaria) !important;
+  background-color: var(--cor-primaria) !important;
+  border-color: var(--cor-primaria) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+#modal-pix-dados-overlay #btn-voltar-pix:hover,
+#modal-cartao-pessoal-overlay #btn-voltar-cartao-pessoal:hover,
+#modal-cartao-dados-overlay #btn-voltar-cartao:hover {
+  background: #47403a !important;
+  background-color: #47403a !important;
+  border-color: #47403a !important;
+  color: #fff !important;
+}
+
+#modal-pix-dados-overlay #btn-avancar-pix,
+#modal-cartao-pessoal-overlay #btn-avancar-cartao-pessoal,
+#modal-cartao-dados-overlay #btn-avancar-cartao {
+  background: var(--cor-secundaria) !important;
+  background-color: var(--cor-secundaria) !important;
+  border-color: var(--cor-secundaria) !important;
+  color: #fff !important;
+  box-shadow: 0 12px 22px rgba(194, 168, 120, 0.18) !important;
+}
+
+#modal-pix-dados-overlay #btn-avancar-pix:hover,
+#modal-cartao-pessoal-overlay #btn-avancar-cartao-pessoal:hover,
+#modal-cartao-dados-overlay #btn-avancar-cartao:hover {
+  background: #b49b6e !important;
+  background-color: #b49b6e !important;
+  border-color: #b49b6e !important;
+  color: #fff !important;
+}
+
+#modal-pix-dados-overlay .pix-acoes,
+#modal-cartao-pessoal-overlay .pix-acoes,
+#modal-cartao-dados-overlay .pix-acoes {
+  gap: 10px !important;
+}
+
+#modal-pix-dados-overlay .pix-acoes .botao,
+#modal-cartao-pessoal-overlay .pix-acoes .botao,
+#modal-cartao-dados-overlay .pix-acoes .botao {
+  min-height: 48px !important;
+  border-radius: 5px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+}
+
+/* ===============================
+   Botões em marrom mais elegante
+   Ajusta o tom champagne para um marrom quente, mantendo texto branco.
+   =============================== */
+:root {
+  --cor-botao-marrom: #544b45; /* Marrom café do site (padrão dos botões) */
+  --cor-botao-marrom-hover: #433b36;
+}
+
+.botao,
+.botao-primario,
+.botao-secundario,
+.botao-pilula-destaque,
+.botao-pequeno,
+.resultado-acao.botao-pequeno,
+.lista-presentes__retry,
+.botao-secundario-destaque,
+.pix-copiar-btn,
+.pix-atualizar-btn,
+.cartoes-seta,
+.btn-ia,
+.carrinho-resumo,
+#carregar-mais-presentes,
+#link-local-evento,
+.btn-add-presente,
+.btn-add-presente--indisponivel {
+  background: var(--cor-botao-marrom) !important;
+  background-color: var(--cor-botao-marrom) !important;
+  border-color: var(--cor-botao-marrom) !important;
+  color: #fff !important;
+}
+
+.botao:hover,
+.botao-primario:hover,
+.botao-secundario:hover,
+.botao-pilula-destaque:hover,
+.botao-pequeno:hover,
+.resultado-acao.botao-pequeno:hover,
+.lista-presentes__retry:hover,
+.botao-secundario-destaque:hover,
+.pix-copiar-btn:hover,
+.pix-atualizar-btn:hover:not(:disabled),
+.cartoes-seta:hover,
+.btn-ia:hover,
+.carrinho-resumo:hover,
+#carregar-mais-presentes:hover,
+#link-local-evento:hover,
+.btn-add-presente:hover {
+  background: var(--cor-botao-marrom-hover) !important;
+  background-color: var(--cor-botao-marrom-hover) !important;
+  border-color: var(--cor-botao-marrom-hover) !important;
+  color: #fff !important;
+}
+
+#modal-pix-dados-overlay #btn-avancar-pix,
+#modal-cartao-pessoal-overlay #btn-avancar-cartao-pessoal,
+#modal-cartao-dados-overlay #btn-avancar-cartao,
+#btn-concluir-checkout,
+.acoes-carrinho #btn-continuar-compra,
+.botoes-destaque #btn-hero-secundario {
+  background: var(--cor-botao-marrom) !important;
+  background-color: var(--cor-botao-marrom) !important;
+  border-color: var(--cor-botao-marrom) !important;
+  color: #fff !important;
+}
+
+#modal-pix-dados-overlay #btn-avancar-pix:hover,
+#modal-cartao-pessoal-overlay #btn-avancar-cartao-pessoal:hover,
+#modal-cartao-dados-overlay #btn-avancar-cartao:hover,
+#btn-concluir-checkout:hover,
+.acoes-carrinho #btn-continuar-compra:hover,
+.botoes-destaque #btn-hero-secundario:hover {
+  background: var(--cor-botao-marrom-hover) !important;
+  background-color: var(--cor-botao-marrom-hover) !important;
+  border-color: var(--cor-botao-marrom-hover) !important;
+  color: #fff !important;
+}
+
+/* ===============================
+   Linha do tempo um pouco maior no desktop
+   =============================== */
+@media (min-width: 769px) {
+  .linha-tempo-casal {
+    max-width: 1080px;
+  }
+
+  .linha-tempo-casal::before {
+    width: 4px;
+  }
+
+  .linha-tempo-item {
+    grid-template-columns: minmax(220px, 310px) 64px minmax(220px, 310px);
+    min-height: 168px;
+  }
+
+  .linha-tempo-lado {
+    max-width: 310px;
+  }
+
+  .linha-tempo-lado--texto h4 {
+    font-size: clamp(1.75rem, 2.55vw, 2.55rem);
+  }
+
+  .linha-tempo-lado--texto p {
+    font-size: clamp(1.08rem, 1.5vw, 1.45rem);
+    line-height: 1.25;
+  }
+
+  .linha-tempo-icone {
+    width: clamp(96px, 8.4vw, 150px);
+    height: clamp(96px, 8.4vw, 150px);
+  }
+
+  .linha-tempo-ponto {
+    width: 24px;
+    height: 24px;
+  }
+
+  .linha-tempo-final {
+    font-size: clamp(1.22rem, 1.65vw, 1.7rem);
+  }
+}
+
+
+/* ===============================
+   Linha do tempo maior no mobile
+   =============================== */
+@media (max-width: 640px) {
+  .linha-tempo-item,
+  .linha-tempo-item:nth-child(even) {
+    grid-template-columns: minmax(126px, 1fr) 38px minmax(126px, 1fr);
+    gap: 0.55rem;
+    min-height: 128px;
+  }
+
+  .linha-tempo-casal::before {
+    width: 3px;
+  }
+
+  .linha-tempo-ponto {
+    width: 19px;
+    height: 19px;
+    border-width: 3px;
+  }
+
+  .linha-tempo-icone {
+    width: clamp(62px, 19vw, 82px);
+    height: clamp(62px, 19vw, 82px);
+  }
+
+  .linha-tempo-lado--texto h4 {
+    font-size: clamp(1.22rem, 5.2vw, 1.55rem);
+    line-height: 1.12;
+  }
+
+  .linha-tempo-lado--texto p {
+    font-size: clamp(1rem, 4.25vw, 1.18rem);
+    line-height: 1.22;
+  }
+
+  .linha-tempo-final {
+    font-size: clamp(1rem, 4.3vw, 1.18rem);
+    line-height: 1.2;
+  }
+}
+
+/* ===============================
+   Mobile: carrinho e ordenação como referência
+   =============================== */
+@media (max-width: 600px) {
+  .controles-presentes {
+    align-items: center;
+    gap: 1.55rem;
+    margin-bottom: 1.85rem;
+  }
+
+  .controles-presentes .carrinho-resumo {
+    width: auto !important;
+    min-width: 166px;
+    max-width: calc(100vw - 3rem);
+    min-height: 48px;
+    padding: 0.72rem 1.15rem;
+    border-radius: 7px;
+    background: var(--cor-botao-marrom) !important;
+    background-color: var(--cor-botao-marrom) !important;
+    border-color: var(--cor-botao-marrom) !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+  }
+
+  .controles-presentes .carrinho-resumo:hover {
+    background: var(--cor-botao-marrom-hover) !important;
+    background-color: var(--cor-botao-marrom-hover) !important;
+    border-color: var(--cor-botao-marrom-hover) !important;
+  }
+
+  .controles-presentes .carrinho-resumo.carrinho-resumo--vazio {
+    min-width: 166px;
+    background: #f8f9fb !important;
+    background-color: #f8f9fb !important;
+    border-color: #dfe5ec !important;
+    color: #a7b8c9 !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+  }
+
+  .controles-presentes .carrinho-resumo.carrinho-resumo--vazio:hover {
+    background: #f8f9fb !important;
+    background-color: #f8f9fb !important;
+    border-color: #dfe5ec !important;
+    color: #a7b8c9 !important;
+    transform: none !important;
+  }
+
+  .controles-presentes .carrinho-icone {
+    width: 24px;
+    height: 24px;
+  }
+
+  .ordenacao-presentes {
+    width: auto;
+    justify-content: center;
+    gap: 1.35rem;
+  }
+
+  .controles-presentes label {
+    color: #456789;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+  }
+}
+
+/* ===============================
+   Confirmação: resultados mais próximos do visual do site
+   =============================== */
+#confirmacao .cartao-busca-confirmacao {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(251, 249, 246, 0.98) 100%);
+  border-color: rgba(194, 168, 120, 0.32);
+  box-shadow: 0 18px 42px rgba(84, 75, 69, 0.08);
+}
+
+#confirmacao .cartao-busca-confirmacao::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  pointer-events: none;
+  border: 1px solid rgba(194, 168, 120, 0.16);
+  border-radius: 14px;
+}
+
+#confirmacao .resultados-confirmacao {
+  position: relative;
+  z-index: 1;
+  gap: 0.95rem;
+  margin-top: 1.15rem;
+}
+
+#confirmacao .resultado-resumo {
+  margin-bottom: 0.15rem;
+  padding: 0.62rem 1.55rem;
+  background: rgba(251, 249, 246, 0.92);
+  border-color: rgba(194, 168, 120, 0.42);
+  color: var(--cor-primaria);
+  font-weight: 700;
+  box-shadow: 0 10px 22px rgba(84, 75, 69, 0.07);
+}
+
+#confirmacao .item-resultado {
+  min-height: 124px;
+  padding: 1.1rem 1.2rem 1.05rem 1.45rem;
+  border-color: rgba(194, 168, 120, 0.38);
+  border-radius: 15px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(250, 247, 242, 0.96) 100%);
+  box-shadow: 0 14px 28px rgba(84, 75, 69, 0.07);
+}
+
+#confirmacao .item-resultado::before {
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  background: linear-gradient(180deg, #d7be8e 0%, var(--cor-secundaria) 100%);
+}
+
+#confirmacao .resultado-nome {
+  font-family: var(--fonte-serifa);
+  font-size: 1.28rem;
+  font-weight: 700;
+  color: var(--cor-primaria);
+  letter-spacing: 0.01em;
+}
+
+#confirmacao .resultado-telefone {
+  color: var(--cor-texto-clara);
+  font-size: 0.95rem;
+}
+
+#confirmacao .resultado-acao.botao-pequeno {
+  min-height: 36px;
+  padding: 0.48rem 1.08rem;
+  background: var(--cor-secundaria);
+  border-color: var(--cor-secundaria);
+  color: #fff;
+  box-shadow: 0 10px 18px rgba(194, 168, 120, 0.22);
+}
+
+#confirmacao .resultado-acao.botao-pequeno:hover {
+  background: #b49b6e;
+  border-color: #b49b6e;
+  color: #fff;
+  box-shadow: 0 12px 22px rgba(194, 168, 120, 0.28);
+}
+
+#confirmacao .resultado-acao.botao-pequeno.confirmado,
+#confirmacao .resultado-acao.botao-pequeno.confirmado:hover {
+  background: #d6bf92;
+  border-color: #d6bf92;
+  color: #fff;
+  opacity: 1;
+  box-shadow: none;
+  transform: none;
+}
+
+#confirmacao .resultado-nova {
+  margin-top: 0.7rem;
+}
+
+#confirmacao .resultado-nova-link {
+  padding: 0.65rem 1.35rem;
+  background: rgba(255, 255, 255, 0.84);
+  border-color: rgba(194, 168, 120, 0.45);
+  color: var(--cor-primaria);
+  box-shadow: 0 10px 20px rgba(84, 75, 69, 0.07);
+}
+
+#confirmacao .resultado-nova-link:hover {
+  background: #fbf7f0;
+  border-color: var(--cor-secundaria);
+}
+
+@media (max-width: 640px) {
+  #confirmacao .cartao-busca-confirmacao {
+    padding: 2.2rem 1.05rem;
+    border-radius: 16px;
+  }
+
+  #confirmacao .cartao-busca-confirmacao::before {
+    inset: 9px;
+    border-radius: 12px;
+  }
+
+  #confirmacao .item-resultado {
+    min-height: 116px;
+    padding: 1rem 1rem 1rem 1.25rem;
+  }
+
+  #confirmacao .resultado-nome {
+    font-size: 1.17rem;
+  }
+}
+
+/* Presente já no carrinho: estado "adicionado" (verde). !important + especificidade
+   extra para vencer o .btn-add-presente marrom !important deste mesmo arquivo. */
+.btn-add-presente.btn-add-presente--no-carrinho {
+  background: #e9f4ec !important;
+  background-color: #e9f4ec !important;
+  border-color: #bcdcc7 !important;
+  color: #2f7d4f !important;
+}
+.btn-add-presente.btn-add-presente--no-carrinho:hover {
+  background: #dcefe3 !important;
+  background-color: #dcefe3 !important;
+  border-color: #a9d2b7 !important;
+  color: #266a42 !important;
+}
+
+/* === Checkout: hierarquia profissional dos botões === */
+.checkout-acoes {
+  gap: 12px !important;
+}
+
+/* Ação principal: sólida, destacada com sombra suave */
+#btn-concluir-checkout {
+  background: var(--cor-primaria) !important;
+  background-color: var(--cor-primaria) !important;
+  border: 1px solid var(--cor-primaria) !important;
+  color: #fff !important;
+  min-height: 48px !important;
+  padding: 0 26px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2px !important;
+  box-shadow: 0 6px 16px rgba(84, 75, 69, 0.22) !important;
+}
+#btn-concluir-checkout:hover {
+  background: #433b36 !important;
+  background-color: #433b36 !important;
+  border-color: #433b36 !important;
+  color: #fff !important;
+  box-shadow: 0 9px 20px rgba(84, 75, 69, 0.30) !important;
+}
+
+/* Ação secundária "Voltar": contorno discreto e compacto */
+#btn-voltar-carrinho-checkout {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid rgba(84, 75, 69, 0.40) !important;
+  color: var(--cor-primaria) !important;
+  min-height: 48px !important;
+  padding: 0 18px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+#btn-voltar-carrinho-checkout:hover {
+  background: rgba(84, 75, 69, 0.07) !important;
+  background-color: rgba(84, 75, 69, 0.07) !important;
+  border-color: var(--cor-primaria) !important;
+  color: var(--cor-primaria) !important;
+  box-shadow: none !important;
+}
+
+/* === Carrinho: mesma hierarquia profissional dos botões === */
+.acoes-carrinho {
+  gap: 12px !important;
+}
+
+/* Ação principal "Finalizar compra": sólida e destacada */
+.acoes-carrinho #btn-continuar-compra {
+  background: var(--cor-primaria) !important;
+  background-color: var(--cor-primaria) !important;
+  border: 1px solid var(--cor-primaria) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2px !important;
+  box-shadow: 0 6px 16px rgba(84, 75, 69, 0.22) !important;
+}
+.acoes-carrinho #btn-continuar-compra:hover {
+  background: #433b36 !important;
+  background-color: #433b36 !important;
+  border-color: #433b36 !important;
+  color: #fff !important;
+  box-shadow: 0 9px 20px rgba(84, 75, 69, 0.30) !important;
+}
+
+/* Ação secundária "Adicionar mais itens": contorno discreto */
+.acoes-carrinho #btn-adicionar-mais {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid rgba(84, 75, 69, 0.40) !important;
+  color: var(--cor-primaria) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+.acoes-carrinho #btn-adicionar-mais:hover {
+  background: rgba(84, 75, 69, 0.07) !important;
+  background-color: rgba(84, 75, 69, 0.07) !important;
+  border-color: var(--cor-primaria) !important;
+  color: var(--cor-primaria) !important;
+  box-shadow: none !important;
+}
+
+/* === RSVP (busca de convites): ação no padrão + "Confirmado" como selo === */
+/* "Selecionar": ação principal no marrom do site */
+.resultado-acao.botao-pequeno {
+  background: var(--cor-primaria) !important;
+  background-color: var(--cor-primaria) !important;
+  border-color: var(--cor-primaria) !important;
+  color: #fff !important;
+}
+.resultado-acao.botao-pequeno:hover {
+  background: #433b36 !important;
+  background-color: #433b36 !important;
+  border-color: #433b36 !important;
+  color: #fff !important;
+}
+
+/* "Confirmado": selo de status (verde), não parece mais um botão clicável */
+.resultado-acao.botao-pequeno.confirmado,
+.resultado-acao.botao-pequeno.confirmado:hover {
+  background: #e8f4ec !important;
+  background-color: #e8f4ec !important;
+  border: 1px solid #bcdcc7 !important;
+  border-color: #bcdcc7 !important;
+  color: #2f7d4f !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  cursor: default !important;
+  transform: none !important;
+}
+.resultado-acao.botao-pequeno.confirmado::before {
+  content: "✓";
+  font-weight: 800;
+}
+
+/* Destaque verde na barrinha lateral do card já confirmado (navegadores com :has) */
+.item-resultado:has(.resultado-acao.confirmado)::before {
+  background: #6fae84 !important;
+}
+
+/* === RSVP: card container mais elegante/profissional === */
+#confirmacao .cartao-busca-confirmacao {
+  border-radius: 24px;
+  border: 1px solid rgba(194, 168, 120, 0.30);
+  background:
+    radial-gradient(130% 70% at 50% -12%, rgba(255, 252, 246, 0.95) 0%, rgba(255, 252, 246, 0) 62%),
+    linear-gradient(180deg, #ffffff 0%, #fbf8f3 100%);
+  box-shadow:
+    0 1px 2px rgba(84, 75, 69, 0.05),
+    0 16px 34px rgba(84, 75, 69, 0.08),
+    0 38px 64px rgba(84, 75, 69, 0.06);
+}
+
+/* Fio dourado sutil no topo do card (toque elegante) */
+#confirmacao .cartao-busca-confirmacao::before {
+  content: "";
+  position: absolute;
+  inset: auto;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: auto;
+  height: 3px;
+  width: auto;
+  border: none;
+  border-radius: 0;
+  background: linear-gradient(90deg, rgba(194, 168, 120, 0) 6%, rgba(194, 168, 120, 0.65) 50%, rgba(194, 168, 120, 0) 94%);
+  pointer-events: none;
+}
+
+/* "X convites encontrados": selo mais refinado */
+#confirmacao .resultado-resumo {
+  border: 1px solid rgba(194, 168, 120, 0.45);
+  background: linear-gradient(180deg, #fffdf9 0%, #f7f0e6 100%);
+  color: var(--cor-primaria);
+  box-shadow: 0 6px 16px rgba(84, 75, 69, 0.06);
+  letter-spacing: 0.2px;
+}
+
+/* Cards internos: sombra mais suave e limpa */
+#confirmacao .item-resultado {
+  border-radius: 16px;
+  border: 1px solid rgba(194, 168, 120, 0.30);
+  box-shadow: 0 8px 22px rgba(84, 75, 69, 0.06);
+  transition: box-shadow 0.22s ease, transform 0.22s ease, border-color 0.22s ease;
+}
+#confirmacao .item-resultado:hover {
+  box-shadow: 0 14px 30px rgba(84, 75, 69, 0.10);
+  border-color: rgba(194, 168, 120, 0.5);
+  transform: translateY(-1px);
+}
+
+/* === RSVP: modal "Confirmar presença?" — hierarquia correta dos botões === */
+/* "Validar": ação principal, sólida, larga e com sombra */
+#btn-validar-telefone {
+  display: block !important;
+  width: min(100%, 320px) !important;
+  margin: 0 auto !important;
+  min-height: 50px !important;
+  background: var(--cor-primaria) !important;
+  background-color: var(--cor-primaria) !important;
+  border: 1px solid var(--cor-primaria) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2px !important;
+  box-shadow: 0 6px 16px rgba(84, 75, 69, 0.22) !important;
+}
+#btn-validar-telefone:hover {
+  background: #433b36 !important;
+  background-color: #433b36 !important;
+  border-color: #433b36 !important;
+  color: #fff !important;
+  box-shadow: 0 9px 20px rgba(84, 75, 69, 0.30) !important;
+}
+
+/* "Voltar": ação secundária, contornada, menor e discreta */
+#btn-cancelar-confirmacao {
+  display: block !important;
+  width: min(100%, 220px) !important;
+  margin: 0.7rem auto 0 !important;
+  min-height: 44px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid rgba(84, 75, 69, 0.38) !important;
+  color: var(--cor-primaria) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+#btn-cancelar-confirmacao:hover {
+  background: rgba(84, 75, 69, 0.07) !important;
+  background-color: rgba(84, 75, 69, 0.07) !important;
+  border-color: var(--cor-primaria) !important;
+  color: var(--cor-primaria) !important;
+  box-shadow: none !important;
+}
+
+/* === RSVP sucesso: "Presentear agora" (principal) vs "Já presenteei" (secundário) === */
+#btn-presentear-agora {
+  background: var(--cor-primaria) !important;
+  background-color: var(--cor-primaria) !important;
+  border: 1px solid var(--cor-primaria) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 16px rgba(84, 75, 69, 0.22) !important;
+}
+#btn-presentear-agora:hover {
+  background: #433b36 !important;
+  background-color: #433b36 !important;
+  border-color: #433b36 !important;
+  color: #fff !important;
+  box-shadow: 0 9px 20px rgba(84, 75, 69, 0.30) !important;
+}
+#btn-ja-presenteei {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid rgba(84, 75, 69, 0.38) !important;
+  color: var(--cor-primaria) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+#btn-ja-presenteei:hover {
+  background: rgba(84, 75, 69, 0.07) !important;
+  background-color: rgba(84, 75, 69, 0.07) !important;
+  border-color: var(--cor-primaria) !important;
+  color: var(--cor-primaria) !important;
+  box-shadow: none !important;
+}
+
+/* === Modais de pagamento: hierarquia Voltar (secundário) / Avançar (principal) === */
+/* "Avançar / Gerar": principal sólido com sombra */
+#modal-pix-dados-overlay #btn-avancar-pix,
+#modal-cartao-pessoal-overlay #btn-avancar-cartao-pessoal,
+#modal-cartao-dados-overlay #btn-avancar-cartao {
+  background: var(--cor-primaria) !important;
+  background-color: var(--cor-primaria) !important;
+  border: 1px solid var(--cor-primaria) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 16px rgba(84, 75, 69, 0.22) !important;
+}
+#modal-pix-dados-overlay #btn-avancar-pix:hover,
+#modal-cartao-pessoal-overlay #btn-avancar-cartao-pessoal:hover,
+#modal-cartao-dados-overlay #btn-avancar-cartao:hover {
+  background: #433b36 !important;
+  background-color: #433b36 !important;
+  border-color: #433b36 !important;
+  color: #fff !important;
+  box-shadow: 0 9px 20px rgba(84, 75, 69, 0.30) !important;
+}
+
+/* "Voltar": secundário contornado e discreto */
+#modal-pix-dados-overlay #btn-voltar-pix,
+#modal-cartao-pessoal-overlay #btn-voltar-cartao-pessoal,
+#modal-cartao-dados-overlay #btn-voltar-cartao {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid rgba(84, 75, 69, 0.40) !important;
+  color: var(--cor-primaria) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+#modal-pix-dados-overlay #btn-voltar-pix:hover,
+#modal-cartao-pessoal-overlay #btn-voltar-cartao-pessoal:hover,
+#modal-cartao-dados-overlay #btn-voltar-cartao:hover {
+  background: rgba(84, 75, 69, 0.07) !important;
+  background-color: rgba(84, 75, 69, 0.07) !important;
+  border-color: var(--cor-primaria) !important;
+  color: var(--cor-primaria) !important;
+  box-shadow: none !important;
+}
+
+/* ===============================
+   Rodapé: acabamento mais elegante e profissional
+   =============================== */
+.rodape-principal {
+  background: linear-gradient(180deg, #4a423d 0%, #322b27 100%);
+  padding: clamp(1.8rem, 4vw, 2.6rem) 0 calc(clamp(1.3rem, 3vw, 1.9rem) + env(safe-area-inset-bottom, 12px));
+  border-top: 1px solid rgba(194, 168, 120, 0.16);
+}
+/* fio dourado sutil no topo do rodapé */
+.rodape-principal::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 8%, rgba(194, 168, 120, 0.6) 50%, transparent 92%);
+  pointer-events: none;
+  z-index: 2;
+}
+.rodape-container {
+  gap: clamp(0.95rem, 2.5vw, 1.35rem);
+}
+.rodape-topo {
+  gap: 0.85rem;
+}
+.rodape-nomes {
+  font-size: clamp(2rem, 5.5vw, 2.5rem);
+  color: #f5e8d3;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.28);
+}
+/* ornamento dourado sob o nome do casal */
+.rodape-identidade::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 2px;
+  margin: 0.45rem auto 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(194, 168, 120, 0.75), transparent);
+}
+/* links com divisor elegante */
+.nav-rodape {
+  gap: 0.25rem 0;
+}
+.nav-rodape a {
+  font-size: 0.82rem;
+  letter-spacing: 0.2px;
+  padding: 0 0.9rem;
+}
+.nav-rodape a:not(:last-child) {
+  border-right: 1px solid rgba(243, 238, 231, 0.22);
+}
+.rodape-payments-img {
+  opacity: 0.9;
+}
+.credito-rodape--destaque {
+  font-size: 0.85rem;
+  color: rgba(243, 238, 231, 0.72);
+}
+
+/* === Mobile: botões do carrinho/checkout em largura total e bem espaçados === */
+@media (max-width: 768px) {
+  .checkout-acoes,
+  .acoes-carrinho {
+    gap: 0.7rem !important;
+  }
+  #btn-voltar-carrinho-checkout,
+  #btn-concluir-checkout,
+  .acoes-carrinho #btn-adicionar-mais,
+  .acoes-carrinho #btn-continuar-compra {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 52px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    font-size: 1.02rem !important;
+  }
+}
+
+/* === Botão "Como chegar": acabamento + ícone visível === */
+#link-local-evento {
+  padding: 0.55rem 1.05rem !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.2px !important;
+  border-radius: 8px !important;
+  gap: 0.5rem !important;
+  box-shadow: 0 5px 14px rgba(84, 75, 69, 0.22) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+/* ícone do pin em branco (antes era marrom escuro = invisível no botão escuro) */
+#link-local-evento::before {
+  width: 15px !important;
+  height: 15px !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z'/><path d='M12 21s6-5.5 6-10a6 6 0 1 0-12 0c0 4.5 6 10 6 10Z'/><path d='M6 20h12'/></svg>") !important;
+}
+#link-local-evento:hover {
+  box-shadow: 0 8px 18px rgba(84, 75, 69, 0.30) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ===============================
+   Modais de pagamento: fundo (atrás) + caixa (à frente) mais premium
+   =============================== */
+/* Fundo: escurecido em tom quente, com leve desfoque (efeito vidro) */
+.modal-pagamento-overlay {
+  background: rgba(38, 32, 28, 0.55) !important;
+  -webkit-backdrop-filter: blur(7px) saturate(1.04);
+  backdrop-filter: blur(7px) saturate(1.04);
+}
+/* Caixa: cantos suaves + sombra em camadas (elevação premium) */
+#modal-pix-dados-overlay .modal-pix-form,
+#modal-cartao-pessoal-overlay .modal-cartao-form,
+#modal-cartao-dados-overlay .modal-cartao-form,
+.modal-pagamento-box {
+  border-radius: 16px !important;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    0 26px 50px rgba(0, 0, 0, 0.24),
+    0 50px 90px rgba(0, 0, 0, 0.12) !important;
+}
+/* QR Code num quadro limpo e elegante */
+#pix-qr-area,
+.pix-qr {
+  background: #fff !important;
+  border: 1px solid rgba(194, 168, 120, 0.30) !important;
+  border-radius: 16px !important;
+  padding: 14px !important;
+  box-shadow: 0 10px 26px rgba(84, 75, 69, 0.10) !important;
+}
+/* "Tempo restante" no tom champagne (combina com a paleta) */
+#pix-tempo-restante {
+  background: linear-gradient(180deg, #fffdf9 0%, #f6efe3 100%) !important;
+  border: 1px solid rgba(194, 168, 120, 0.40) !important;
+  color: #6f5f43 !important;
+  border-radius: 12px !important;
+}
+

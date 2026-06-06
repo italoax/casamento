@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npx tsc --noEmit; \"Exit code: $LASTEXITCODE\")",
+      "PowerShell(npm run build 2>&1)",
+      "Bash(node --experimental-vm-modules deploys/_scan.cjs)",
+      "Bash(node --check public/js/payment/cartao.js)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(node deploys/_scan.cjs)",
+      "Bash(node deploys/_fix.cjs)",
+      "Bash(cp public/js/payment/cartao.js /tmp/fixed.mjs)",
+      "Bash(node --check /tmp/fixed.mjs)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(node deploys/_csscheck.cjs)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

@@ -1,0 +1,665 @@
+.menu-nav-top,
+.menu-nav-close {
+  display: none;
+}
+/* ===============================
+   Responsivo
+   =============================== */
+@media (max-width: 768px) {
+  body.menu-aberto {
+    overflow: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 16, 14, 0.45);
+    z-index: 1050;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.24s ease,
+      visibility 0.24s ease;
+  }
+
+  body.menu-aberto::before {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  body.menu-aberto .cabecalho-principal {
+    z-index: 1200;
+  }
+
+  body.menu-aberto .menu-nav {
+    z-index: 1210;
+  }
+
+  .navegacao-principal {
+    justify-content: space-between;
+  }
+
+  .marca-nav {
+    position: static;
+  }
+  .menu-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    width: min(72vw, 280px);
+    background-color: var(--cor-superficie-clara);
+    padding: 0;
+    box-shadow: 0 14px 34px rgba(44, 36, 30, 0.26);
+    align-items: flex-start;
+    text-align: left;
+    border-top: none;
+    border-right: 1px solid var(--cor-borda-clara);
+    z-index: 1100;
+    min-height: 100dvh;
+    max-height: 100dvh;
+    height: 100dvh;
+    overflow-y: hidden;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    transform: translateX(-110%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    will-change: transform, opacity;
+    transition:
+      transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.22s ease,
+      visibility 0.22s ease;
+  }
+
+  .menu-nav-top {
+    display: block;
+    position: relative;
+    width: 100%;
+    background: linear-gradient(
+      180deg,
+      #f4eee6 0%,
+      var(--cor-fundo) 100%
+    );
+    border-bottom: 1px solid var(--cor-borda-clara);
+    padding: calc(1rem + env(safe-area-inset-top, 0px)) 0.9rem 0.85rem;
+  }
+
+  .menu-nav-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: var(--fonte-serifa);
+    font-size: 1.25rem;
+    color: var(--cor-texto-clara);
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid #e6ddd2;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.03em;
+  }
+
+  .menu-nav-title {
+    display: block;
+    font-size: 1.02rem;
+    line-height: 1.2;
+    color: var(--cor-primaria);
+    font-weight: 700;
+    padding-right: 2.2rem;
+  }
+
+  .menu-nav-close {
+    display: block;
+    position: absolute;
+    top: 0.4rem;
+    right: 0.5rem;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--cor-primaria);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .menu-nav a:focus-visible,
+  .menu-nav-close:focus-visible,
+  .alternar-nav:focus-visible {
+    outline: 2px solid var(--cor-secundaria);
+    outline-offset: 2px;
+  }
+
+  .menu-nav > li:not(.menu-nav-top) {
+    width: 100%;
+    padding: 0 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .menu-nav > li:not(.menu-nav-top):first-of-type {
+    margin-top: 1.15rem;
+  }
+
+  .menu-nav > li:not(.menu-nav-top):last-child {
+    margin-bottom: 0.35rem;
+  }
+
+  .menu-nav a {
+    color: var(--cor-primaria);
+    width: 100%;
+    text-align: left;
+    padding: 0.24rem 0.2rem;
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .menu-nav a:hover {
+    color: var(--cor-secundaria);
+  }
+
+  .menu-nav.ativo {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    overflow-y: auto;
+  }
+  .alternar-nav {
+    display: block;
+  }
+
+  .destaque::before,
+  .destaque::after {
+    display: none;
+  }
+
+  .destaque {
+    padding: 120px 20px 40px; /* Mais espaço no topo para não ficar atrás do menu */
+    min-height: auto; /* Altura automática no mobile */
+  }
+  .titulo-destaque {
+    font-size: 3.5rem;
+    line-height: 1.1;
+  }
+
+  .data-destaque {
+    font-size: 1.4rem;
+  }
+  .titulo-contagem-hero {
+    font-size: 2rem;
+  }
+
+  .cartao-contagem {
+    width: 80px;
+    height: 80px;
+    margin: 5px;
+  }
+  .cartao-contagem span:first-child {
+    font-size: 1.6rem;
+  }
+  #link-local-evento {
+    font-size: 1rem;
+  }
+  .cartao-contagem .rotulo {
+    font-size: 0.55rem;
+    letter-spacing: 0.4px;
+    line-height: 1.1;
+    text-align: center;
+    padding: 0 4px;
+  }
+
+  .cabecalho-casal {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Ajustes Recepção / Mapa */
+  .detalhes-evento {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+    gap: 1.8rem;
+  }
+  .info-evento,
+  .mapa-evento {
+    width: 100%;
+    min-width: auto;
+  }
+  .info-evento {
+    text-align: center;
+  }
+  .info-evento h3 {
+    text-align: center;
+  }
+  .item-evento {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .icone-evento {
+    margin-right: 0;
+    margin-top: 0;
+  }
+  .texto-evento {
+    text-align: center;
+  }
+  #link-local-evento {
+    margin: 1rem auto 0;
+    display: inline-flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 320px;
+  }
+  /* Ajustes Lista de Presentes */
+  .controles-presentes {
+    flex-direction: column;
+    align-items: center;
+  }
+  .selecao-formulario {
+    width: auto;
+    text-align: center;
+    background-position: right 0.6rem center;
+  }
+  /* Ajustes RSVP */
+  .cartao-busca-confirmacao {
+    padding: 2rem 1rem;
+  }
+
+  .botoes-destaque {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+  }
+  .botao {
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+  }
+}
+/* ===============================
+   Animações & Transições
+   =============================== */
+/* Animação de Entrada (Fade In Up) */
+@keyframes aparecerSubindo {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Aplica animação automática nos elementos do Hero (Topo) */
+.conteudo-destaque > * {
+  opacity: 0; /* começa invisível */
+  transform: translateY(30px);
+}
+.conteudo-destaque.hero-animado > * {
+  animation: aparecerSubindo 1s ease-out forwards;
+}
+/* Cascata leve para secoes */
+.secao-aparecer .cascata-item {
+  opacity: 0;
+  transform: translateY(24px);
+}
+.secao-aparecer.visivel .cascata-item {
+  animation: aparecerSubindo 0.9s ease-out forwards;
+  animation-delay: var(--delay, 0s);
+}
+@media (prefers-reduced-motion: reduce) {
+  .secao-aparecer .cascata-item {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+/* Delays para efeito cascata no topo */
+.conteudo-destaque.hero-animado .rotulo-rd {
+  animation-delay: 0.2s;
+}
+.conteudo-destaque.hero-animado .titulo-destaque {
+  animation-delay: 0.5s;
+}
+.conteudo-destaque.hero-animado .data-destaque {
+  animation-delay: 0.8s;
+}
+.conteudo-destaque.hero-animado .divisor-rd {
+  animation-delay: 1s;
+}
+.conteudo-destaque.hero-animado .local-rd {
+  animation-delay: 1.2s;
+}
+.conteudo-destaque.hero-animado .titulo-contagem-hero {
+  animation-delay: 1.4s;
+}
+.conteudo-destaque.hero-animado .container-contagem {
+  animation-delay: 1.6s;
+}
+.conteudo-destaque.hero-animado .botoes-destaque {
+  animation-delay: 1.9s;
+}
+/* Classe para animação ao rolar a página (Scroll) */
+.secao-aparecer {
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity 0.8s ease-out,
+    transform 0.8s ease-out;
+  will-change: opacity, transform;
+}
+.secao-aparecer.visivel {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* ===============================
+   Carrossel de Fotos do Casal
+   =============================== */
+.carrossel-fotos {
+  overflow: hidden;
+  width: 100%;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  border-radius: var(--raio-borda);
+  box-shadow: var(--sombra);
+}
+.trilho-fotos {
+  position: relative;
+  width: 100%;
+  height: var(--altura-carrossel);
+}
+.slide-foto {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Preenche o espaço (pode cortar bordas) */
+  object-position: var(--pos-desktop, center); /* Define o foco da imagem */
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+}
+.slide-foto.ativa {
+  opacity: 1;
+  z-index: 1;
+}
+.navegacao-bolinhas {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+.bolinha {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.bolinha.ativa {
+  background-color: #fff;
+  transform: scale(1.2);
+}
+.seta-carrossel {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.15
+  ); /* Fundo translúcido mais elegante */
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Borda sutil */
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(2px); /* Efeito vidro fosco */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.seta-carrossel:hover {
+  background-color: var(--cor-secundaria); /* Usa a cor dourada do tema */
+  border-color: var(--cor-secundaria);
+  transform: translateY(-50%) scale(1.1); /* Efeito de zoom */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+.seta-carrossel.anterior {
+  left: 20px;
+}
+.seta-carrossel.proxima {
+  right: 20px;
+}
+@media (max-width: 768px) {
+  .trilho-fotos,
+  .slide-foto {
+    height: var(--altura-carrossel-mobile);
+  }
+  .slide-foto {
+    object-position: var(--pos-mobile, var(--pos-desktop, center));
+  }
+  .seta-carrossel {
+    width: 34px;
+    height: 34px;
+    font-size: 1.1rem;
+  }
+  .seta-carrossel.anterior {
+    left: 10px;
+  }
+  .seta-carrossel.proxima {
+    right: 10px;
+  }
+}
+/* ===============================
+   Confirmação (RSVP) - Estilos Inline
+   =============================== */
+.destaque-modal-confirmacao {
+  font-family: var(--fonte-sans);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--cor-secundaria);
+  margin: 0.5rem 0 2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.campo-qtd-confirmacao {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+.campo-qtd-confirmacao,
+#container-selecao-pessoas,
+#step-confirmacao {
+  width: 100%;
+}
+#area-processo-confirmacao {
+  max-width: 420px;
+  margin: 0 auto;
+  text-align: center;
+}
+#texto-confirmar-presenca,
+#texto-validacao-telefone {
+  text-align: center !important;
+}
+#container-selecao-pessoas {
+  margin-inline: auto;
+}
+#lista-convidados-form {
+  scrollbar-gutter: stable both-edges;
+  padding-right: 0 !important;
+}
+.acoes-modal-confirmacao {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  width: 100%;
+}
+#btn-confirmar-presenca,
+#btn-cancelar-confirmacao {
+  display: block;
+  width: min(100%, 320px);
+  margin-inline: auto;
+  text-align: center;
+}
+#btn-confirmar-presenca {
+  min-height: 52px;
+  font-size: 1.04rem;
+}
+#btn-confirmar-presenca:hover,
+#btn-confirmar-presenca:focus,
+#btn-confirmar-presenca:focus-visible,
+#btn-confirmar-presenca:active {
+  background-color: var(--cor-primaria);
+  color: var(--cor-clara);
+  border-color: transparent;
+  transform: none;
+}
+@media (max-width: 480px) {
+  .acoes-modal-confirmacao {
+    flex-direction: column;
+  }
+}
+/* Estilo do Input de PIN (Validação) */
+#input-validacao-telefone {
+  display: block;
+  margin: 1rem auto 2rem;
+  width: 180px;
+  text-align: center;
+  font-family: var(--fonte-sans);
+  font-size: 1.8rem;
+  letter-spacing: 0.8rem;
+  border: none;
+  border-bottom: 2px solid #e0e0e0;
+  border-radius: 0;
+  padding: 0.5rem;
+  background: transparent;
+  color: var(--cor-primaria);
+  transition: border-color 0.3s;
+}
+#input-validacao-telefone:focus {
+  outline: none;
+  border-bottom-color: var(--cor-secundaria);
+  box-shadow: none;
+}
+#input-validacao-telefone::placeholder {
+  font-size: 1rem;
+  letter-spacing: normal;
+  color: #ccc;
+  transform: translateY(-5px);
+}
+/* ===============================
+   Novo Formulário de Convidados (Detalhado)
+   =============================== */
+.guest-card {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-left: 4px solid var(--cor-secundaria); /* Detalhe dourado */
+  padding: 20px;
+  border-radius: var(--raio-borda);
+  margin-bottom: 15px;
+  text-align: left;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.guest-card h4 {
+  margin-bottom: 10px;
+  color: var(--cor-primaria);
+  font-size: 0.95rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 5px;
+  font-family: var(--fonte-sans);
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.guest-field {
+  margin-bottom: 12px;
+}
+.guest-row {
+  display: flex;
+  gap: 15px;
+}
+.guest-field.half {
+  flex: 1;
+}
+.guest-field label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #999;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+.guest-field input,
+.guest-field select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: var(--fonte-sans);
+  font-size: 0.95rem;
+  background-color: #fff;
+  transition: border-color 0.3s;
+}
+.guest-field input[readonly] {
+  background-color: #f7f7f7;
+  color: #666;
+  cursor: not-allowed;
+}
+.guest-field input:focus,
+.guest-field select:focus {
+  border-color: var(--cor-secundaria);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(194, 168, 120, 0.1);
+}
+.aviso-alteracao {
+  font-size: 0.85rem;
+  color: #d9534f; /* Vermelho suave */
+  background: #fdf7f7;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  border-left: 3px solid #d9534f;
+  text-align: left;
+  line-height: 1.4;
+}
+/* Tela de Sucesso Inline */
+.sucesso-container {
+  text-align: center;
+  padding: 2rem 1rem;
+  animation: aparecerSubindo 0.5s ease;
+}
+#sucesso-confirmacao-container {
+  width: 100%;
+  overflow: visible;
+}
+@media (max-width: 768px) {
+  .cartao-busca-confirmacao {
+    overflow: visible;
+  }
+}
