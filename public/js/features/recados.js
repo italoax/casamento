@@ -87,38 +87,114 @@ function iniciarRecados() {
     feedback.classList.remove("erro", "sucesso");
     if (tipo) feedback.classList.add(tipo);
   };
+  let carrosselTimer = null;
+  const criarRecadoItem = recado => {
+    const item = document.createElement("article");
+    item.className = "recado-item";
+    const nome = document.createElement("h3");
+    nome.textContent = recado.nome || "Convidado";
+    const mensagem = document.createElement("p");
+    mensagem.textContent = recado.mensagem || "";
+    item.appendChild(nome);
+    item.appendChild(mensagem);
+    return item;
+  };
   const renderizarRecados = recados => {
+    if (carrosselTimer) {
+      window.clearInterval(carrosselTimer);
+      carrosselTimer = null;
+    }
     lista.innerHTML = "";
+    lista.classList.remove("vazia", "tem-carrossel");
+
     if (!recados || recados.length === 0) {
       lista.classList.add("vazia");
       return;
     }
-    lista.classList.remove("vazia");
+
+    // Apenas 1 recado: mostra fixo, sem carrossel.
+    if (recados.length === 1) {
+      lista.appendChild(criarRecadoItem(recados[0]));
+      return;
+    }
+
+    // 2 ou mais: carrossel que passa sozinho.
+    lista.classList.add("tem-carrossel");
+    const viewport = document.createElement("div");
+    viewport.className = "recados-viewport";
+    const track = document.createElement("div");
+    track.className = "recados-track";
     recados.forEach(recado => {
-      const item = document.createElement("article");
-      item.className = "recado-item";
-      const nome = document.createElement("h3");
-      nome.textContent = recado.nome || "Convidado";
-      const mensagem = document.createElement("p");
-      mensagem.textContent = recado.mensagem || "";
-      item.appendChild(nome);
-      item.appendChild(mensagem);
-      lista.appendChild(item);
+      const slide = document.createElement("div");
+      slide.className = "recado-slide";
+      slide.appendChild(criarRecadoItem(recado));
+      track.appendChild(slide);
     });
+    viewport.appendChild(track);
+
+    const dots = document.createElement("div");
+    dots.className = "recados-dots";
+
+    let indice = 0;
+    const irPara = i => {
+      indice = (i + recados.length) % recados.length;
+      track.style.transform = `translateX(-${indice * 100}%)`;
+      dots.querySelectorAll(".recado-dot").forEach((d, di) => d.classList.toggle("ativo", di === indice));
+    };
+
+    const reiniciarTimer = () => {
+      if (carrosselTimer) window.clearInterval(carrosselTimer);
+      carrosselTimer = window.setInterval(() => irPara(indice + 1), 5000);
+    };
+
+    recados.forEach((_, i) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "recado-dot" + (i === 0 ? " ativo" : "");
+      dot.setAttribute("aria-label", `Ver recado ${i + 1}`);
+      dot.addEventListener("click", () => {
+        irPara(i);
+        reiniciarTimer();
+      });
+      dots.appendChild(dot);
+    });
+
+    lista.appendChild(viewport);
+    lista.appendChild(dots);
+
+    // Pausa enquanto o visitante está lendo (mouse em cima) e retoma ao sair.
+    viewport.addEventListener("mouseenter", () => {
+      if (carrosselTimer) {
+        window.clearInterval(carrosselTimer);
+        carrosselTimer = null;
+      }
+    });
+    viewport.addEventListener("mouseleave", reiniciarTimer);
+
+    reiniciarTimer();
   };
-  const carregarRecados = async () => {
+  let assinaturaRecados = null;
+  const carregarRecados = async ({ silencioso = false } = {}) => {
     try {
       const resp = await fetch("/api/recados", {
         cache: "no-store"
       });
       const data = await lerJsonComFallback(resp);
-      if (data && data.sucesso) {
-        renderizarRecados(data.recados || []);
-      } else {
+      // A API embrulha a resposta como { sucesso, data: { sucesso, recados } }.
+      // Desembrulha com fallback caso o formato mude no futuro.
+      const payload = (data && data.data) || data;
+      if (payload && payload.sucesso) {
+        const recados = payload.recados || [];
+        const assinatura = JSON.stringify(recados.map(r => [r.id, r.nome, r.mensagem]));
+        if (silencioso && assinatura === assinaturaRecados) return; // nada mudou: evita re-render/piscada
+        assinaturaRecados = assinatura;
+        renderizarRecados(recados);
+      } else if (!silencioso) {
+        assinaturaRecados = "[]";
         renderizarRecados([]);
       }
     } catch (erro) {
-      renderizarRecados([]);
+      if (!silencioso) renderizarRecados([]); // em refresh automático, mantém o que já está na tela
     }
   };
   form.addEventListener("submit", async event => {
@@ -178,6 +254,17 @@ function iniciarRecados() {
     carregarRecaptchaV3().catch(() => {});
   }
   carregarRecados();
+
+  // Atualização automática: recados aprovados no painel aparecem sem dar refresh,
+  // igual à lista de presentes (polling a cada 5 min + ao focar/voltar para a aba).
+  const atualizarRecadosSilenciosamente = () => {
+    if (document.hidden) return;
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+    carregarRecados({ silencioso: true });
+  };
+  window.setInterval(atualizarRecadosSilenciosamente, 3e5);
+  window.addEventListener("focus", atualizarRecadosSilenciosamente);
+  window.addEventListener("pageshow", atualizarRecadosSilenciosamente);
 }
 
 export { lerJsonComFallback, carregarRecaptchaV3, getRecaptchaTokenForAction, bloquearCopiaImagens, iniciarRecados };

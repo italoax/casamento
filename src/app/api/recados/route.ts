@@ -8,9 +8,10 @@ import {
   validarComSchema,
 } from "@/app/api/_middleware/validation";
 import { validarEmail, validarNomeCompleto } from "@/lib/utils/validation";
+import { logPayment } from "@/lib/payment";
 import { Security, SafeLog } from "@/lib/security";
 import type { Recado, RecadoResponse, RecadoSubmitResponse } from "@/lib/types/recado";
-import { enviarNotificacaoRecado } from "@/lib/site-emails";
+import { enviarAgradecimentoRecado, enviarNotificacaoRecado } from "@/lib/site-emails";
 
 export const runtime = "nodejs";
 
@@ -200,7 +201,19 @@ export async function POST(request: NextRequest) {
 
     const id = Number((result as { insertId?: number }).insertId || 0);
 
+    // Registra nos logs do painel (aba "Logs"). Fica pendente de aprovação.
+    void logPayment({
+      tipo: "recado",
+      status: "sucesso",
+      mensagem,
+      nome_comprador: nome,
+      email,
+      payload: { origem: "site", recado_id: id, ip, userAgent: request.headers.get("user-agent") || null },
+    }).catch(() => undefined);
+
     void enviarNotificacaoRecado({ nome, email, mensagem });
+    // Agradecimento ao convidado que deixou o recado.
+    void enviarAgradecimentoRecado({ email, nome });
 
     return json<RecadoSubmitResponse>(
       {

@@ -23,9 +23,11 @@ export default function ManualDosPadrinhosPage() {
       <section id="inicio" className="hero secao-aparecer">
       <div className="container hero-inner">
       <div className="hero-titulo">
+      <span className="hero-eyebrow">Padrinhos &amp; Madrinhas</span>
       <h1>MANUAL DOS PADRINHOS</h1>
-      <p className="subtexto">Criamos este manual com carinho para orientar o traje e detalhes do grande dia.</p>
-      <div className="hero-faixa">Emanuelle & Ítalo</div>
+      <div className="divisor" aria-hidden="true"></div>
+      <p className="subtexto">Criamos este manual com carinho para orientar o traje e os detalhes do nosso grande dia. Obrigado por caminhar ao nosso lado.</p>
+      <div className="hero-faixa">Emanuelle &amp; Ítalo</div>
       </div>
       <div className="contagem" aria-live="polite">
       <div className="contagem-titulo">Contagem regressiva</div>
@@ -65,9 +67,10 @@ export default function ManualDosPadrinhosPage() {
       <section id="data" className="secao secao-aparecer">
       <div className="container">
       <div className="secao-topo">
+      <span className="secao-eyebrow">Reserve a data</span>
       <h2>Save the date</h2>
+      <div className="divisor" aria-hidden="true"></div>
       <p className="intro">Nosso grande dia está marcado. Contamos com você!</p>
-      <div className="divisor"></div>
       </div>
       <div className="cartao-data destaque-sombra">
       <div className="cartao-data__evento">
@@ -103,9 +106,10 @@ export default function ManualDosPadrinhosPage() {
       <section id="madrinha" className="secao secao-aparecer">
       <div className="container">
       <div className="secao-topo">
+      <span className="secao-eyebrow">Traje das madrinhas</span>
       <h2>Querida Madrinha</h2>
+      <div className="divisor" aria-hidden="true"></div>
       <p className="intro">Queremos que você se sinta linda e confortável no nosso grande dia.</p>
-      <div className="divisor"></div>
       </div>
       <p className="texto-centro">Vestido no modelo de sua preferência na cor azul serenity.</p>
       <div className="grid">
@@ -146,9 +150,10 @@ export default function ManualDosPadrinhosPage() {
       <section id="padrinho" className="secao secao-aparecer">
       <div className="container">
       <div className="secao-topo">
+      <span className="secao-eyebrow">Traje dos padrinhos</span>
       <h2>Querido Padrinho</h2>
+      <div className="divisor" aria-hidden="true"></div>
       <p className="intro">Queremos que você se sinta elegante e confortável no nosso grande dia.</p>
-      <div className="divisor"></div>
       </div>
       <p className="texto-centro">Gostaríamos que usasse a gravata azul serenity, juntamente com um terno grafite.</p>
       <div className="grid">
@@ -209,8 +214,9 @@ export default function ManualDosPadrinhosPage() {
       <section id="dicas" className="secao secao-aparecer">
       <div className="container">
       <div className="secao-topo">
+      <span className="secao-eyebrow">Para lembrar</span>
       <h2>Dicas para o grande dia</h2>
-      <div className="divisor"></div>
+      <div className="divisor" aria-hidden="true"></div>
       </div>
       <div className="lista-dicas">
       <div className="dica">

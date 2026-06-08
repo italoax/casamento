@@ -12,9 +12,12 @@ function labelLog(tipo: unknown, status: unknown) {
   const t = String(tipo || "").toLowerCase();
   if (["sucesso", "approved", "paid", "received", "confirmed", "received_in_cash"].includes(s)) return "Sucesso";
   if (["pendente", "pending", "in_process"].includes(s)) return "Pendente";
+  if (["info", "consulta", "busca"].includes(s)) return "Consulta";
   if (["expirado", "expired"].includes(s)) return "Expirado";
   if (["erro", "rejected", "failed", "refused", "cancelled", "canceled", "overdue", "removida_pelo_psp"].includes(s)) {
-    return t === "cartao" || t === "cartão" ? "Recusado" : "Expirado";
+    if (t === "cartao" || t === "cartão") return "Recusado"; // cartão recusado
+    if (t === "pix" || t === "efi") return "Expirado"; // Pix não pago = expirado
+    return "Erro"; // demais tipos (recado, busca, sistema...)
   }
   return String(status || "Pendente");
 }
@@ -24,9 +27,12 @@ function badgeLog(tipo: unknown, status: unknown) {
   const t = String(tipo || "").toLowerCase();
   if (["sucesso", "approved", "paid", "received", "confirmed", "received_in_cash"].includes(s)) return "confirmado";
   if (["pendente", "pending", "in_process"].includes(s)) return "pendente";
+  if (["info", "consulta", "busca"].includes(s)) return "pendente"; // neutro
   if (["expirado", "expired"].includes(s)) return "expirado";
   if (["erro", "rejected", "failed", "refused", "cancelled", "canceled", "overdue", "removida_pelo_psp"].includes(s)) {
-    return t === "cartao" || t === "cartão" ? "recusado" : "expirado";
+    if (t === "cartao" || t === "cartão") return "recusado";
+    if (t === "pix" || t === "efi") return "expirado";
+    return "recusado"; // erro genérico em vermelho
   }
   return "pendente";
 }
@@ -50,6 +56,8 @@ export function TabelaLogs({ logs, data, filtros, aplicarFiltros, limparFiltro, 
           <option value="">Todos os tipos</option>
           <option value="pix">Pix</option>
           <option value="cartao">Cartão</option>
+          <option value="recado">Recado</option>
+          <option value="busca">Busca</option>
           <option value="webhook">Webhook</option>
           <option value="sistema">Sistema</option>
         </select>
@@ -57,6 +65,7 @@ export function TabelaLogs({ logs, data, filtros, aplicarFiltros, limparFiltro, 
           <option value="">Todos status</option>
           <option value="sucesso">Sucesso</option>
           <option value="pendente">Pendente</option>
+          <option value="info">Consulta</option>
           <option value="expirado">Expirado</option>
           <option value="erro">Erro</option>
         </select>

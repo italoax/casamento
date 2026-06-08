@@ -5,9 +5,10 @@
 
 import { randomBytes } from "node:crypto";
 import { db, queryOne, queryRows } from "../db";
-import { encryptCPF, encryptEmail, encryptPhone } from "../encryption";
+import { encryptCPF, encryptEmail, encryptPhone, decryptEmail } from "../encryption";
 import { normalizeStatus } from "./payment-utils";
 import { settleStockForPayment } from "./payment-stock";
+import { enviarPixExpirado } from "../site-emails";
 import type { DbRow, SaleData } from "./payment-types";
 
 const SALE_COLUMNS = [
@@ -145,6 +146,8 @@ export async function updateSaleStatusByPayment(
 ): Promise<DbRow | null> {
   await ensureSalesTable();
   const normalized = normalizeStatus(status);
+  // Lê o estado anterior para detectar a transição (envio único de e-mail).
+  const anterior = await queryOne<DbRow>(`SELECT ${SALE_COLUMNS} FROM vendas WHERE gateway_payment_id = ? LIMIT 1`, [paymentId]);
   await db().execute("UPDATE vendas SET status = ?, status_detail = ? WHERE gateway_payment_id = ?", [normalized, statusDetail, paymentId]);
 
   // Liquida o estoque de forma idempotente sempre que o status muda para final.
@@ -154,9 +157,44 @@ export async function updateSaleStatusByPayment(
     await settleStockForPayment(paymentId, "convert").catch(() => undefined);
   } else if (normalized === "rejected") {
     await settleStockForPayment(paymentId, "release").catch(() => undefined);
+    // Pix que expirou sem pagamento: avisa o convidado uma única vez
+    // (apenas na transição a partir de um estado pendente).
+    void notificarPixExpirado(anterior, normalized);
   }
 
   return queryOne<DbRow>(`SELECT ${SALE_COLUMNS} FROM vendas WHERE gateway_payment_id = ? LIMIT 1`, [paymentId]);
+}
+
+/**
+ * Dispara o e-mail de "Pix expirado" só quando o pagamento sai de um estado
+ * pendente para rejeitado/expirado e o método é Pix. O próprio uso do status
+ * anterior garante o envio único (chamadas repetidas do polling já encontram
+ * o status como "rejected"). Nunca quebra o fluxo de pagamento.
+ */
+async function notificarPixExpirado(anterior: DbRow | null, novoStatus: string): Promise<void> {
+  try {
+    if (!anterior || novoStatus !== "rejected") return;
+    const statusAnterior = String(anterior.status || "").toLowerCase();
+    if (!["pending", "in_process", ""].includes(statusAnterior)) return;
+    const metodo = String(anterior.payment_method || "").toLowerCase();
+    if (metodo && metodo !== "pix") return; // cartão recusado é tratado no webhook
+    if (!anterior.email) return;
+    let email = "";
+    try {
+      email = decryptEmail(String(anterior.email));
+    } catch {
+      email = String(anterior.email || "");
+    }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return;
+    await enviarPixExpirado({
+      email,
+      nome: String(anterior.nome_comprador || "Convidado"),
+      itens: anterior.itens,
+      total: Number(anterior.valor_total || 0),
+    });
+  } catch {
+    // E-mail é best-effort: nunca interrompe a atualização de status.
+  }
 }
 
 export async function parseIds(value: unknown): Promise<number[]> {

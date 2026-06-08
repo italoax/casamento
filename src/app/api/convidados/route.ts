@@ -2,6 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { db, queryOne, queryRows, columnExists, tableExists } from "@/lib/db";
 import { json, errorJson, cleanText, clientIp } from "@/lib/http";
 import { env } from "@/lib/env";
+import { logPayment } from "@/lib/payment";
 import { Security, SafeLog } from "@/lib/security";
 import { enviarAvisoAdminRsvp, enviarConfirmacaoPresenca } from "@/lib/site-emails";
 
@@ -195,6 +196,24 @@ export async function GET(request: Request) {
         `SELECT id, nome, status, convites_disponiveis, telefone FROM convidados WHERE nome LIKE ? ESCAPE '\\\\'${whereVisibility} LIMIT 10`,
         [`%${nomeSafe}%`],
       );
+
+      // Registra a busca nos logs do painel: termo pesquisado, IP e nº de resultados.
+      const ipBusca = Security.clientIp(request);
+      void logPayment({
+        tipo: "busca",
+        status: "info",
+        mensagem: `Busca na lista de convidados: "${nome}" — ${convidados.length} resultado(s) — IP ${ipBusca}`,
+        nome_comprador: nome,
+        itens: convidados.map((c) => String(c.nome)).join(", ") || "Nenhum resultado",
+        payload: {
+          termo: nome,
+          resultados: convidados.length,
+          ip: ipBusca,
+          userAgent: request.headers.get("user-agent") || null,
+          referer: request.headers.get("referer") || null,
+        },
+      }).catch(() => undefined);
+
       return json(convidados.map(publicConvidado), { headers: corsHeaders });
     }
 
