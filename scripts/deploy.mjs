@@ -7,7 +7,7 @@
  *
  * Estrutura do ZIP (tudo na raiz, sem pasta dentro de pasta):
  *   package.json, package-lock.json, next.config.ts, tsconfig.json, next-env.d.ts,
- *   server.js, app.js, src/, public/
+ *   server.js, src/, public/
  * NÃO incluso: node_modules/, .next/, .git/, .env, certificates/, scripts/
  *
  * Uso: npm run deploy  ->  gera deploys/casamento-hostinger.zip
@@ -190,7 +190,6 @@ for (const required of [
   "next.config.ts",
   "tsconfig.json",
   "server.js",
-  "app.js",
   "public/painel/css/painel.css",
 ]) {
   if (!files.includes(required)) throw new Error(`Arquivo obrigatorio ausente no ZIP: ${required}`);
