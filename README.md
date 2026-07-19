@@ -60,7 +60,7 @@ próprio e empacotado em **Docker**.
 
 - **Node.js** `>=20 <23`
 - **MySQL** 8+
-- **Docker Desktop** (opcional, mas recomendado — veja [DOCKER.md](DOCKER.md))
+- **Docker Desktop** (opcional, mas recomendado)
 
 ---
 
@@ -130,8 +130,15 @@ touch .env.docker
 docker compose --env-file .env.docker --profile dev up --build
 ```
 
-Acesse **http://localhost:3000**. O guia completo, com explicação de cada parte,
-está em **[DOCKER.md](DOCKER.md)**.
+Acesse **http://localhost:3000**. O código é montado por volume, então suas edições
+recarregam sozinhas (hot-reload).
+
+Para subir a versão de produção (build otimizado, igual ao servidor) e para derrubar:
+
+```bash
+docker compose --env-file .env.docker up --build -d   # produção, em segundo plano
+docker compose --env-file .env.docker down            # derruba os containers
+```
 
 ### Direto com Node
 
