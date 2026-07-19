@@ -15,6 +15,9 @@ tsconfig.tsbuildinfo
 
 certificates
 
+# Configuração local de ferramentas (permissões, paths da máquina) — não versionar
+.claude/
+
 # Exportações com dados pessoais de convidados (LGPD) — nunca versionar
 lista_convidados*.csv
 *.csv
