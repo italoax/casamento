@@ -5,16 +5,26 @@ import { dateBR, money } from "../../utils/formatting";
 import { Row } from "../../utils/guest-helpers";
 import { Paginacao } from "../common/Paginacao";
 
+// Detecta estorno/reembolso/chargeback pela mensagem (ex.: "Webhook Asaas:
+// PAYMENT_REFUNDED"). O status normalizado desses eventos é "rejected", igual a
+// um cartão recusado — por isso olhamos a mensagem para diferenciar.
+function ehEstorno(status: unknown, mensagem: unknown) {
+  const s = String(status || "").toLowerCase();
+  if (["estornado", "refunded", "refund"].includes(s)) return true;
+  return /\b(refund(?:ed)?|estorn|chargeback|reembols)/i.test(String(mensagem || ""));
+}
+
 // Rótulo amigável do status do log. Pix não pago aparece como "Expirado"
-// (não "erro"); cartão recusado aparece como "Recusado".
-function labelLog(tipo: unknown, status: unknown) {
+// (não "erro"); cartão recusado aparece como "Recusado"; reembolso como "Estornado".
+function labelLog(tipo: unknown, status: unknown, mensagem?: unknown) {
   const s = String(status || "").toLowerCase();
   const t = String(tipo || "").toLowerCase();
   if (["sucesso", "approved", "paid", "received", "confirmed", "received_in_cash"].includes(s)) return "Sucesso";
   if (["pendente", "pending", "in_process"].includes(s)) return "Pendente";
   if (["info", "consulta", "busca"].includes(s)) return "Consulta";
   if (["expirado", "expired"].includes(s)) return "Expirado";
-  if (["erro", "rejected", "failed", "refused", "cancelled", "canceled", "overdue", "removida_pelo_psp"].includes(s)) {
+  if (["erro", "rejected", "failed", "refused", "cancelled", "canceled", "overdue", "removida_pelo_psp", "estornado", "refunded"].includes(s)) {
+    if (ehEstorno(s, mensagem)) return "Estornado"; // reembolso/chargeback (dinheiro devolvido)
     if (t === "cartao" || t === "cartão") return "Recusado"; // cartão recusado
     if (t === "pix" || t === "efi") return "Expirado"; // Pix não pago = expirado
     return "Erro"; // demais tipos (recado, busca, sistema...)
@@ -22,14 +32,15 @@ function labelLog(tipo: unknown, status: unknown) {
   return String(status || "Pendente");
 }
 
-function badgeLog(tipo: unknown, status: unknown) {
+function badgeLog(tipo: unknown, status: unknown, mensagem?: unknown) {
   const s = String(status || "").toLowerCase();
   const t = String(tipo || "").toLowerCase();
   if (["sucesso", "approved", "paid", "received", "confirmed", "received_in_cash"].includes(s)) return "confirmado";
   if (["pendente", "pending", "in_process"].includes(s)) return "pendente";
   if (["info", "consulta", "busca"].includes(s)) return "pendente"; // neutro
   if (["expirado", "expired"].includes(s)) return "expirado";
-  if (["erro", "rejected", "failed", "refused", "cancelled", "canceled", "overdue", "removida_pelo_psp"].includes(s)) {
+  if (["erro", "rejected", "failed", "refused", "cancelled", "canceled", "overdue", "removida_pelo_psp", "estornado", "refunded"].includes(s)) {
+    if (ehEstorno(s, mensagem)) return "estornado"; // âmbar neutro (não é erro)
     if (t === "cartao" || t === "cartão") return "recusado";
     if (t === "pix" || t === "efi") return "expirado";
     return "recusado"; // erro genérico em vermelho
@@ -37,7 +48,17 @@ function badgeLog(tipo: unknown, status: unknown) {
   return "pendente";
 }
 
-export function TabelaLogs({ logs, data, filtros, aplicarFiltros, limparFiltro, api, paginar }: { logs: Row[]; data: any; filtros: any; aplicarFiltros: any; limparFiltro: any; api: any; paginar: any }) {
+// Rótulo amigável do tipo do log (capitalizado/legível).
+function labelTipo(tipo: unknown) {
+  const t = String(tipo || "").toLowerCase();
+  const map: Record<string, string> = {
+    confirmacao: "Confirmação", pix: "Pix", cartao: "Cartão", recado: "Recado",
+    busca: "Busca", webhook: "Webhook", sistema: "Sistema",
+  };
+  return map[t] || (t ? t.charAt(0).toUpperCase() + t.slice(1) : "-");
+}
+
+export function TabelaLogs({ logs, data, filtros, aplicarFiltros, limparFiltro, atualizarFiltro, api, paginar }: { logs: Row[]; data: any; filtros: any; aplicarFiltros: any; limparFiltro: any; atualizarFiltro: any; api: any; paginar: any }) {
   const total = data.logs?.total || 0;
   const [modal, setModal] = useState<{ titulo: string; texto: string } | null>(null);
 
@@ -49,11 +70,15 @@ export function TabelaLogs({ logs, data, filtros, aplicarFiltros, limparFiltro, 
   return (
     <div id="tab-logs" className="tab-conteudo ativo">
       <div className="painel-header compact"><h3 className="painel-subtitulo">Logs do Site</h3></div>
-      <div className="resumo-mini"><span className="toolbar-pill">Logs: {total}</span></div>
-      <form className="barra-ferramentas barra-ferramentas--mini painel-filtros" onSubmit={aplicarFiltros}>
-        <input name="busca_log" placeholder="Buscar mensagem, email ou referência..." defaultValue={filtros.busca_log} />
-        <select name="tipo_log" defaultValue={filtros.tipo_log}>
+      <div className="resumo-mini resumo-mini--stats"><span className="toolbar-pill"><span className="rp-label">Logs</span><span className="rp-num">{total}</span></span></div>
+      <div className="barra-ferramentas barra-ferramentas--mini painel-filtros">
+        <div className={`campo-busca`}>
+          <input placeholder="Buscar mensagem, email ou referência..." value={filtros.busca_log} onChange={(e) => atualizarFiltro({ busca_log: e.target.value }, { debounce: true, resetPagina: "pagina_log" })} autoComplete="off" />
+          {filtros.busca_log ? <button type="button" className="campo-busca__limpar" aria-label="Limpar busca" onClick={() => atualizarFiltro({ busca_log: "" }, { resetPagina: "pagina_log" })}>×</button> : null}
+        </div>
+        <select value={filtros.tipo_log} onChange={(e) => atualizarFiltro({ tipo_log: e.target.value }, { resetPagina: "pagina_log" })}>
           <option value="">Todos os tipos</option>
+          <option value="confirmacao">Confirmação</option>
           <option value="pix">Pix</option>
           <option value="cartao">Cartão</option>
           <option value="recado">Recado</option>
@@ -61,7 +86,7 @@ export function TabelaLogs({ logs, data, filtros, aplicarFiltros, limparFiltro, 
           <option value="webhook">Webhook</option>
           <option value="sistema">Sistema</option>
         </select>
-        <select name="status_log" defaultValue={filtros.status_log}>
+        <select value={filtros.status_log} onChange={(e) => atualizarFiltro({ status_log: e.target.value }, { resetPagina: "pagina_log" })}>
           <option value="">Todos status</option>
           <option value="sucesso">Sucesso</option>
           <option value="pendente">Pendente</option>
@@ -69,10 +94,9 @@ export function TabelaLogs({ logs, data, filtros, aplicarFiltros, limparFiltro, 
           <option value="expirado">Expirado</option>
           <option value="erro">Erro</option>
         </select>
-        <button className="toolbar-btn" type="submit">Filtrar</button>
-        <button className="toolbar-btn" type="button" onClick={() => limparFiltro(["busca_log", "tipo_log", "status_log"])}>Limpar</button>
+        <button className="toolbar-btn" type="button" onClick={() => limparFiltro(["busca_log", "tipo_log", "status_log", "pagina_log"])}>Limpar</button>
         <button className="toolbar-btn toolbar-btn--danger" type="button" onClick={() => confirm("Limpar todos os logs do site?") && api("/api/painel/logs", { method: "DELETE" }, "Logs removidos.")}>Limpar logs</button>
-      </form>
+      </div>
 
       <div className="tabela-container">
         <table>
@@ -100,8 +124,8 @@ export function TabelaLogs({ logs, data, filtros, aplicarFiltros, limparFiltro, 
                 <tr key={l.id}>
                   <td data-label="Data">{dateBR(l.created_at)}</td>
                   <td data-label="Validade Pix" className="log-nowrap-cell">{validadePix}</td>
-                  <td data-label="Tipo">{l.tipo}</td>
-                  <td data-label="Status"><span className={`status-badge ${badgeLog(l.tipo, l.status)}`}>{labelLog(l.tipo, l.status)}</span></td>
+                  <td data-label="Tipo">{labelTipo(l.tipo)}</td>
+                  <td data-label="Status"><span className={`status-badge ${badgeLog(l.tipo, l.status, l.mensagem)}`}>{labelLog(l.tipo, l.status, l.mensagem)}</span></td>
                   <td data-label="Mensagem" className="log-nowrap-cell log-message-cell">
                     <button type="button" className="log-line-preview" onClick={() => abrirModal("Mensagem completa", mensagem)} aria-label="Ver mensagem completa">
                       {mensagem}

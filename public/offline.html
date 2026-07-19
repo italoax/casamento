@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f7f4ef" />
+  <title>Sem conexão — Emanuelle &amp; Ítalo</title>
+  <style>
+    :root { --cor: #544b45; --fundo: #f7f4ef; --dourado: #c2a878; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100dvh; padding: 24px; text-align: center;
+      background: var(--fundo); color: var(--cor);
+      font-family: "Quicksand", system-ui, -apple-system, sans-serif;
+    }
+    .caixa { max-width: 420px; }
+    img { width: 84px; height: 84px; margin-bottom: 20px; opacity: 0.92; }
+    h1 {
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-weight: 700; font-size: 1.9rem; margin: 0 0 10px;
+    }
+    p { font-size: 1rem; line-height: 1.6; color: rgba(84, 75, 69, 0.78); margin: 0 0 24px; }
+    button {
+      border: none; border-radius: 999px; cursor: pointer;
+      background: var(--cor); color: #fff;
+      font-size: 1rem; font-weight: 700; padding: 14px 28px;
+    }
+    button:active { transform: translateY(1px); }
+  </style>
+</head>
+<body>
+  <div class="caixa">
+    <img src="/img/favicon/icon-192.png" alt="Emanuelle & Ítalo" />
+    <h1>Você está sem conexão</h1>
+    <p>Não conseguimos carregar esta página agora. Verifique sua internet e tente novamente.</p>
+    <button type="button" onclick="location.reload()">Tentar de novo</button>
+  </div>
+</body>
+</html>

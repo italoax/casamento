@@ -83,9 +83,10 @@ export async function checkoutItems(idsProdutos: number[]): Promise<{ total: num
       ? null 
       : Number(item.quantidade_disponivel);
     const vendido = Number(item.quantidade_vendida || 0);
-    const reservado = Number(item.quantidade_reservada || 0);
-    
-    if (disponivel !== null && qtd > Math.max(0, disponivel - vendido - reservado)) {
+
+    // Só o que já foi PAGO (vendido) bloqueia. Reservas de Pix pendente não contam:
+    // como é contribuição em dinheiro, repetições são permitidas.
+    if (disponivel !== null && qtd > Math.max(0, disponivel - vendido)) {
       throw new Error(`Quantidade indisponível para ${String(item.nome || "presente")}.`);
     }
     

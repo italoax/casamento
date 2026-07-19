@@ -90,6 +90,7 @@ function criarHTMLModalPagamento() {
 function criarCardPagamento(forma) {
   const ativo = forma.id === opcaoPagamentoSelecionada ? "ativo" : "";
   const temBadge = forma.badge ? "tem-badge" : "";
+  const recomendado = forma.recomendado ? "recomendado" : "";
   const imagemPix = forma.id === "pix" ? `<img class="modal-pagamento-logo-inline" src="${versionarImagemUrl("img/icones/pix-logo.webp")}" alt="" aria-hidden="true">` : "";
   const bandeiras = forma.id === "cartao" ? `
     <div class="modal-pagamento-bandeiras" aria-hidden="true">
@@ -103,7 +104,7 @@ function criarCardPagamento(forma) {
   const badge = forma.badge ? `<span class="modal-pagamento-badge">${forma.badge}</span>` : "";
 
   return `
-    <button type="button" class="modal-pagamento-card ${ativo} ${temBadge}" data-opcao="${forma.id}">
+    <button type="button" class="modal-pagamento-card ${ativo} ${temBadge} ${recomendado}" data-opcao="${forma.id}">
       ${badge}
       <strong class="modal-pagamento-label">
         ${imagemPix}${forma.label}

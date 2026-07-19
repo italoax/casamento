@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { queryRows, db } from "@/lib/db";
+import { queryRows, execute, columnExists } from "@/lib/db";
 import { cleanText, clientIp } from "@/lib/http";
-import { env, envBool } from "@/lib/env";
+import { validateCaptcha } from "@/lib/captcha";
 import { json, erro, validacaoErro } from "@/app/api/_middleware/responses";
 import {
   validarCamposObrigatorios,
@@ -16,7 +16,7 @@ import { enviarAgradecimentoRecado, enviarNotificacaoRecado } from "@/lib/site-e
 export const runtime = "nodejs";
 
 async function ensureRecadosTable() {
-  await db().execute(`CREATE TABLE IF NOT EXISTS recados (
+  await execute(`CREATE TABLE IF NOT EXISTS recados (
     id INT AUTO_INCREMENT PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     nome VARCHAR(80) NOT NULL,
@@ -26,37 +26,9 @@ async function ensureRecadosTable() {
     ip VARCHAR(64) NULL,
     INDEX idx_created_at (created_at)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
-}
-
-/**
- * Valida token do reCAPTCHA com Google
- */
-async function validarRecaptcha(token: string): Promise<boolean> {
-  if (process.env.NODE_ENV !== "production" && envBool("DEV_BYPASS_RECAPTCHA", false)) return true;
-
-  const secret = env("RECAPTCHA_SECRET");
-  if (!secret || !token) return false;
-
-  try {
-    const body = new URLSearchParams({ secret, response: token });
-    const resp = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body,
-    });
-
-    const data = (await resp.json().catch(() => null)) as {
-      success?: boolean;
-      score?: number;
-      action?: string;
-    } | null;
-
-    const minScore = Number(env("RECAPTCHA_MIN_SCORE", "0.5"));
-    const requiredScore = Number.isFinite(minScore) ? minScore : 0.5;
-    return Boolean(data?.success) && typeof data?.score === "number" && data.score >= requiredScore;
-  } catch (error) {
-    SafeLog.error("reCAPTCHA /api/recados", error);
-    return false;
+  // "visivel" controla a exibição no mural independentemente da aprovação.
+  if (!(await columnExists("recados", "visivel"))) {
+    await execute("ALTER TABLE recados ADD COLUMN visivel TINYINT(1) NOT NULL DEFAULT 1").catch(() => undefined);
   }
 }
 
@@ -71,7 +43,7 @@ export async function GET(request: NextRequest) {
     await ensureRecadosTable();
 
     const recados = (await queryRows(
-      "SELECT id, nome, mensagem, created_at FROM recados WHERE aprovado = 1 ORDER BY created_at DESC LIMIT 50"
+      "SELECT id, nome, mensagem, created_at FROM recados WHERE aprovado = 1 AND visivel = 1 ORDER BY created_at DESC LIMIT 50"
     )) as Recado[];
 
     return json<RecadoResponse>(
@@ -180,11 +152,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar reCAPTCHA
-    if (!(await validarRecaptcha(data.recaptchaToken))) {
-      return erro("Falha na verificação do reCAPTCHA.", {
+    // Validar captcha (Cloudflare Turnstile)
+    if (!(await validateCaptcha(data.recaptchaToken, request, "recado"))) {
+      return erro("Falha na verificação de segurança.", {
         status: 422,
-        code: "RECAPTCHA_FAILED",
+        code: "CAPTCHA_FAILED",
       });
     }
 
@@ -194,7 +166,7 @@ export async function POST(request: NextRequest) {
     const mensagem = cleanText(data.mensagem, 600);
 
     // Inserir no banco
-    const [result] = await db().execute(
+    const [result] = await execute(
       "INSERT INTO recados (nome, email, mensagem, aprovado, ip) VALUES (?, ?, ?, 0, ?)",
       [nome, email, mensagem, ip]
     );

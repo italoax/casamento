@@ -15,8 +15,6 @@ export type CheckoutPayload = {
     address?: { zip_code?: string; number?: string };
   };
   card?: { number?: string; holder_name?: string; expiration?: string; ccv?: string };
-  creditCardToken?: string;
-  efiCustomerId?: string;
   metadata?: { ids_produtos?: unknown; mensagem?: string; cartao_personalizado?: unknown; modelo_cartao?: string };
   recaptchaToken?: string;
 };

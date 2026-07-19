@@ -8,7 +8,7 @@ import { bloquearScrollModal, liberarScrollModal } from "../core/modals.js";
 
 import { marcarRetornoModalPagamento, limparRetornoModalPagamento } from "../ui/navigation.js";
 
-import { lerJsonComFallback, getRecaptchaTokenForAction } from "../features/recados.js";
+import { lerJsonComFallback } from "../features/recados.js";
 
 import { atualizarDisponibilidadePresentesAposPagamento } from "../features/presentes.js";
 
@@ -700,76 +700,7 @@ async function postJsonCartao(url, payload, timeoutMs = 15e4) {
   return json;
 }
 
-let efiTokenConfigCache = null;
-let efiTokenScriptPromise = null;
-
-async function carregarScriptTokenEfi() {
-  if (window.EfiPay && window.EfiPay.CreditCard) return window.EfiPay;
-  if (!efiTokenScriptPromise) {
-    efiTokenScriptPromise = new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/payment-token-efi/dist/payment-token-efi-umd.min.js";
-      script.async = true;
-      script.onload = () => window.EfiPay ? resolve(window.EfiPay) : reject(new Error("Biblioteca de tokenização da Efí indisponível."));
-      script.onerror = () => reject(new Error("Não foi possível carregar a biblioteca de cartão da Efí."));
-      document.head.appendChild(script);
-    });
-  }
-  return efiTokenScriptPromise;
-}
-
-async function obterConfiguracaoTokenEfi() {
-  if (efiTokenConfigCache) return efiTokenConfigCache;
-  const resp = await fetch("/api/cartao/tokenizar", { method: "GET" });
-  const texto = await resp.text();
-  let dados = null;
-  try {
-    dados = texto ? JSON.parse(texto) : null;
-  } catch (err) {
-    dados = null;
-  }
-  if (!resp.ok || !dados || !dados.sucesso) {
-    throw new Error(dados && dados.erro || "Configuração de cartão Efí indisponível.");
-  }
-  efiTokenConfigCache = dados;
-  return dados;
-}
-
-function expirationPartsEfi(validade = "") {
-  const digits = normalizarDigitos(validade);
-  const month = digits.slice(0, 2);
-  const year = digits.length === 4 ? `20${digits.slice(2)}` : digits.slice(2, 6);
-  return { month, year };
-}
-
-async function gerarPaymentTokenEfi(total) {
-  const config = await obterConfiguracaoTokenEfi();
-  const EfiPay = await carregarScriptTokenEfi();
-  const cartao = cartaoFormData.cartao || {};
-  const numero = cartao.numero || "";
-  const brandMap = { master: "mastercard" };
-  const brand = brandMap[detectarBandeiraPorBin(numero.slice(0, 6))] || detectarBandeiraPorBin(numero.slice(0, 6));
-  const expiration = expirationPartsEfi(cartao.validade || "");
-  if (!brand) throw new Error("Bandeira do cartão não suportada pela Efí.");
-  const result = await EfiPay.CreditCard
-    .setAccount(config.account_id)
-    .setEnvironment(config.environment || "production")
-    .setCreditCardData({
-      brand,
-      number: numero,
-      cvv: cartao.cvv || "",
-      expirationMonth: expiration.month,
-      expirationYear: expiration.year,
-      holderName: cartao.holderName || cartaoFormData.nomeCartao || cartaoFormData.nomeCompleto || "",
-      holderDocument: cartaoFormData.cpf || "",
-      reuse: false
-    })
-    .getPaymentToken();
-  if (!result || !result.payment_token) throw new Error("Não foi possível gerar o token do cartão na Efí.");
-  return result.payment_token;
-}
-
-async function iniciarPagamentoCartaoEfi() {
+async function enviarPagamentoCartao() {
   const total = obterTotalParcelasSelecionadas() || calcularTotalFinal("cartao");
   const nomeCompleto = (cartaoFormData.nomeCompleto || checkoutState.nome || "Convidado").trim();
   const [firstName, ...lastNameParts] = nomeCompleto.split(/\s+/);
@@ -805,18 +736,25 @@ async function iniciarPagamentoCartaoEfi() {
       tentativa_id: `${Date.now()}_${Math.random().toString(16).slice(2, 8)}`
     }
   };
-  let creditCardToken = "";
+  // Asaas não tokeniza no navegador: os dados do cartão são enviados ao backend,
+  // que os repassa ao Asaas. Limpamos o cartão da memória logo após o envio.
+  const cartao = cartaoFormData.cartao || {};
+  const card = {
+    number: cartao.numero || "",
+    holder_name: cartao.holderName || cartaoFormData.nomeCartao || cartaoFormData.nomeCompleto || "",
+    expiration: cartao.validade || "",
+    ccv: cartao.cvv || ""
+  };
+  let paymentJson;
   try {
-    creditCardToken = await gerarPaymentTokenEfi(total);
+    paymentJson = await postJsonCartao("/api/cartao", {
+      ...basePayload,
+      card
+    });
   } finally {
     delete cartaoFormData.cartao;
     window.cartaoFormData = cartaoFormData;
   }
-  const paymentJson = await postJsonCartao("/api/cartao", {
-    ...basePayload,
-    creditCardToken,
-    recaptchaToken: await getRecaptchaTokenForAction("checkout_cartao")
-  });
   return {
     status: paymentJson.status || "pending",
     id: paymentJson.id || "",
@@ -842,7 +780,7 @@ function iniciarPagamentoCartao(opcoes = {}) {
     btnConcluir.textContent = siteConfig.cartao.pagamento.gerando;
   }
   exibirModalProcessandoCartao();
-  iniciarPagamentoCartaoEfi().then(result => {
+  enviarPagamentoCartao().then(result => {
     const statusRaw = typeof result === "string" ? result : result.status;
     const statusToken = result && typeof result === "object" ? result.status_token || "" : "";
     const status = mapEfiStatus(statusRaw);
@@ -937,7 +875,7 @@ function iniciarMonitoramentoStatusCartao(statusToken, idsProdutos = []) {
     pararMonitoramentoStatusCartao(overlay);
     tentativas += 1;
     try {
-      const resp = await fetch("/api/pagamento_status", {
+      const resp = await fetch("/api/pagamento-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -1063,4 +1001,4 @@ window.mostrarFormularioCartaoDetalhes = mostrarFormularioCartaoDetalhes;
 
 window.iniciarPagamentoCartao = iniciarPagamentoCartao;
 
-export { cartaoFormData, limparCartaoFormulario, mostrarFormularioCartaoPessoal, mostrarFormularioCartao, mostrarFormularioCartaoDetalhes, calcularTotalComJuros, obterTotalParcelasSelecionadas, sanitizarTextoParcela, normalizarParcelasSelect, preencherParcelasSimuladas, limitarParcelasSelect, atualizarTotalCartaoModal, atualizarParcelasMp, atualizarStatusParcelas, validarFormularioCartaoPessoal, validarFormularioCartao, detectarBandeiraPorBin, nomeBandeiraCartao, iniciarPagamentoCartaoEfi, iniciarPagamentoCartao, fecharModalCartaoDados, pararMonitoramentoStatusCartao, iniciarMonitoramentoStatusCartao, exibirModalProcessandoCartao, atualizarModalProcessandoCartao, traduzirErroMpCartao, mapEfiStatus };
+export { cartaoFormData, limparCartaoFormulario, mostrarFormularioCartaoPessoal, mostrarFormularioCartao, mostrarFormularioCartaoDetalhes, calcularTotalComJuros, obterTotalParcelasSelecionadas, sanitizarTextoParcela, normalizarParcelasSelect, preencherParcelasSimuladas, limitarParcelasSelect, atualizarTotalCartaoModal, atualizarParcelasMp, atualizarStatusParcelas, validarFormularioCartaoPessoal, validarFormularioCartao, detectarBandeiraPorBin, nomeBandeiraCartao, enviarPagamentoCartao, iniciarPagamentoCartao, fecharModalCartaoDados, pararMonitoramentoStatusCartao, iniciarMonitoramentoStatusCartao, exibirModalProcessandoCartao, atualizarModalProcessandoCartao, traduzirErroMpCartao, mapEfiStatus };

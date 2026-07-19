@@ -34,8 +34,8 @@ export function CoupleSection() {
     {/* Vídeo do Casal */}
     <div className="video-casal cascata-item" style={{ "--delay": "0.55s" } as React.CSSProperties}>
     <div className="video-player" data-video-player>
-    <video playsInline preload="auto">
-    <source src="/video/video1-fast.mp4" />
+    <video playsInline preload="metadata" poster="/img/video-poster.webp">
+    <source src="/video/video1-web.mp4" type="video/mp4" />
     Seu navegador não suporta vídeo.
     </video>
     <button className="video-play" type="button" aria-label="Reproduzir">

@@ -4,6 +4,7 @@ import sharp from "sharp";
 import { errorJson, json, cleanText } from "@/lib/http";
 import { requirePainelPermission } from "@/lib/painel-auth";
 import { columnExists, db, queryOne, tableExists } from "@/lib/db";
+import { uploadsDir, resolveUploadPath } from "@/lib/uploads";
 
 export const runtime = "nodejs";
 
@@ -12,7 +13,11 @@ async function requireAuth() {
 }
 
 function money(v: unknown) {
-  const raw = String(v || "").replace(/[R$%\s]/g, "").replace(/\./g, "").replace(",", ".");
+  let raw = String(v ?? "").replace(/[R$%\s]/g, "");
+  // Com vírgula = formato BR ("1.234,56"): pontos são milhar, vírgula é decimal.
+  // Sem vírgula, o ponto JÁ é o separador decimal ("144.23" vindo do banco) — não remover,
+  // senão "144.23" virava 14423 (preço ~100x maior) ao editar/salvar.
+  raw = raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw;
   const n = Number(raw);
   return Number.isFinite(n) ? Math.max(0, n) : 0;
 }
@@ -75,7 +80,9 @@ async function getTaxaAtualPresentes() {
 async function saveUpload(file: File | null, nomePresente?: string) {
   if (!file || file.size <= 0) return "";
   if (!file.type.startsWith("image/") && !/\.(jpe?g|png|webp|gif)$/i.test(file.name)) return "";
-  const dir = path.join(process.cwd(), "public", "img", "presentes");
+  // Grava no diretório PERSISTENTE (fora da pasta do deploy quando UPLOADS_DIR
+  // está configurado), para as imagens não sumirem a cada deploy na Hostinger.
+  const dir = uploadsDir();
   await mkdir(dir, { recursive: true });
   const filename = safeFileName(file.name, nomePresente);
   const bytes = Buffer.from(await file.arrayBuffer());
@@ -105,7 +112,7 @@ async function removeOldImage(id: number) {
     const value = String(img || "");
     if (!value || value.startsWith("http") || value.includes("..")) continue;
     if (!value.startsWith("img/presentes/")) continue;
-    await unlink(path.join(process.cwd(), "public", value)).catch(() => {});
+    await unlink(resolveUploadPath(value)).catch(() => {});
   }
 }
 

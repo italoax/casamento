@@ -1,15 +1,14 @@
 /**
  * WEBHOOK ROUTE - /api/webhook
- * 
- * Recebe webhooks de pagamentos da Efí Pay.
+ *
+ * Recebe webhooks de pagamentos do Asaas.
  * Processa eventos como:
- * - Pagamento aprovado/recusado
- * - Transferência completa
- * - Pix recebido
- * 
+ * - PAYMENT_CONFIRMED / PAYMENT_RECEIVED (aprovado)
+ * - PAYMENT_OVERDUE / PAYMENT_REFUNDED / PAYMENT_CHARGEBACK_REQUESTED
+ *
  * Implementa idempotência para evitar duplicação de processamento.
  * Se o webhook for retransmitido, detecta e retorna a mesma resposta.
- * 
+ *
  * POST /api/webhook - Processa webhook
  * OPTIONS /api/webhook - CORS preflight
  */
@@ -36,7 +35,7 @@ function safeEmail(value: unknown) {
 
 /**
  * Tabela para garantir idempotência - evita processar o mesmo webhook duas vezes
- * A Efí pode reenviar webhooks se não receber resposta 200
+ * O Asaas reenvia webhooks (fila sequencial) enquanto não receber resposta 200
  */
 async function ensureIdempotencyTable() {
   await db()
@@ -116,8 +115,8 @@ export async function OPTIONS(request: Request) {
 }
 
 /**
- * POST Handler - Processa webhooks da Efí
- * 
+ * POST Handler - Processa webhooks do Asaas
+ *
  * Fluxo:
  * 1. Valida CORS origin
  * 2. Verifica token de autenticação (timing-safe comparison)
@@ -132,17 +131,23 @@ export async function POST(request: Request) {
   const origin = request.headers.get("origin");
   const corsHeaders = Security.corsHeaders(origin, request.url);
 
-  // Não validamos Origin aqui: webhook é servidor-a-servidor (a Efí envia um
+  // Não validamos Origin aqui: webhook é servidor-a-servidor (o Asaas envia um
   // header Origin próprio, que reprovaria no check de CORS e devolveria 403).
-  // A proteção real do webhook é o token (EFI_WEBHOOK_TOKEN) e/ou mTLS abaixo.
+  // A proteção do webhook é o token configurado no painel (ASAAS_WEBHOOK_TOKEN).
 
   try {
-    // 1. Validar webhook token quando configurado.
-    // Para Pix Efí, a proteção principal costuma ser mTLS no cadastro do webhook.
-    const expected = env("EFI_WEBHOOK_TOKEN");
-    const provided = request.headers.get("x-efi-webhook-token") || request.headers.get("efi-access-token") || "";
+    // 1. Validar webhook token. O Asaas envia o token cadastrado no header
+    // "asaas-access-token". Falha FECHADA: sem ASAAS_WEBHOOK_TOKEN configurado, o
+    // webhook fica desabilitado — impede que alguém forje "pagamento confirmado"
+    // caso o token seja removido por engano.
+    const expected = env("ASAAS_WEBHOOK_TOKEN");
+    const provided = request.headers.get("asaas-access-token") || "";
 
-    if (expected && !Security.constantTimeCompare(provided.trim(), expected.trim())) {
+    if (!expected) {
+      SafeLog.error("WEBHOOK", "ASAAS_WEBHOOK_TOKEN não configurado — webhook desabilitado por segurança.");
+      return errorJson("Webhook não configurado.", 503, { headers: corsHeaders });
+    }
+    if (!Security.constantTimeCompare(provided.trim(), expected.trim())) {
       const clientIp = Security.clientIp(request);
       SafeLog.warn("WEBHOOK", `Tentativa não autorizada do IP ${clientIp}`);
       return errorJson("Não autorizado", 403, { headers: corsHeaders });
@@ -154,20 +159,18 @@ export async function POST(request: Request) {
       return errorJson("Muitas requisições", 429, { headers: corsHeaders });
     }
 
-    // 3. Parse payload. A Efí valida a URL no cadastro com um POST de teste (sem
-    // dados de Pix); respondemos 200 a esse "ping" para o registro do webhook passar.
+    // 3. Parse payload. O Asaas valida a URL no cadastro com um POST de teste;
+    // respondemos 200 a esse "ping" para o registro do webhook passar.
     const payload = (await request.json().catch(() => null)) as Record<string, unknown> | null;
     if (!payload) {
       return json({ sucesso: true, status: "ping" }, 200, { headers: corsHeaders });
     }
 
-    // Extrai dados do pagamento: Efí Pix envia { pix: [{ txid, endToEndId, valor, horario }] }.
+    // O Asaas envia { event, payment: { id, status, externalReference, ... } }.
     const payment = (payload.payment || {}) as Record<string, unknown>;
-    const pixItems = Array.isArray(payload.pix) ? (payload.pix as Array<Record<string, unknown>>) : [];
-    const pix = pixItems[0] || null;
-    const paymentId = String(pix?.txid || payment.id || payload.txid || payload.charge_id || "");
-    const event = String(payload.event || (pix ? "PIX_RECEIVED" : ""));
-    const detail = String(payment.status || payload.status || (pix ? "CONCLUIDA" : event || "PENDING"));
+    const paymentId = String(payment.id || "");
+    const event = String(payload.event || "");
+    const detail = String(payment.status || event || "PENDING");
 
     if (!paymentId) {
       return json({ sucesso: true, status: "ping" }, 200, { headers: corsHeaders });
@@ -191,9 +194,9 @@ export async function POST(request: Request) {
 
     // 6. Log sem expor dados sensíveis
     await logPayment({
-      tipo: String(sale?.payment_method || "efi"),
+      tipo: String(sale?.payment_method || "asaas"),
       status: status === "approved" ? "sucesso" : status,
-      mensagem: `Webhook Efí: ${event || detail}`,
+      mensagem: `Webhook Asaas: ${event || detail}`,
       gateway_payment_id: paymentId,
       external_reference: payment.externalReference || payload.custom_id || null,
       nome_comprador: sale?.nome_comprador ? String(sale.nome_comprador) : null,
@@ -216,7 +219,7 @@ export async function POST(request: Request) {
           nome,
           itens,
           total,
-          metodo: String(sale.payment_method || "efi"),
+          metodo: String(sale.payment_method || "asaas"),
           status: "aprovado",
         });
         await db().execute("UPDATE vendas SET comprovante_enviado = 1 WHERE gateway_payment_id = ?", [paymentId]).catch(() => undefined);

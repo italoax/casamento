@@ -104,7 +104,7 @@
 .btn-remover-carrinho {
   background: none;
   border: none;
-  color: #ff0000;
+  color: #9a948e;
   cursor: pointer;
   font-family: var(--fonte-sans);
   font-size: 0.78rem;
@@ -113,7 +113,7 @@
   transition: color 0.2s;
 }
 .btn-remover-carrinho:hover {
-  color: #8f343f;
+  color: #c0392b;
 }
 .rodape-carrinho {
   margin-top: 2rem;
@@ -130,35 +130,38 @@
 .parcelamento-carrinho {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  min-height: 56px;
-  padding: 0.9rem 1.1rem;
-  background: #f4f5f7;
-  color: #13233a;
+  gap: 0.55rem;
+  min-height: 0;
+  padding: 0.5rem 0.75rem;
+  background: #f6f6f4;
+  color: #7a736c;
   font-family: var(--fonte-sans);
-  font-size: 0.84rem;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.3;
+  border-radius: 6px;
 }
 .parcelamento-carrinho svg {
-  width: 22px;
-  height: 22px;
-  color: #5d7694;
+  width: 18px;
+  height: 18px;
+  color: #9a948e;
   flex: 0 0 auto;
 }
 .total-carrinho {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.4rem;
   font-family: var(--fonte-sans);
-  font-size: 1rem;
-  color: #111827;
+  font-size: 1.05rem;
+  color: var(--cor-primaria);
+  font-weight: 700;
   margin-bottom: 0;
   white-space: nowrap;
 }
 .total-carrinho strong {
-  font-weight: 400;
+  font-weight: 800;
+  color: var(--cor-primaria);
 }
 .acoes-carrinho {
   display: flex;
@@ -230,7 +233,7 @@
   }
   .valor-acao-carrinho {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-end;
     padding-left: 0;
   }
   .acoes-carrinho {
@@ -370,6 +373,26 @@
   font-size: 0.7rem;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+}
+/* Forma de pagamento recomendada (Pix): destaque sutil em dourado para
+   conduzir o convidado à opção mais rápida. */
+.modal-pagamento-card.recomendado {
+  border-color: var(--cor-secundaria);
+  box-shadow: 0 8px 22px rgba(194, 168, 120, 0.28);
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(135deg, #d8b873, #c2a878) border-box;
+  border: 1.5px solid transparent;
+}
+.modal-pagamento-card.recomendado:hover,
+.modal-pagamento-card.recomendado.ativo {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(194, 168, 120, 0.38);
+}
+.modal-pagamento-card.recomendado .modal-pagamento-badge {
+  background: linear-gradient(135deg, #c2a878, #a9884f);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(169, 136, 79, 0.4);
 }
 .modal-pagamento-logo--pix {
   display: block;
@@ -822,7 +845,7 @@
   resize: vertical;
 }
 .textarea-checkout.compacta {
-  height: 80px;
+  height: 140px;
 }
 .contador-caracteres {
   text-align: right;
@@ -840,8 +863,32 @@
   margin-bottom: 15px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
   transition: all 0.3s ease;
+}
+.btn-ia.carregando {
+  opacity: 0.85;
+}
+/* Spinner de carregamento dentro do botão "Gerar mensagem com IA". */
+.btn-ia__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  animation: btn-ia-spin 0.6s linear infinite;
+}
+@keyframes btn-ia-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-ia__spinner {
+    animation-duration: 1.2s;
+  }
 }
 .cartoes-carrossel {
   position: relative;
@@ -859,19 +906,17 @@
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   padding: 4px;
+  /* Barra de rolagem oculta: navegação fica só pelas setas/gestos. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .grid-cartoes.compacta {
   grid-auto-columns: minmax(170px, 1fr);
 }
 .grid-cartoes::-webkit-scrollbar {
-  height: 6px;
-}
-.grid-cartoes::-webkit-scrollbar-thumb {
-  background: #e3ded6;
-  border-radius: 999px;
-}
-.grid-cartoes::-webkit-scrollbar-track {
-  background: transparent;
+  width: 0;
+  height: 0;
+  display: none;
 }
 .opcao-cartao {
   border: 2px solid #eee;
@@ -893,11 +938,11 @@
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 .opcao-cartao.selecionado {
-  border-color: var(--cor-secundaria);
-  box-shadow: 0 10px 25px rgba(194, 168, 120, 0.25);
+  border-color: var(--destaque-borda);
+  background: #fff;
+  box-shadow: var(--destaque-sombra);
   opacity: 1;
   transform: scale(1.03);
-  background-color: #fff;
 }
 .opcao-cartao p {
   text-align: center;
@@ -916,12 +961,13 @@
   color: #666;
 }
 .opcao-cartao-tag.destaque {
-  background: rgba(194, 168, 120, 0.15);
-  color: var(--cor-secundaria);
+  background: var(--destaque-borda);
+  color: #fff;
+  font-weight: 700;
 }
 .opcao-cartao-preview {
   height: 150px;
-  background: #fafafa;
+  background: #fff;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -935,6 +981,8 @@
   position: relative;
 }
 .opcao-cartao-preview img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -966,33 +1014,6 @@
   width: 18px;
   height: 18px;
   fill: currentColor;
-}
-.opcao-cartao-zoom {
-  display: flex;
-  justify-content: center;
-  margin-top: 8px;
-}
-.opcao-cartao-zoom-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  border: 1px solid #dfe7f0;
-  background: #fff;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.opcao-cartao-zoom-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-}
-.opcao-cartao-zoom-btn svg {
-  width: 18px;
-  height: 18px;
-  fill: #6f7a86;
 }
 .cartao-preview-overlay {
   position: fixed;
@@ -1112,21 +1133,22 @@
 .parcelamento-checkout {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  min-height: 56px;
+  gap: 0.55rem;
+  min-height: 0;
   margin-top: 0;
-  padding: 0.85rem 1rem;
-  background: #f4f5f7;
-  color: var(--cor-primaria);
+  padding: 0.5rem 0.75rem;
+  background: #f6f6f4;
+  color: #7a736c;
   font-family: var(--fonte-sans);
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.3;
+  border-radius: 6px;
 }
 .parcelamento-checkout svg {
-  width: 22px;
-  height: 22px;
-  color: #5d7694;
+  width: 18px;
+  height: 18px;
+  color: #9a948e;
   flex: 0 0 auto;
 }
 .titulo-checkout-resumo {

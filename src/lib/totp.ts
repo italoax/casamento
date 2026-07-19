@@ -11,7 +11,7 @@
  * 4. No login, o usuário digita o código e we verify com verifyTotp()
  */
 
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, timingSafeEqual, randomBytes } from "crypto";
 
 const BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
@@ -39,6 +39,58 @@ export function base32Decode(input: string) {
   }
 
   return Buffer.from(bytes);
+}
+
+/**
+ * Codifica um buffer em base32 (sem padding "=").
+ * É o formato que os autenticadores (Google Authenticator, Authy) esperam no QR code.
+ */
+export function base32Encode(buffer: Buffer) {
+  let bits = 0;
+  let value = 0;
+  let output = "";
+
+  for (const byte of buffer) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      bits -= 5;
+      output += BASE32_ALPHABET[(value >>> bits) & 31];
+    }
+    // Mantém só os bits restantes para não estourar os 32 bits das operações bitwise do JS.
+    value &= (1 << bits) - 1;
+  }
+
+  if (bits > 0) {
+    output += BASE32_ALPHABET[(value << (5 - bits)) & 31];
+  }
+
+  return output;
+}
+
+/**
+ * Gera um novo segredo TOTP aleatório em base32 (20 bytes = 160 bits, padrão recomendado).
+ * Use no cadastro do 2FA: este segredo vai para o QR code e fica salvo no banco.
+ */
+export function generateTotpSecret(bytes = 20) {
+  return base32Encode(randomBytes(bytes));
+}
+
+/**
+ * Monta a URL otpauth:// que o autenticador lê pelo QR code.
+ * Os parâmetros (SHA1, 6 dígitos, 30s) batem com o que verifyTotp() valida.
+ */
+export function otpauthUrl({ secret, label, issuer }: { secret: string; label: string; issuer: string }) {
+  const params = new URLSearchParams({
+    secret,
+    issuer,
+    algorithm: "SHA1",
+    digits: "6",
+    period: "30",
+  });
+  // O label segue o padrão "Emissor:Conta" e precisa ser percent-encoded.
+  const encodedLabel = encodeURIComponent(`${issuer}:${label}`);
+  return `otpauth://totp/${encodedLabel}?${params.toString()}`;
 }
 
 export function totpCode(secret: string, timeSlice = Math.floor(Date.now() / 1000 / 30)) {

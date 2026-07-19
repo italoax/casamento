@@ -59,7 +59,7 @@ export function formatPaymentMethod(method: unknown) {
 export function statusConvidadoLabel(status: unknown) {
   const s = String(status || "pendente").toLowerCase();
   if (s === "confirmado") return "Confirmado";
-  if (s === "recusado") return "Ausente";
+  if (s === "recusado") return "Não irei";
   return "Pendente";
 }
 
@@ -73,7 +73,7 @@ export function statusBadgeClass(status: unknown) {
 export function labelStatus(status: unknown) {
   const s = String(status || "pendente").toLowerCase();
   if (s === "confirmado") return "Confirmado";
-  if (s === "recusado") return "Ausente";
+  if (s === "recusado") return "Não irei";
   if (["approved", "paid", "received", "confirmed", "received_in_cash"].includes(s)) return "Aprovado";
   if (["pending", "in_process"].includes(s)) return "Pendente";
   if (["rejected", "refused", "failed", "overdue", "cancelled", "canceled"].includes(s)) return "Recusado";

@@ -157,8 +157,36 @@ function atualizarGrandeDia() {
   if (botaoMapa) botaoMapa.textContent = siteConfig.grandeDia.botaoMapa;
   const mapa = document.getElementById("mapa-iframe");
   if (mapa) {
-    mapa.src = siteConfig.grandeDia.mapaSrc;
     mapa.title = siteConfig.grandeDia.mapaTitle;
+    const mapaSrc = siteConfig.grandeDia.mapaSrc;
+    const facade = document.getElementById("mapa-facade");
+    // O iframe pesado do Google Maps só entra quando a seção se aproxima da
+    // tela (lazy). Um placeholder leve fica no lugar e some quando o mapa
+    // termina de carregar. Assim a página abre rápido, sobretudo no celular.
+    const carregarMapa = () => {
+      if (mapa.getAttribute("src")) return;
+      mapa.src = mapaSrc;
+    };
+    if (facade) {
+      mapa.addEventListener("load", () => {
+        if (mapa.getAttribute("src")) facade.classList.add("mapa-facade--oculto");
+      });
+      facade.addEventListener("click", carregarMapa); // atalho/fallback manual
+    }
+    const alvo = document.querySelector(".secao-grande-dia .mapa-evento") || mapa;
+    if ("IntersectionObserver" in window) {
+      const observador = new IntersectionObserver((entradas, obs) => {
+        entradas.forEach((entrada) => {
+          if (entrada.isIntersecting) {
+            carregarMapa();
+            obs.disconnect();
+          }
+        });
+      }, { rootMargin: "300px 0px" });
+      observador.observe(alvo);
+    } else {
+      carregarMapa();
+    }
   }
 }
 

@@ -82,6 +82,15 @@ function validarValorMinimoPagamento(total) {
 
 function irParaCheckout() {
   renderizarCheckout();
+  // Rola até o TOPO do checkout ("Resumo da sua compra"), logo abaixo do cabeçalho
+  // fixo. Centralizar cortava o topo do resumo, pois o checkout é alto.
+  const carrinhoEl = document.getElementById("carrinho-fixo");
+  if (carrinhoEl) {
+    const cabecalho = document.querySelector(".cabecalho-principal");
+    const offset = cabecalho ? cabecalho.offsetHeight + 12 : 0;
+    const destino = Math.max(0, carrinhoEl.getBoundingClientRect().top + window.scrollY - offset);
+    window.scrollTo({ top: destino, behavior: "smooth" });
+  }
 }
 
 function renderizarCheckout() {
@@ -100,12 +109,17 @@ function renderizarCheckout() {
     tag: siteConfig.checkout.cartaoRecomendadoTag,
     texto: siteConfig.checkout.cartaoRecomendadoTexto,
     destaque: true
-  } ]).map(opcao => `\n          <div id="cartao-${String(opcao.id).replace(/"/g, "&quot;")}" class="opcao-cartao ${checkoutState.cartaoSelecionado && checkoutState.modeloCartao === opcao.id ? "selecionado" : ""}" data-modelo-cartao="${String(opcao.id).replace(/"/g, "&quot;")}">\n            ${opcao.tag ? `<div class="opcao-cartao-tag${opcao.destaque ? " destaque" : ""}">${opcao.tag}</div>` : ""}\n            <div class="opcao-cartao-preview">\n              ${opcao.imagem ? `<img src="${versionarImagemUrl(opcao.imagem)}" alt="${opcao.texto}" loading="lazy">` : `<span>${opcao.texto}</span>`}\n            </div>\n            <div class="opcao-cartao-zoom">\n              <button type="button" class="opcao-cartao-zoom-btn" data-preview-src="${String(versionarImagemUrl(opcao.imagem || "") || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;")}" data-preview-titulo="${String(opcao.texto || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;")}">\n                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">\n                  <path d="M10.5 3a7.5 7.5 0 0 1 5.93 12.06l3.25 3.25a1 1 0 1 1-1.42 1.42l-3.25-3.25A7.5 7.5 0 1 1 10.5 3zm0 2a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11z"></path>\n                </svg>\n              </button>\n            </div>\n          </div>\n        `).join("")}\n          </div>\n          <button type="button" class="cartoes-seta cartoes-seta--dir" aria-label="Avançar cartões">\n            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">\n              <path d="M8.5 4.5a1 1 0 0 1 1.4 0l6.8 6.8a1 1 0 0 1 0 1.4l-6.8 6.8a1 1 0 0 1-1.4-1.4L14.6 12 8.5 5.9a1 1 0 0 1 0-1.4z"></path>\n            </svg>\n          </button>\n        </div>\n        <button type="button" id="btn-alternar-cartao" class="btn-sem-cartao">\n          ${siteConfig.checkout.cartaoSem}\n        </button>\n      </div>\n\n        <div class="checkout-acoes">\n          <div class="checkout-compra-segura">\n          <img class="compra-segura-img compra-segura-img--checkout" src="${versionarImagemUrl("img/icones/compra-segura.webp")}" alt="Compra segura" draggable="false">\n          </div>\n        <div class="checkout-espaco"></div>\n        <button id="btn-voltar-carrinho-checkout" class="botao botao-secundario checkout-btn">${siteConfig.checkout.voltarCarrinho}</button>\n        <button id="btn-concluir-checkout" class="botao botao-primario checkout-btn botao-secundario-destaque">${siteConfig.checkout.concluirCompra}</button>\n      </div>\n    </div>\n  `;
+  } ]).map(opcao => `\n          <div id="cartao-${String(opcao.id).replace(/"/g, "&quot;")}" class="opcao-cartao ${checkoutState.cartaoSelecionado && checkoutState.modeloCartao === opcao.id ? "selecionado" : ""}" data-modelo-cartao="${String(opcao.id).replace(/"/g, "&quot;")}">\n            ${opcao.tag ? `<div class="opcao-cartao-tag${opcao.destaque ? " destaque" : ""}">${opcao.tag}</div>` : ""}\n            <div class="opcao-cartao-preview">\n              ${opcao.imagem ? `<img src="${versionarImagemUrl(opcao.imagem)}" alt="${opcao.texto}" loading="lazy">` : `<span>${opcao.texto}</span>`}\n            </div>\n          </div>\n        `).join("")}\n          </div>\n          <button type="button" class="cartoes-seta cartoes-seta--dir" aria-label="Avançar cartões">\n            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">\n              <path d="M8.5 4.5a1 1 0 0 1 1.4 0l6.8 6.8a1 1 0 0 1 0 1.4l-6.8 6.8a1 1 0 0 1-1.4-1.4L14.6 12 8.5 5.9a1 1 0 0 1 0-1.4z"></path>\n            </svg>\n          </button>\n        </div>\n        <button type="button" id="btn-alternar-cartao" class="btn-sem-cartao">\n          ${siteConfig.checkout.cartaoSem}\n        </button>\n      </div>\n\n        <div class="checkout-acoes">\n          <div class="checkout-compra-segura">\n          <img class="compra-segura-img compra-segura-img--checkout" src="${versionarImagemUrl("img/icones/compra-segura.webp")}" alt="Compra segura" draggable="false">\n          </div>\n        <div class="checkout-espaco"></div>\n        <button id="btn-voltar-carrinho-checkout" class="botao botao-secundario checkout-btn">${siteConfig.checkout.voltarCarrinho}</button>\n        <button id="btn-concluir-checkout" class="botao botao-primario checkout-btn botao-secundario-destaque">${siteConfig.checkout.concluirCompra}</button>\n      </div>\n    </div>\n  `;
   const btnVoltarCarrinho = document.getElementById("btn-voltar-carrinho-checkout");
   if (btnVoltarCarrinho) {
     btnVoltarCarrinho.addEventListener("click", event => {
       event.preventDefault();
       renderizarCarrinho();
+      // Sem isso a página ficava na posição do checkout (mais alto) e acabava
+      // mostrando a seção de baixo (Confirme sua Presença). Rola de volta pro
+      // carrinho e centraliza.
+      const carrinhoEl = document.getElementById("carrinho-fixo");
+      if (carrinhoEl) carrinhoEl.scrollIntoView({ behavior: "smooth", block: "center" });
     });
   }
   const btnConcluirCheckout = document.getElementById("btn-concluir-checkout");
@@ -126,14 +140,6 @@ function renderizarCheckout() {
     cardEl.addEventListener("click", () => {
       const modelo = cardEl.getAttribute("data-modelo-cartao");
       if (modelo) selecionarCartao(modelo);
-    });
-  });
-  document.querySelectorAll(".opcao-cartao-zoom-btn").forEach(btn => {
-    btn.addEventListener("click", event => {
-      event.stopPropagation();
-      const src = btn.getAttribute("data-preview-src") || "";
-      const titulo = btn.getAttribute("data-preview-titulo") || "";
-      window.abrirPreviewCartao(src, titulo);
     });
   });
   const btnAlternarCartao = document.getElementById("btn-alternar-cartao");
@@ -201,14 +207,25 @@ function atualizarInterfaceCheckout() {
       : (siteConfig.checkout.cartaoComCartao || "Adicionar cartão postal");
     btn.style.display = "inline-flex";
   }
-  const linhaCartao = document.getElementById("linha-resumo-cartao");
-  if (linhaCartao) linhaCartao.style.display = "flex";
-  const linhaSubtotal = document.getElementById("linha-resumo-subtotal");
-  if (linhaSubtotal) linhaSubtotal.style.display = checkoutState.cartaoSelecionado ? "none" : "flex";
-  const linhaCartaoRemovido = document.getElementById("linha-resumo-cartao-removido");
-  if (linhaCartaoRemovido) linhaCartaoRemovido.style.display = checkoutState.cartaoSelecionado ? "none" : "flex";
-  const totalPresentes = calcularTotalPresentes();
   const valorCartao = siteConfig.checkout.valorCartao;
+  const linhaCartao = document.getElementById("linha-resumo-cartao");
+  if (linhaCartao) {
+    linhaCartao.style.display = "flex";
+    // Cartão removido: mostra "Não incluído" (discreto) em vez de somar e subtrair.
+    linhaCartao.classList.toggle("resumo-cartao-nao-incluido", !checkoutState.cartaoSelecionado);
+    const strongCartao = linhaCartao.querySelector("strong");
+    if (strongCartao) {
+      strongCartao.textContent = checkoutState.cartaoSelecionado
+        ? formatarMoedaBR(valorCartao)
+        : (siteConfig.checkout.cartaoNaoIncluido || "Não incluído");
+    }
+  }
+  // Desdobramento antigo (Subtotal + "Cartão removido") foi descontinuado.
+  const linhaSubtotal = document.getElementById("linha-resumo-subtotal");
+  if (linhaSubtotal) linhaSubtotal.style.display = "none";
+  const linhaCartaoRemovido = document.getElementById("linha-resumo-cartao-removido");
+  if (linhaCartaoRemovido) linhaCartaoRemovido.style.display = "none";
+  const totalPresentes = calcularTotalPresentes();
   const custoCartao = checkoutState.cartaoSelecionado ? valorCartao : 0;
   const totalFinal = totalPresentes + custoCartao;
   const elTotal = document.getElementById("resumo-total-final");
@@ -271,50 +288,153 @@ function abrirPreviewCartao(src, titulo) {
   if (btnFechar) btnFechar.addEventListener("click", fechar);
 }
 
+// Fallback local (sem IA): combina frases pré-definidas. Usado quando a API de IA
+// não está configurada ou falha, para o botão nunca ficar sem resposta.
+function gerarMensagemTemplateLocal() {
+  // Em texto corrido o "&" fica estranho ("Emanuelle & Ítalo"); trocamos por "e".
+  const noivos = (siteConfig?.dados?.noivos || "os noivos").trim().replace(/\s*&\s*/g, " e ");
+  const nomeConvidado = (document.getElementById("nome-checkout")?.value || "").trim();
+
+  const aberturas = [
+    `Parabéns, ${noivos}!`,
+    `${noivos}, que felicidade imensa ver vocês começando essa história juntos!`,
+    `Que alegria enorme celebrar o amor de ${noivos}!`,
+    `${noivos}, votos de uma vida repleta de amor e cumplicidade!`,
+    `Hoje o amor de ${noivos} está em festa — e eu celebro junto!`,
+    `${noivos}, que Deus abençoe grandemente essa união!`,
+    `Felicidades, ${noivos}! O grande dia de vocês finalmente chegou!`,
+    `${noivos}, é lindo demais ver dois corações se tornando um só.`,
+    `Meus parabéns ao casal mais lindo, ${noivos}!`,
+    `${noivos}, que esse "sim" seja o começo de tudo o que vocês sonharam!`,
+  ];
+  const desejos = [
+    "Que a vida a dois seja cheia de leveza, respeito e descobertas especiais.",
+    "Que nunca faltem diálogo, parceria e motivos para sorrir juntos.",
+    "Que cada dia traga novas memórias bonitas e muito companheirismo.",
+    "Que essa união seja sempre guiada por carinho, paz e admiração mútua.",
+    "Que o lar de vocês seja repleto de amor, alegria e boas surpresas.",
+    "Que o amor de vocês cresça mais forte a cada amanhecer.",
+    "Que os dias difíceis sejam poucos e os felizes, incontáveis.",
+    "Que vocês construam juntos um caminho de fé, sonhos e conquistas.",
+    "Que a paciência e a bondade que o amor tem guiem cada passo de vocês.",
+    "Que a rotina nunca apague o brilho de quando tudo começou.",
+    "Que não faltem abraços apertados, boas risadas e planos a dois.",
+  ];
+  const fechamentos = [
+    "Aproveitem cada instante dessa caminhada.",
+    "Que esse novo capítulo seja inesquecível.",
+    "Que essa história seja linda em cada detalhe.",
+    "Muitas bênçãos e felicidade nessa jornada.",
+    "Contem sempre comigo nessa torcida.",
+    "Que seja para sempre — e mais bonito a cada dia.",
+    "Sejam muito, muito felizes!",
+  ];
+  const despedidas = ["Com carinho", "Com amor", "Com todo o carinho", "Com muito carinho e admiração", "Um abraço carinhoso"];
+
+  // Sorteia um item do array; se "evitar" for passado, tenta não repeti-lo.
+  const sortear = (arr, evitar) => {
+    let escolhido = arr[Math.floor(Math.random() * arr.length)];
+    if (arr.length > 1) {
+      let tentativas = 0;
+      while (escolhido === evitar && tentativas < 5) {
+        escolhido = arr[Math.floor(Math.random() * arr.length)];
+        tentativas += 1;
+      }
+    }
+    return escolhido;
+  };
+
+  // Monta uma mensagem variando a ESTRUTURA (nem sempre igual), pra não soar robótico.
+  const montar = () => {
+    const abertura = sortear(aberturas);
+    const desejo = sortear(desejos);
+    const partes = [abertura, desejo];
+    const estrutura = Math.random();
+    if (estrutura < 0.45) {
+      partes.push(sortear(fechamentos));            // abertura + desejo + fechamento
+    } else if (estrutura < 0.75) {
+      partes.push(sortear(desejos, desejo));         // abertura + dois desejos diferentes
+    }                                                // senão: abertura + desejo (curtinho)
+    let texto = partes.join(" ");
+    const assinatura = nomeConvidado ? ` ${sortear(despedidas)}, ${nomeConvidado}.` : "";
+    if ((texto + assinatura).length <= 400) texto += assinatura;
+    return texto.slice(0, 400);
+  };
+
+  // Evita repetir exatamente a última mensagem gerada.
+  const ultimaMensagem = sessionStorage.getItem("checkout.mensagem_ia.ultima") || "";
+  let mensagemEscolhida = "";
+  for (let i = 0; i < 6; i += 1) {
+    mensagemEscolhida = montar();
+    if (mensagemEscolhida !== ultimaMensagem) break;
+  }
+  return mensagemEscolhida;
+}
+
+// Busca a mensagem gerada por IA real (Claude) no backend; cai no template local
+// se a API falhar ou não estiver configurada.
+async function obterMensagemIA() {
+  // IA desligada no config: usa o gerador local direto (sem rede, sem espera).
+  if (siteConfig?.checkout?.iaMensagens !== true) {
+    return gerarMensagemTemplateLocal();
+  }
+  const nomeConvidado = (document.getElementById("nome-checkout")?.value || "").trim();
+  try {
+    const resp = await fetch("/api/mensagem-ia", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome: nomeConvidado })
+    });
+    if (resp.ok) {
+      const json = await resp.json().catch(() => null);
+      if (json && json.sucesso && typeof json.mensagem === "string" && json.mensagem.trim()) {
+        return json.mensagem.trim().slice(0, 400);
+      }
+    }
+  } catch (e) {}
+  return gerarMensagemTemplateLocal();
+}
+
 function gerarMensagemIA() {
   const btn = document.querySelector(".btn-ia");
   const textarea = document.getElementById("mensagem-checkout");
   if (!(btn && textarea)) return;
   const textoOriginal = btn.innerHTML;
-  btn.innerHTML = siteConfig.checkout.mensagemGerando;
+  // Mostra um spinner + texto "Gerando...". O gerador local responde na hora,
+  // então garantimos um tempo mínimo visível pra animação não "piscar".
+  btn.innerHTML = `<span class="btn-ia__spinner" aria-hidden="true"></span><span>${siteConfig.checkout.mensagemGerando}</span>`;
+  btn.classList.add("carregando");
   btn.disabled = true;
-  btn.style.opacity = "0.8";
   btn.style.cursor = "wait";
   textarea.style.opacity = "0.5";
-  setTimeout(() => {
-    const noivos = (siteConfig?.dados?.noivos || "os noivos").trim();
-    const nomeConvidado = (document.getElementById("nome-checkout")?.value || "").trim();
-    const assinatura = nomeConvidado ? ` Com carinho, ${nomeConvidado}.` : "";
-    const aberturas = [ `Parabéns, ${noivos}!`, `${noivos}, muitas felicidades nesta nova etapa!`, `Que alegria celebrar esse momento de ${noivos}!`, `${noivos}, votos de muito amor e cumplicidade!` ];
-    const desejos = [ "Que a vida a dois seja cheia de leveza, respeito e descobertas especiais.", "Que nunca faltem diálogo, parceria e motivos para sorrir juntos.", "Que cada dia traga novas memórias bonitas e muito companheirismo.", "Que essa união seja sempre guiada por carinho, paz e admiração mútua.", "Que o lar de vocês seja repleto de amor, alegria e boas surpresas." ];
-    const fechamentos = [ "Aproveitem cada instante dessa caminhada.", "Que esse novo capítulo seja inesquecível.", "Que essa história seja linda em cada detalhe.", "Muitas bênçãos e felicidade nessa jornada." ];
-    let tentativas = 0;
-    let mensagemEscolhida = "";
-    const ultimaMensagem = sessionStorage.getItem("checkout.mensagem_ia.ultima") || "";
-    do {
-      const abertura = aberturas[Math.floor(Math.random() * aberturas.length)];
-      const desejo = desejos[Math.floor(Math.random() * desejos.length)];
-      const fechamento = fechamentos[Math.floor(Math.random() * fechamentos.length)];
-      mensagemEscolhida = `${abertura} ${desejo} ${fechamento}${assinatura}`;
-      if (mensagemEscolhida.length > 400) {
-        mensagemEscolhida = `${abertura} ${desejo} ${fechamento}`;
-      }
-      tentativas += 1;
-    } while (mensagemEscolhida === ultimaMensagem && tentativas < 5);
-    sessionStorage.setItem("checkout.mensagem_ia.ultima", mensagemEscolhida);
-    textarea.value = mensagemEscolhida;
+  const TEMPO_MINIMO = 800;
+  const esperaMinima = new Promise(resolve => setTimeout(resolve, TEMPO_MINIMO));
+  Promise.all([obterMensagemIA(), esperaMinima]).then(([mensagem]) => {
+    sessionStorage.setItem("checkout.mensagem_ia.ultima", mensagem);
+    textarea.value = mensagem;
     window.atualizarContador(textarea);
     textarea.style.opacity = "1";
     textarea.focus();
+  }).finally(() => {
     btn.innerHTML = textoOriginal;
+    btn.classList.remove("carregando");
     btn.disabled = false;
-    btn.style.opacity = "1";
     btn.style.cursor = "pointer";
-  }, 800);
+  });
 }
 
 function concluirCompraFinal() {
   if (carrinho.length === 0) return;
+  // Revalida o carrinho contra o estoque/lista atual antes do pagamento. Se tudo
+  // ficou indisponível, volta para a lista em vez de seguir para uma cobrança que
+  // o servidor rejeitaria.
+  if (typeof window.sincronizarCarrinhoAtual === "function") {
+    window.sincronizarCarrinhoAtual();
+    if (carrinho.length === 0) {
+      renderizarCarrinho();
+      return;
+    }
+  }
   const nomeEl = document.getElementById("nome-checkout");
   const mensagemEl = document.getElementById("mensagem-checkout");
   const nomeDigitado = nomeEl ? nomeEl.value.trim() : "";

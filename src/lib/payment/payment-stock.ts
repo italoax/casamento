@@ -45,7 +45,7 @@ export async function reserveStockAtomic(idsProdutos: number[]): Promise<void> {
          AND (
            quantidade_disponivel IS NULL
            OR TRIM(CAST(quantidade_disponivel AS CHAR)) = ''
-           OR (CAST(quantidade_disponivel AS SIGNED) - COALESCE(quantidade_vendida, 0) - COALESCE(quantidade_reservada, 0)) >= ?
+           OR (CAST(quantidade_disponivel AS SIGNED) - COALESCE(quantidade_vendida, 0)) >= ?
          )`,
       [qtd, id, qtd],
     );

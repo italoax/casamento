@@ -489,6 +489,17 @@ p.intro-secao,
     gap: 0.65rem;
   }
 
+  /* Concluir compra em destaque no topo; Voltar (link) por último. */
+  .checkout-acoes .checkout-compra-segura {
+    order: 0;
+  }
+  .checkout-acoes #btn-concluir-checkout {
+    order: 1;
+  }
+  .checkout-acoes #btn-voltar-carrinho-checkout {
+    order: 2;
+  }
+
   .cartao-presente .botao,
   .cartao-presente .btn-add-presente,
   .checkout-btn,

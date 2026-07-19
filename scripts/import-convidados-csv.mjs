@@ -120,7 +120,15 @@ if (mode !== 'execute') {
   process.exit(0);
 }
 
-const env = { ...loadEnv(), ...process.env };
+function dbSslOptions(env) {
+  const mode = String(env.DB_SSL || '').trim().toLowerCase();
+  if (!mode || ['false', '0', 'off', 'no'].includes(mode)) return undefined;
+  if (['skip-verify', 'insecure'].includes(mode)) return { rejectUnauthorized: false };
+  if (env.DB_SSL_CA) return { ca: env.DB_SSL_CA };
+  return {};
+}
+
+const env = { ...process.env, ...loadEnv() };
 const conn = await mysql.createConnection({
   host: env.DB_HOST || '127.0.0.1',
   port: Number(env.DB_PORT || 3306),
@@ -128,6 +136,7 @@ const conn = await mysql.createConnection({
   password: env.DB_PASSWORD,
   database: env.DB_NAME,
   charset: 'utf8mb4',
+  ssl: dbSslOptions(env),
 });
 
 await conn.beginTransaction();

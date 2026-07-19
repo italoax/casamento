@@ -1,0 +1,69 @@
+# docker-compose do site "casamento".
+#
+# IMPORTANTE: sempre passe --env-file .env.docker (arquivo vazio). Isso faz o
+# Compose ignorar o ./.env real, cujo conteúdo (SMTP_FROM="Nome" <email>, chaves
+# com "$") quebra/confunde o parser do Compose. O ./.env real continua indo pro
+# container pela montagem read-only abaixo e é lido pelo próprio Next.js.
+#
+# PRODUÇÃO (build otimizado, igual à Hostinger):
+#   docker compose --env-file .env.docker up --build -d
+#   -> http://localhost:3000
+#
+# DESENVOLVIMENTO (hot-reload, edita no PC e recarrega):
+#   docker compose --env-file .env.docker --profile dev up --build
+#   -> http://localhost:3000  (edite o código; o container recarrega)
+#
+# Parar:  docker compose --env-file .env.docker down
+
+services:
+  # ---- Produção (padrão) ----
+  casamento:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+      secrets:
+        - dotenv   # entrega o .env real ao `next build` sem gravá-lo na imagem
+    image: casamento:local
+    container_name: casamento
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    volumes:
+      - ./.env:/app/.env:ro            # segredos ficam fora da imagem
+      - casamento_backups:/app/backups # backups diários do banco (persistem)
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # ---- Desenvolvimento (docker compose --profile dev up) ----
+  casamento-dev:
+    profiles: ["dev"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    image: casamento:dev
+    container_name: casamento-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # Monta o código do PC (hot-reload) mas preserva node_modules/.next do
+      # container (Linux) — o sharp tem binário nativo que não é o do Windows.
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    restart: unless-stopped
+
+volumes:
+  casamento_backups:
+
+secrets:
+  # Usado só no build (build.secrets acima). Em runtime o .env vai pelo volume.
+  dotenv:
+    file: ./.env

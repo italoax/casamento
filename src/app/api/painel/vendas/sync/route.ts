@@ -2,18 +2,11 @@ import { errorJson, json } from "@/lib/http";
 import { requirePainelPermission } from "@/lib/painel-auth";
 import { db, queryRows, tableExists } from "@/lib/db";
 import { condicaoVendasPendentes } from "@/lib/painel-data";
-import { fetchEfiPayment, normalizeStatus, settleStockForSale } from "@/lib/payment";
+import { fetchAsaasPayment, normalizeStatus, settleStockForSale } from "@/lib/payment";
 
 export const runtime = "nodejs";
 
 type Venda = { id: number; gateway_payment_id?: string | null; status?: string | null; payment_method?: string | null; ids_produtos?: string | null };
-
-function metodoPorGatewayId(paymentId: unknown, fallback: unknown) {
-  const id = String(paymentId || "");
-  if (/^\d+$/.test(id)) return "cartao";
-  const method = String(fallback || "").toLowerCase();
-  return method || "pix";
-}
 
 export async function POST() {
   if (!(await requirePainelPermission("sync_vendas"))) return errorJson("Acesso negado.", 403);
@@ -26,10 +19,11 @@ export async function POST() {
 
   for (const venda of pendentes) {
     try {
-      const payment = await fetchEfiPayment(String(venda.gateway_payment_id));
+      const payment = await fetchAsaasPayment(String(venda.gateway_payment_id));
       if (!payment) { erros++; continue; }
       const statusNovo = normalizeStatus(payment.status || venda.status);
-      const method = metodoPorGatewayId(venda.gateway_payment_id, venda.payment_method);
+      // Asaas usa ids "pay_..." para Pix e cartão; confiamos no método já gravado.
+      const method = String(venda.payment_method || "pix").toLowerCase();
       const statusAtual = String(venda.status || "").toLowerCase();
       await db().execute("UPDATE vendas SET status = ?, payment_method = COALESCE(NULLIF(?, ''), payment_method) WHERE id = ?", [statusNovo, method, venda.id]);
       if (statusNovo !== statusAtual) atualizados++;

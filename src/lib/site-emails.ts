@@ -287,6 +287,23 @@ export async function enviarPixExpirado(data: { email: string; nome: string; ite
   }));
 }
 
+export async function enviarCodigoFesta(data: { email: string; codigo: string }) {
+  if (!data.email) return false;
+  const codigoHtml = `<div style="text-align:center;margin:18px 0 6px;">
+    <span style="display:inline-block;background:${COR.creme};border:1px solid ${COR.borda};border-radius:12px;padding:14px 26px;font-family:${FONTE_SERIFA};font-size:30px;font-weight:bold;letter-spacing:8px;color:${COR.marrom};">${esc(data.codigo)}</span>
+  </div>`;
+  return sendSafe("EMAIL codigo festa", () => sendEmail({
+    to: data.email,
+    userType: "convite",
+    subject: "Seu código do Mural de Fotos - Casamento Emanuelle e Ítalo",
+    html: emailShell("Código do mural de fotos", `${titulo("Mural de Fotos da Festa")}
+      ${selo("Código de verificação")}
+      ${paragrafo("Use o código abaixo para liberar o envio das suas fotos:")}
+      ${codigoHtml}
+      ${paragrafo("O código vale por <strong>15 minutos</strong>. Se você não pediu, pode ignorar este e-mail.")}`),
+  }));
+}
+
 export async function enviarAgradecimentoRecado(data: { email: string; nome: string }) {
   if (!data.email) return false;
   return sendSafe("EMAIL agradecimento recado", () => sendEmail({

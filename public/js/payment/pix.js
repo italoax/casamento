@@ -10,7 +10,7 @@ import { bloquearScrollModal, liberarScrollModal } from "../core/modals.js";
 
 import { marcarRetornoModalPagamento, limparRetornoModalPagamento } from "../ui/navigation.js";
 
-import { lerJsonComFallback, getRecaptchaTokenForAction } from "../features/recados.js";
+import { lerJsonComFallback } from "../features/recados.js";
 
 import { atualizarDisponibilidadePresentesAposPagamento } from "../features/presentes.js";
 
@@ -300,15 +300,12 @@ function iniciarPagamentoPix(callbacks = {}) {
       cartao_personalizado: checkoutState.cartaoSelecionado ? 1 : 0
     }
   };
-  getRecaptchaTokenForAction("checkout_pix").then(recaptchaToken => {
-    payload.recaptchaToken = recaptchaToken;
-    return fetch("/api/pix", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
+  fetch("/api/pix", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
   }).then(async resp => {
     const texto = await resp.text();
     let json = null;
@@ -382,7 +379,7 @@ function exibirPix(dados) {
   const valorFmt = valorTotal !== null ? `R$ ${valorTotal.toLocaleString("pt-BR", {
     minimumFractionDigits: 2
   })}` : "";
-  overlay.innerHTML = `\n    <div class="pix-modal">\n      <button id="fechar-pix" class="pix-fechar" aria-label="${siteConfig.ui.fecharAria}">&times;</button>\n      <div class="pix-header">\n        <div class="pix-header-icon pix-header-icon--logo">\n          <img class="pix-logo-img" src="${versionarImagemUrl("img/icones/pix-logo.webp")}" alt="Pix" draggable="false">\n        </div>\n        <div>\n          <h3>${siteConfig.pix.modal.titulo}</h3>\n          <p>${siteConfig.pix.modal.descricao}</p>\n        </div>\n      </div>\n      <ol class="pix-instrucoes" id="pix-instrucoes">\n        <li>Acesse a opção Pix no seu Internet Banking ou app de pagamentos.</li>\n        <li>Escaneie o QR Code a seguir ou copie o código do pagamento.</li>\n        <li>Assim que recebermos o pagamento, você receberá uma notificação no e-mail informado.</li>\n      </ol>\n      <div class="pix-aprovado oculto" id="pix-aprovado-msg">\n        <div class="pix-aprovado-icon">\n          <img class="pix-aprovado-img" src="${versionarImagemUrl("img/icones/pix-ok.webp")}" alt="OK" draggable="false">\n        </div>\n        <div class="pix-aprovado-texto">\n          <strong>Pagamento aprovado!</strong>\n          <p>Recebemos seu Pix. Obrigado pelo presente.</p>\n          <span class="pix-aprovado-hora" id="pix-aprovado-hora"></span>\n        </div>\n      </div>\n      <div class="pix-grid">\n      <div class="pix-qr-area" id="pix-qr-area">\n          ${qrBase64 ? `<img src="${qrBase64}" alt="${siteConfig.pix.modal.qrAlt}" class="pix-qr">` : `<div class="pix-qr-indisponivel">${siteConfig.pix.modal.qrIndisponivel}</div>`}\n        </div>\n      <div class="pix-resumo" id="pix-resumo">\n          <div class="pix-resumo-badge">\n            Tempo restante para pagar: <strong id="pix-tempo-restante">${prazoFmt}</strong>\n          </div>\n          ${valorFmt ? `<div class="pix-resumo-valor">Valor: <span>${valorFmt}</span></div>` : ""}\n        </div>\n      </div>\n      <div class="pix-copia" id="pix-copia">\n        <p>Se preferir, copie o código abaixo para realizar o pagamento.</p>\n        <div class="pix-copia-linha">\n          <textarea id="pix-copia-e-cola" class="pix-copia-input" readonly rows="2"></textarea>\n          <button id="copiar-pix" class="pix-copiar-btn">Copiar</button>\n        </div>\n      </div>\n      <div class="pix-status-acoes" id="pix-status-acoes">\n        <span id="pix-status-feedback" class="pix-status-feedback" aria-live="polite">Pagamento ainda pendente. O status será atualizado automaticamente.</span>\n      </div>\n      <p class="pix-rodape" id="pix-rodape">Você também receberá este QR Code por e-mail.</p>\n    </div>\n  `;
+  overlay.innerHTML = `\n    <div class="pix-modal">\n      <button id="fechar-pix" class="pix-fechar" aria-label="${siteConfig.ui.fecharAria}">&times;</button>\n      <div class="pix-header">\n        <div class="pix-header-icon pix-header-icon--logo">\n          <img class="pix-logo-img" src="${versionarImagemUrl("img/icones/pix-logo.webp")}" alt="Pix" draggable="false">\n        </div>\n        <div>\n          <h3>${siteConfig.pix.modal.titulo}</h3>\n          <p>${siteConfig.pix.modal.descricao}</p>\n        </div>\n      </div>\n      <ol class="pix-instrucoes" id="pix-instrucoes">\n        <li>Acesse a opção Pix no seu Internet Banking ou app de pagamentos.</li>\n        <li>Escaneie o QR Code a seguir ou copie o código do pagamento.</li>\n        <li>Assim que recebermos o pagamento, você receberá uma notificação no e-mail informado.</li>\n      </ol>\n      <div class="pix-aprovado oculto" id="pix-aprovado-msg">\n        <div class="pix-aprovado-icon">\n          <img class="pix-aprovado-img" src="${versionarImagemUrl("img/icones/pix-ok.webp")}" alt="OK" draggable="false">\n        </div>\n        <div class="pix-aprovado-texto">\n          <strong>Pagamento aprovado!</strong>\n          <p>Recebemos seu Pix. Obrigado pelo presente.</p>\n          <span class="pix-aprovado-hora" id="pix-aprovado-hora"></span>\n        </div>\n      </div>\n      <div class="pix-grid">\n      <div class="pix-qr-area" id="pix-qr-area">\n          ${qrBase64 ? `<img src="${qrBase64}" alt="${siteConfig.pix.modal.qrAlt}" class="pix-qr">` : `<div class="pix-qr-indisponivel">${siteConfig.pix.modal.qrIndisponivel}</div>`}\n        </div>\n      <div class="pix-resumo" id="pix-resumo">\n          <div class="pix-resumo-badge">\n            Tempo restante <strong id="pix-tempo-restante">${prazoFmt}</strong>\n          </div>\n          ${valorFmt ? `<div class="pix-resumo-valor">Valor a pagar <span>${valorFmt}</span></div>` : ""}\n        </div>\n      </div>\n      <div class="pix-copia" id="pix-copia">\n        <p>Se preferir, copie o código abaixo para realizar o pagamento.</p>\n        <div class="pix-copia-linha">\n          <textarea id="pix-copia-e-cola" class="pix-copia-input" readonly rows="2"></textarea>\n          <button id="copiar-pix" class="pix-copiar-btn">Copiar</button>\n        </div>\n      </div>\n      <div class="pix-status-acoes" id="pix-status-acoes">\n        <span id="pix-status-feedback" class="pix-status-feedback" aria-live="polite">Pagamento ainda pendente. O status será atualizado automaticamente.</span>\n      </div>\n      <p class="pix-rodape" id="pix-rodape">Você também receberá este QR Code por e-mail.</p>\n    </div>\n  `;
   const copiaEl = overlay.querySelector("#pix-copia-e-cola");
   if (copiaEl) copiaEl.value = qrText;
   const fechar = overlay.querySelector("#fechar-pix");
@@ -515,7 +512,7 @@ function iniciarMonitoramentoStatusPix(overlay, statusToken) {
     let aprovado = false;
     let encerrado = false;
     try {
-      const resp = await fetch("/api/pagamento_status", {
+      const resp = await fetch("/api/pagamento-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

@@ -75,12 +75,12 @@ export function badge(status: any) {
 export function labelStatus(status: any) {
   const s = String(status || "pendente").toLowerCase();
   if (s === "confirmado") return "Confirmado";
-  if (s === "recusado") return "Ausente";
+  if (s === "recusado") return "Não irei";
   if (["approved", "paid", "received", "confirmed", "received_in_cash"].includes(s)) return "Aprovado";
-  if (["pending", "in_process"].includes(s)) return "Pendente";
+  if (["pending", "in_process", "pendente"].includes(s)) return "Pendente";
   if (s === "1") return "Aprovado";
   if (s === "0") return "Pendente";
-  return s || "Pendente";
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : "Pendente";
 }
 
 export function imagemPresente(value: any) {

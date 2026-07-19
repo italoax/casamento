@@ -22,7 +22,18 @@ export function RsvpSection() {
     className="intro-secao cascata-item"
     style={{ "--delay": "0.3s" } as React.CSSProperties}
     ></p>
-    
+
+    {/* Botão que abre o vídeo tutorial (modal) */}
+    <div
+    className="tutorial-confirmacao-acao cascata-item"
+    style={{ "--delay": "0.4s" } as React.CSSProperties}
+    >
+    <button type="button" id="btn-tutorial-confirmacao" className="botao-tutorial-confirmacao">
+    <span className="tutorial-play" aria-hidden="true"></span>
+    Ver tutorial: como confirmar no celular
+    </button>
+    </div>
+
     {/* Card de Pesquisa */}
     <div
     className="cartao-busca-confirmacao cascata-item"
@@ -116,6 +127,30 @@ export function RsvpSection() {
     ></button>
     </div>
     </div>
+    </div>
+    </div>
+
+    {/* Modal do vídeo tutorial (vertical). O vídeo carrega só ao abrir. */}
+    <div
+    id="tutorial-confirmacao-overlay"
+    className="tutorial-video-overlay oculto"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Tutorial: como confirmar presença"
+    >
+    <div className="tutorial-video-caixa">
+    <button type="button" className="tutorial-video-fechar" aria-label="Fechar">&times;</button>
+    <video
+    className="tutorial-video"
+    controls
+    muted
+    playsInline
+    preload="none"
+    poster="/img/presenca-tutorial-v4-poster.webp"
+    data-src="/video/presenca-tutorial-v4.mp4"
+    >
+    Seu navegador não suporta vídeo.
+    </video>
     </div>
     </div>
     </section>

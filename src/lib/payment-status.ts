@@ -1,5 +1,5 @@
 import { errorJson, json } from "./http";
-import { fetchEfiPayment, normalizeStatus, saleByStatusToken, updateSaleStatusByPayment } from "./payment";
+import { fetchAsaasPayment, normalizeStatus, saleByStatusToken, updateSaleStatusByPayment } from "./payment";
 
 export async function handlePaymentStatusRequest(request: Request) {
   try {
@@ -15,7 +15,7 @@ export async function handlePaymentStatusRequest(request: Request) {
     const paymentId = String(sale.gateway_payment_id || "");
 
     if ((data.force || status === "pending" || status === "in_process") && paymentId) {
-      const payment = await fetchEfiPayment(paymentId);
+      const payment = await fetchAsaasPayment(paymentId);
       if (payment) {
         detail = String(payment.status || detail || "PENDING");
         status = normalizeStatus(detail);

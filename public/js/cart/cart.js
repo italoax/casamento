@@ -1,6 +1,6 @@
 import { versionarImagemUrl } from "../utils/assets.js";
 
-import { listaAtual, presenteUsaCotas, obterResumoEstoquePresente, obterPrecoUnitarioPresente, renderizarPresentes, mostrarListaPresentes, obterQuantidadeVisivelPresentes } from "../features/presentes.js";
+import { listaAtual, presenteUsaCotas, obterResumoEstoquePresente, obterPrecoUnitarioPresente, obterPresenteAtualPorId, obterTodosPresentes, sincronizarCarrinhoComPresentes, renderizarPresentes, mostrarListaPresentes, obterQuantidadeVisivelPresentes } from "../features/presentes.js";
 
 const siteConfig = window.siteConfig;
 
@@ -74,14 +74,55 @@ function removerItemCarrinho(id) {
   }
   salvarCarrinho();
   renderizarCarrinho();
+  // Ao remover o último item, o carrinho some e a lista reaparece: leva a pessoa
+  // de volta ao TOPO da lista de presentes (mostrando o título da seção), em vez
+  // de cair no meio da lista.
+  if (carrinho.length === 0 && typeof mostrarListaPresentes === "function") {
+    mostrarListaPresentes();
+  }
+}
+
+// Resolve o produto do item do carrinho contra a lista ATUAL (preço/estoque já
+// carregados da API). Evita exibir/cobrar com base num snapshot antigo do
+// localStorage — ex.: presente cujo preço mudou no painel depois de adicionado.
+function produtoAtualDoItem(item) {
+  if (!item || !item.produto) return item && item.produto ? item.produto : {};
+  const atual = obterPresenteAtualPorId(item.produto.id);
+  return atual || item.produto;
 }
 
 function calcularTotalPresentes() {
   let total = 0;
   carrinho.forEach(item => {
-    total += item.qtd * obterPrecoUnitarioPresente(item.produto);
+    total += item.qtd * obterPrecoUnitarioPresente(produtoAtualDoItem(item));
   });
   return total;
+}
+
+// Reconcilia o carrinho salvo no navegador com a lista ATUAL de presentes:
+// remove itens que sumiram/ficaram ocultos/esgotaram e ajusta quantidades acima
+// do estoque. Protegido: se a lista ainda não carregou (ex.: falha de rede), NÃO
+// mexe no carrinho — evita esvaziar o carrinho do convidado por um erro temporário.
+function sincronizarCarrinhoAtual() {
+  if (!Array.isArray(carrinho) || carrinho.length === 0) {
+    atualizarResumoCarrinho();
+    return { modificado: false, carrinho };
+  }
+  if (!obterTodosPresentes().length) {
+    return { modificado: false, carrinho };
+  }
+  const resultado = sincronizarCarrinhoComPresentes(carrinho);
+  if (resultado && resultado.modificado) {
+    carrinho = Array.isArray(resultado.carrinho) ? resultado.carrinho : [];
+    salvarCarrinho();
+    // Re-renderiza só se o convidado está vendo o carrinho — nunca no checkout
+    // (apagaria o nome/mensagem que ele está digitando).
+    const noCheckout = document.querySelector(".checkout-box");
+    const noCarrinho = document.querySelector(".carrinho-box");
+    if (!noCheckout && noCarrinho) renderizarCarrinho();
+  }
+  atualizarResumoCarrinho();
+  return resultado || { modificado: false, carrinho };
 }
 
 function atualizarResumoCarrinho() {
@@ -126,11 +167,12 @@ function renderizarCarrinho() {
   let total = 0;
   let htmlItens = "";
   carrinho.forEach(item => {
-    const precoNum = obterPrecoUnitarioPresente(item.produto);
-    const imagemProduto = versionarImagemUrl(item.produto.imagem ? item.produto.imagem : siteConfig.presentes.placeholderImagem);
+    const produtoAtual = produtoAtualDoItem(item);
+    const precoNum = obterPrecoUnitarioPresente(produtoAtual);
+    const imagemProduto = versionarImagemUrl(produtoAtual.imagem ? produtoAtual.imagem : siteConfig.presentes.placeholderImagem);
     total += item.qtd * precoNum;
     for (let i = 0; i < item.qtd; i++) {
-      htmlItens += `\n        <div class="item-carrinho">\n          <div class="info-item-carrinho">\n            <div class="thumb-carrinho">\n              <img src="${imagemProduto}" alt="${item.produto.nome}" loading="lazy">\n            </div>\n            <div class="detalhes-item-carrinho">\n              <span class="nome-item">${item.produto.nome}</span>\n              <button class="btn-remover-carrinho" data-remove-id="${String(item.produto.id).replace(/"/g, "&quot;")}">${siteConfig.carrinho.botaoRemover}</button>\n            </div>\n          </div>\n          <div class="valor-acao-carrinho">\n            <span class="preco-item">R$ ${precoNum.toLocaleString("pt-BR", {
+      htmlItens += `\n        <div class="item-carrinho">\n          <div class="info-item-carrinho">\n            <div class="thumb-carrinho">\n              <img src="${imagemProduto}" alt="${produtoAtual.nome}" loading="lazy">\n            </div>\n            <div class="detalhes-item-carrinho">\n              <span class="nome-item">${produtoAtual.nome}</span>\n              <button class="btn-remover-carrinho" data-remove-id="${String(item.produto.id).replace(/"/g, "&quot;")}">${siteConfig.carrinho.botaoRemover}</button>\n            </div>\n          </div>\n          <div class="valor-acao-carrinho">\n            <span class="preco-item">R$ ${precoNum.toLocaleString("pt-BR", {
         minimumFractionDigits: 2
       })}</span>\n          </div>\n        </div>\n      `;
     }
@@ -194,4 +236,6 @@ window.renderizarCarrinho = renderizarCarrinho;
 
 window.mostrarListaPresentes = mostrarListaPresentes;
 
-export { carrinho, salvarCarrinho, carregarCarrinhoPersistido, limparCarrinhoPersistido, adicionarAoCarrinho, quantidadeNoCarrinho, removerItemCarrinho, calcularTotalPresentes, atualizarResumoCarrinho, renderizarCarrinho, mostrarListaPresentes, configurarAcoesCarrinho };
+window.sincronizarCarrinhoAtual = sincronizarCarrinhoAtual;
+
+export { carrinho, salvarCarrinho, carregarCarrinhoPersistido, limparCarrinhoPersistido, adicionarAoCarrinho, quantidadeNoCarrinho, removerItemCarrinho, calcularTotalPresentes, atualizarResumoCarrinho, renderizarCarrinho, sincronizarCarrinhoAtual, mostrarListaPresentes, configurarAcoesCarrinho };

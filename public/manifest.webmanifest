@@ -1,0 +1,48 @@
+{
+  "name": "Casamento Emanuelle & Ítalo",
+  "short_name": "Emanuelle & Ítalo",
+  "description": "Confirme sua presença, veja a lista de presentes e o mural de fotos do casamento de Emanuelle e Ítalo.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f4ef",
+  "theme_color": "#f7f4ef",
+  "categories": ["lifestyle", "social"],
+  "icons": [
+    {
+      "src": "/img/favicon/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/favicon/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/favicon/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Confirmar presença",
+      "short_name": "Presença",
+      "url": "/?source=pwa#confirmar-presenca",
+      "icons": [{ "src": "/img/favicon/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mural de Fotos",
+      "short_name": "Fotos",
+      "url": "/festa?source=pwa",
+      "icons": [{ "src": "/img/favicon/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

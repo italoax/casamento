@@ -38,10 +38,18 @@ export async function POST(request: Request) {
   const origin = request.headers.get("origin");
   const corsHeaders = Security.corsHeaders(origin, request.url);
   
-  // Autenticação por token
+  // Autenticação por token.
+  // Esta rota envia e-mail para o destinatário informado no corpo (data.email),
+  // então sem proteção viraria um relay de spam/phishing usando o nosso domínio.
+  // Por isso ela falha FECHADA: sem EMAIL_API_TOKEN configurado, fica desabilitada.
   const token = env("EMAIL_API_TOKEN", "");
+  const provided = request.headers.get("x-api-token") || "";
 
-  if (token && request.headers.get("x-api-token") !== token) {
+  if (!token) {
+    return errorJson("Endpoint desabilitado.", 503, { headers: corsHeaders });
+  }
+  // Comparação constante-time evita timing attack na descoberta do token.
+  if (!Security.constantTimeCompare(provided, token)) {
     return errorJson("Acesso negado", 403, { headers: corsHeaders });
   }
 

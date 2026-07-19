@@ -1,5 +1,16 @@
-body.login-page, body { background: var(--cor-superficie, #f7f4ef); }
-.login-card { max-width: 380px; margin: 12vh auto; background: #fff; border-radius: 18px; box-shadow: var(--sombra, 0 14px 40px rgba(0,0,0,.08)); padding: 30px; border: 1px solid rgba(184,142,93,.18); }
+/* O login do painel usa o layout raiz do site, cujo <html> tem fundo escuro
+   (#322b27). Aqui forçamos a página de login a ocupar a tela toda em creme e a
+   centralizar o card, cobrindo esse fundo escuro e evitando o "margin collapse"
+   do card antigo. Estas regras só carregam na rota /painel/login. */
+html { background: var(--cor-superficie, #f7f4ef); }
+body.login-page, body {
+  min-height: 100dvh;
+  background: var(--cor-superficie, #f7f4ef);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-card { width: min(380px, 100%); margin: 20px; background: #fff; border-radius: 18px; box-shadow: var(--sombra, 0 14px 40px rgba(0,0,0,.08)); padding: 30px; border: 1px solid rgba(184,142,93,.18); }
 .login-card h2 { margin: 0 0 22px; text-align: center; color: var(--cor-dourado, #b88e5d); font-family: var(--fonte-titulo, serif); }
 .grupo-input { margin-bottom: 16px; display: grid; gap: 7px; }
 .grupo-input label { font-weight: 700; color: var(--cor-texto, #443a31); }

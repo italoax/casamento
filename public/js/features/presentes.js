@@ -96,16 +96,15 @@ function presenteUsaCotas(presente = {}) {
 }
 
 function obterResumoEstoquePresente(presente = {}, opcoes = {}) {
-  // O servidor conta a reserva no checkout para TODOS os presentes (inclusive cotas),
-  // então contamos aqui também — evita "adicionar no carrinho e ser recusado no fim".
-  // As reservas agora se liberam sozinhas quando o Pix expira, então isso é seguro.
-  // (opcoes.ignorarReservas é mantido por compatibilidade, mas não é mais usado.)
+  // Só o que foi efetivamente PAGO (quantidade_vendida) bloqueia o presente.
+  // Pix pendente (reserva) NÃO conta: como é contribuição em dinheiro, repetições
+  // são permitidas; o presente só fica indisponível quando a compra é confirmada.
   void opcoes;
   const limiteDefinido = !(presente.quantidade_disponivel === null || presente.quantidade_disponivel === "" || typeof presente.quantidade_disponivel === "undefined");
   const qtdDisponivel = limiteDefinido ? Math.max(0, parseInt(presente.quantidade_disponivel, 10) || 0) : null;
   const qtdVendida = Math.max(0, Number(presente.quantidade_vendida) || 0);
   const qtdReservada = Math.max(0, Number(presente.quantidade_reservada) || 0);
-  const qtdReservadaConsiderada = qtdReservada;
+  const qtdReservadaConsiderada = 0;
   const qtdComprometida = qtdVendida + qtdReservadaConsiderada;
   const saldoDisponivel = limiteDefinido ? Math.max(0, (qtdDisponivel || 0) - qtdComprometida) : Number.POSITIVE_INFINITY;
   const esgotado = limiteDefinido && qtdDisponivel !== null && qtdComprometida >= qtdDisponivel;
@@ -219,8 +218,18 @@ function configurarControlesPresentes() {
   const btnMais = document.getElementById("carregar-mais-presentes");
   if (btnMais) {
     btnMais.addEventListener("click", () => {
+      // Preserva a posição de rolagem: renderizarPresentes recria toda a lista
+      // (innerHTML = ""), o que no mobile embaralha o scroll anchoring e faz a
+      // página "pular" pro meio da lista. Os itens novos entram no fim, então o
+      // conteúdo acima permanece estável e basta restaurar o scrollY.
+      const scrollAntes = window.scrollY;
+      const restaurarScroll = () => window.scrollTo(0, scrollAntes);
       quantidadeVisivel += obterQuantidadeInicialPresentes();
       renderizarPresentes(listaAtual);
+      restaurarScroll();
+      // Cobre o reflow assíncrono (imagens recriadas) em alguns frames seguintes.
+      requestAnimationFrame(restaurarScroll);
+      requestAnimationFrame(() => requestAnimationFrame(restaurarScroll));
     });
   }
   window.addEventListener("resize", ajustarLayoutFinalPresentes);
@@ -351,6 +360,11 @@ async function carregarPresentes(opcoes = {}) {
     aplicarOrdenacao({
       preservarQuantidadeVisivel: preservarQuantidadeVisivel
     });
+    // Reconcilia o carrinho com a lista recém-carregada (preço/estoque atuais).
+    // Só quando há presentes de verdade, pra nunca limpar o carrinho à toa.
+    if (dadosNormalizados.length > 0 && typeof window !== "undefined" && typeof window.sincronizarCarrinhoAtual === "function") {
+      window.sincronizarCarrinhoAtual();
+    }
   } catch (error) {
     if (typeof console !== "undefined" && console.error) {
       console.error("[presentes] falha ao carregar lista:", error);
@@ -494,11 +508,15 @@ function renderizarPresentes(presentes) {
             if (typeof window.adicionarAoCarrinho === "function") window.adicionarAoCarrinho(p);
           });
         } else {
-          // Presente único: botão indica que está no carrinho e abre o carrinho ao clicar.
+          // Presente único: botão indica que está no carrinho e, ao clicar, sobe
+          // até o carrinho e o centraliza na tela (mesmo comportamento de quando
+          // se adiciona um item).
           btn.textContent = noCarrinho > 1 ? `✓ No carrinho (${noCarrinho})` : "✓ No carrinho";
           btn.setAttribute("aria-label", `${p.nome} já está no carrinho. Toque para ver o carrinho.`);
           btn.addEventListener("click", () => {
             if (typeof window.renderizarCarrinho === "function") window.renderizarCarrinho();
+            const carrinhoEl = document.getElementById("carrinho-fixo");
+            if (carrinhoEl) carrinhoEl.scrollIntoView({ behavior: "smooth", block: "center" });
           });
         }
       } else {
@@ -571,6 +589,14 @@ function obterTodosPresentes() {
   return [ ...todosPresentes ];
 }
 
+// Busca o presente ATUAL (preço/estoque já carregados da API) por id. Usado pelo
+// carrinho para nunca exibir um snapshot antigo salvo no localStorage (ex.: preço
+// que mudou no painel depois que o item foi adicionado).
+function obterPresenteAtualPorId(id) {
+  const alvo = String(id);
+  return todosPresentes.find(p => String(p.id) === alvo) || null;
+}
+
 function obterListaAtual() {
   return [ ...listaAtual ];
 }
@@ -579,4 +605,4 @@ function obterQuantidadeVisivelPresentes() {
   return quantidadeVisivel;
 }
 
-export { todosPresentes, listaAtual, obterQuantidadeInicialPresentes, gerarAssinaturaPresentes, normalizarPresenteBruto, presenteUsaCotas, obterResumoEstoquePresente, obterPrecoUnitarioPresente, atualizarDisponibilidadePresentesAposPagamento, sincronizarCarrinhoComPresentes, mostrarCarregandoPresentes, mostrarErroPresentes, configurarControlesPresentes, aplicarOrdenacao, iniciarAtualizacaoAutomaticaPresentes, ajustarLayoutFinalPresentes, carregarPresentes, renderizarPresentes, mostrarListaPresentes, obterTodosPresentes, obterListaAtual, obterQuantidadeVisivelPresentes };
+export { todosPresentes, listaAtual, obterQuantidadeInicialPresentes, gerarAssinaturaPresentes, normalizarPresenteBruto, presenteUsaCotas, obterResumoEstoquePresente, obterPrecoUnitarioPresente, atualizarDisponibilidadePresentesAposPagamento, sincronizarCarrinhoComPresentes, mostrarCarregandoPresentes, mostrarErroPresentes, configurarControlesPresentes, aplicarOrdenacao, iniciarAtualizacaoAutomaticaPresentes, ajustarLayoutFinalPresentes, carregarPresentes, renderizarPresentes, mostrarListaPresentes, obterTodosPresentes, obterPresenteAtualPorId, obterListaAtual, obterQuantidadeVisivelPresentes };

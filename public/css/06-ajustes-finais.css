@@ -274,10 +274,7 @@
 
 .reserve-a-data .data-destaque::before,
 .reserve-a-data .data-destaque::after {
-  content: "";
-  width: 42px;
-  height: 1px;
-  background: rgba(194, 168, 120, 0.55);
+  content: none;
 }
 
 .reserve-a-data .titulo-contagem-hero {
@@ -570,26 +567,28 @@
   border-bottom: 1px solid rgba(84, 75, 69, 0.12);
 }
 
-.checkout-box .resumo-compra .resumo-cartao-removido {
-  margin-top: 12px;
-  color: #ff003b;
+/* Cartão postal não incluído (removido): rótulo e valor discretos. */
+.checkout-box .resumo-compra .resumo-cartao-nao-incluido {
+  color: #9a948e;
 }
 
-.checkout-box .resumo-compra .resumo-cartao-removido strong {
-  color: #ff003b;
-  font-weight: 400;
+.checkout-box .resumo-compra .resumo-cartao-nao-incluido strong {
+  color: #9a948e;
+  font-weight: 500;
+  font-style: italic;
 }
 
 .checkout-box .resumo-compra .total-destaque {
-  border-top: none;
-  color: #d86a90;
-  font-size: 0.95rem;
-  margin-top: 8px;
-  padding-top: 0;
+  border-top: 1px solid rgba(84, 75, 69, 0.18);
+  color: var(--cor-primaria);
+  font-size: 1.12rem;
+  font-weight: 700;
+  margin-top: 12px;
+  padding-top: 12px;
 }
 
 .checkout-box .resumo-compra .total-destaque span:last-child {
-  font-weight: 700;
+  font-weight: 800;
 }
 
 /* ===============================
@@ -960,7 +959,8 @@
 #modal-cartao-dados-overlay .modal-cartao-form {
   width: min(600px, calc(100vw - 48px)) !important;
   max-width: 600px !important;
-  min-height: min(760px, calc(100dvh - 40px)) !important;
+  /* Altura pelo conteúdo (sem espaço branco sobrando); rola só se passar da tela. */
+  min-height: auto !important;
   max-height: calc(100dvh - 40px) !important;
   overflow-y: auto;
   padding: 38px 20px 34px !important;
@@ -1617,13 +1617,31 @@
 
 .secao-grande-dia .item-evento:last-child {
   display: flex;
-  align-items: flex-start;
+  /* No mobile o ícone fica centralizado verticalmente no card (folga igual em
+     cima e embaixo). No desktop ele acompanha o título "Local" — ver media abaixo. */
+  align-items: center;
   gap: 0.95rem;
   padding: 0.72rem 1rem;
 }
 
 .secao-grande-dia .item-evento:last-child .icone-evento {
   margin-top: 0;
+}
+
+/* Desktop: o ícone do Local acompanha a 1ª linha (o título "Local"), com respiro
+   no topo — em vez de centralizar no card alto, o que o afastava do título. */
+@media (min-width: 521px) {
+  .secao-grande-dia .item-evento:last-child {
+    align-items: flex-start;
+    /* Mesmo gap e padding lateral dos cards Data/Horário, para os 3 ícones e os
+       3 títulos ficarem na mesma coluna (o Local vinha com valores menores). */
+    gap: 1.25rem;
+    padding: 1.5rem 1.35rem;
+  }
+
+  .secao-grande-dia .item-evento:last-child .icone-evento {
+    margin-top: -0.55rem;
+  }
 }
 
 .secao-grande-dia .item-evento:last-child .texto-evento {
@@ -1701,15 +1719,28 @@
     display: block;
   }
 
+  /* No mobile o Local empilha como Data/Horário (label em cima, nome e
+     endereço embaixo ocupando a largura toda) em vez do grid de 2 colunas,
+     que jogava "Local" e o nome lado a lado e quebrava o endereço. */
   .secao-grande-dia .item-evento:last-child .texto-evento {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    column-gap: 0.65rem;
-    row-gap: 0.4rem;
+    display: block;
+  }
+
+  .secao-grande-dia .item-evento:last-child .texto-evento strong,
+  .secao-grande-dia .item-evento:last-child #nome-local-evento {
+    display: block;
+    margin-bottom: 0.18rem;
+  }
+
+  /* No mobile o ícone do Local fica no topo, junto do título "Local"
+     (e não centralizado no card alto). */
+  .secao-grande-dia .item-evento:last-child {
+    align-items: flex-start;
+    padding-top: 1.1rem;
   }
 
   .secao-grande-dia .item-evento:last-child .icone-evento {
-    margin-top: 0;
+    margin-top: -0.35rem;
   }
 
   .secao-grande-dia .texto-evento strong,
@@ -1801,12 +1832,34 @@
 .carrinho-resumo,
 #carregar-mais-presentes,
 #link-local-evento,
-.btn-add-presente,
-.btn-add-presente--indisponivel {
+.btn-add-presente {
   background: var(--cor-botao-marrom) !important;
   background-color: var(--cor-botao-marrom) !important;
   border-color: var(--cor-botao-marrom) !important;
   color: #fff !important;
+}
+#carregar-mais-presentes {
+  display: block !important;
+  width: min(100%, 260px) !important;
+  margin-inline: auto !important;
+  min-height: 44px !important;
+  padding: 0.6rem 1.4rem !important;
+  font-size: 0.95rem !important;
+}
+
+/* Botão "Presenteado" (esgotado/indisponível): mesma cor do "Carrinho vazio". */
+.cartao-presente .btn-add-presente--indisponivel,
+.cartao-presente .btn-add-presente--indisponivel:hover,
+.cartao-presente .btn-add-presente--indisponivel:disabled,
+.presente.center-block .btn-add-presente--indisponivel,
+.presente.center-block .btn-add-presente--indisponivel:hover,
+.presente.center-block .btn-add-presente--indisponivel:disabled {
+  background: #f8f9fb !important;
+  background-color: #f8f9fb !important;
+  border-color: #dfe5ec !important;
+  color: #a7b8c9 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
 }
 
 .botao:hover,
@@ -2160,6 +2213,11 @@
   color: #266a42 !important;
 }
 
+/* Selos de segurança removidos do checkout (a pedido). */
+.checkout-acoes .checkout-compra-segura {
+  display: none !important;
+}
+
 /* === Checkout: hierarquia profissional dos botões === */
 .checkout-acoes {
   gap: 12px !important;
@@ -2185,22 +2243,28 @@
   box-shadow: 0 9px 20px rgba(84, 75, 69, 0.30) !important;
 }
 
-/* Ação secundária "Voltar": contorno discreto e compacto */
+/* Ação secundária "Voltar": link discreto, sem caixa */
 #btn-voltar-carrinho-checkout {
   background: transparent !important;
   background-color: transparent !important;
-  border: 1px solid rgba(84, 75, 69, 0.40) !important;
+  border: none !important;
   color: var(--cor-primaria) !important;
-  min-height: 48px !important;
-  padding: 0 18px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 6px 10px !important;
+  margin: 2px 0 0 !important;
+  align-self: center !important;
   font-weight: 600 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
   box-shadow: none !important;
 }
 #btn-voltar-carrinho-checkout:hover {
-  background: rgba(84, 75, 69, 0.07) !important;
-  background-color: rgba(84, 75, 69, 0.07) !important;
-  border-color: var(--cor-primaria) !important;
-  color: var(--cor-primaria) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #47403a !important;
+  text-decoration: underline !important;
   box-shadow: none !important;
 }
 
@@ -2338,9 +2402,11 @@
 /* "Validar": ação principal, sólida, larga e com sombra */
 #btn-validar-telefone {
   display: block !important;
-  width: min(100%, 320px) !important;
+  width: min(100%, 260px) !important;
   margin: 0 auto !important;
-  min-height: 50px !important;
+  min-height: 44px !important;
+  padding: 0.6rem 1.4rem !important;
+  font-size: 0.95rem !important;
   background: var(--cor-primaria) !important;
   background-color: var(--cor-primaria) !important;
   border: 1px solid var(--cor-primaria) !important;
@@ -2360,9 +2426,11 @@
 /* "Voltar": ação secundária, contornada, menor e discreta */
 #btn-cancelar-confirmacao {
   display: block !important;
-  width: min(100%, 220px) !important;
-  margin: 0.7rem auto 0 !important;
-  min-height: 44px !important;
+  width: min(100%, 190px) !important;
+  margin: 0.6rem auto 0 !important;
+  min-height: 38px !important;
+  padding: 0.5rem 1.2rem !important;
+  font-size: 0.88rem !important;
   background: transparent !important;
   background-color: transparent !important;
   border: 1px solid rgba(84, 75, 69, 0.38) !important;
@@ -2380,6 +2448,10 @@
 
 /* === RSVP sucesso: "Presentear agora" (principal) vs "Já presenteei" (secundário) === */
 #btn-presentear-agora {
+  width: min(100%, 260px) !important;
+  min-height: 44px !important;
+  padding: 0.6rem 1.4rem !important;
+  font-size: 0.95rem !important;
   background: var(--cor-primaria) !important;
   background-color: var(--cor-primaria) !important;
   border: 1px solid var(--cor-primaria) !important;
@@ -2395,6 +2467,10 @@
   box-shadow: 0 9px 20px rgba(84, 75, 69, 0.30) !important;
 }
 #btn-ja-presenteei {
+  width: min(100%, 260px) !important;
+  min-height: 44px !important;
+  padding: 0.6rem 1.4rem !important;
+  font-size: 0.95rem !important;
   background: transparent !important;
   background-color: transparent !important;
   border: 1px solid rgba(84, 75, 69, 0.38) !important;
@@ -2520,7 +2596,6 @@
   .acoes-carrinho {
     gap: 0.7rem !important;
   }
-  #btn-voltar-carrinho-checkout,
   #btn-concluir-checkout,
   .acoes-carrinho #btn-adicionar-mais,
   .acoes-carrinho #btn-continuar-compra {
@@ -2584,11 +2659,44 @@
   padding: 14px !important;
   box-shadow: 0 10px 26px rgba(84, 75, 69, 0.10) !important;
 }
-/* "Tempo restante" no tom champagne (combina com a paleta) */
-#pix-tempo-restante {
-  background: linear-gradient(180deg, #fffdf9 0%, #f6efe3 100%) !important;
-  border: 1px solid rgba(194, 168, 120, 0.40) !important;
-  color: #6f5f43 !important;
-  border-radius: 12px !important;
+
+/* ===============================
+   Botões dos modais de pagamento — padrão final
+   Voltar: branco  |  Avançar/Pagar: marrom
+   (regra autoritativa, sobrescreve os overrides conflitantes acima)
+   =============================== */
+#modal-pix-dados-overlay #btn-voltar-pix,
+#modal-cartao-pessoal-overlay #btn-voltar-cartao-pessoal,
+#modal-cartao-dados-overlay #btn-voltar-cartao {
+  background: #fff !important;
+  background-color: #fff !important;
+  border: 1px solid rgba(194, 168, 120, 0.55) !important;
+  color: var(--cor-primaria, #544b45) !important;
+  box-shadow: none !important;
+}
+#modal-pix-dados-overlay #btn-voltar-pix:hover,
+#modal-cartao-pessoal-overlay #btn-voltar-cartao-pessoal:hover,
+#modal-cartao-dados-overlay #btn-voltar-cartao:hover {
+  background: #faf6ef !important;
+  background-color: #faf6ef !important;
+  border-color: rgba(194, 168, 120, 0.8) !important;
+  color: var(--cor-primaria, #544b45) !important;
+}
+#modal-pix-dados-overlay #btn-avancar-pix,
+#modal-cartao-pessoal-overlay #btn-avancar-cartao-pessoal,
+#modal-cartao-dados-overlay #btn-avancar-cartao {
+  background: var(--cor-botao-marrom, #544b45) !important;
+  background-color: var(--cor-botao-marrom, #544b45) !important;
+  border: 1px solid var(--cor-botao-marrom, #544b45) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 22px rgba(84, 75, 69, 0.18) !important;
+}
+#modal-pix-dados-overlay #btn-avancar-pix:hover,
+#modal-cartao-pessoal-overlay #btn-avancar-cartao-pessoal:hover,
+#modal-cartao-dados-overlay #btn-avancar-cartao:hover {
+  background: var(--cor-botao-marrom-hover, #433b36) !important;
+  background-color: var(--cor-botao-marrom-hover, #433b36) !important;
+  border-color: var(--cor-botao-marrom-hover, #433b36) !important;
+  color: #fff !important;
 }
 

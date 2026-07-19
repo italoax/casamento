@@ -21,7 +21,7 @@ export function Footer() {
     </div>
     <p id="rodape-credito" className="credito-rodape credito-rodape--destaque cascata-item" style={{ "--delay": "0.22s" } as React.CSSProperties}>&copy; 2026 - Desenvolvido por &Iacute;talo Xavier</p>
     <div className="rodape-base cascata-item" style={{ "--delay": "0.3s" } as React.CSSProperties}>
-    <span className="recaptcha-info">Protegido por reCAPTCHA &middot; <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacidade</a> &middot; <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Termos</a></span>
+    <span className="recaptcha-info">Protegido por Cloudflare Turnstile &middot; <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Privacidade</a></span>
     </div>
     </div>
     </footer>

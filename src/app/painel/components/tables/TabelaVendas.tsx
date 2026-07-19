@@ -11,6 +11,7 @@ export function TabelaVendas({
   filtros,
   aplicarFiltros,
   limparFiltro,
+  atualizarFiltro,
   sincronizarVendas,
   paginar,
 }: {
@@ -19,6 +20,7 @@ export function TabelaVendas({
   filtros: any;
   aplicarFiltros: any;
   limparFiltro: any;
+  atualizarFiltro: any;
   sincronizarVendas: any;
   paginar: any;
 }) {
@@ -36,23 +38,24 @@ export function TabelaVendas({
         <h3 className="painel-subtitulo">Mensagens, Vendas & Pendentes</h3>
       </div>
 
-      <div className="resumo-mini">
-        <span className="toolbar-pill">Registros: {total}</span>
-        <span className="toolbar-pill">Pendentes: {data.dashboard?.presentes?.qtd_pendente || 0}</span>
-        <span className="toolbar-pill">Recebido: {money(data.dashboard?.presentes?.total_vendido || 0)}</span>
+      <div className="resumo-mini resumo-mini--stats">
+        <span className="toolbar-pill"><span className="rp-label">Registros</span><span className="rp-num">{total}</span></span>
+        <span className="toolbar-pill"><span className="rp-label">Pendentes</span><span className="rp-num">{data.dashboard?.presentes?.qtd_pendente || 0}</span></span>
+        <span className="toolbar-pill"><span className="rp-label">Recebido</span><span className="rp-num">{money(data.dashboard?.presentes?.total_vendido || 0)}</span></span>
       </div>
 
-      <form className="barra-ferramentas barra-ferramentas--mini painel-filtros" onSubmit={aplicarFiltros}>
-        <input name="busca_venda" placeholder="Buscar comprador, email, CPF ou referência..." defaultValue={filtros.busca_venda} />
-        <select name="status_venda" defaultValue={filtros.status_venda}>
+      <div className="barra-ferramentas barra-ferramentas--mini painel-filtros">
+        <div className="campo-busca">
+          <input placeholder="Buscar comprador, email, CPF ou referência..." value={filtros.busca_venda} onChange={(e) => atualizarFiltro({ busca_venda: e.target.value }, { debounce: true, resetPagina: "pagina_venda" })} autoComplete="off" />
+          {filtros.busca_venda ? <button type="button" className="campo-busca__limpar" aria-label="Limpar busca" onClick={() => atualizarFiltro({ busca_venda: "" }, { resetPagina: "pagina_venda" })}>×</button> : null}
+        </div>
+        <select value={filtros.status_venda} onChange={(e) => atualizarFiltro({ status_venda: e.target.value }, { resetPagina: "pagina_venda" })}>
           <option value="">Todos</option>
           <option value="pagos">Pagos</option>
           <option value="pendentes">Pendentes</option>
         </select>
-        <button className="toolbar-btn" type="submit">Filtrar</button>
-        <button className="toolbar-btn" type="button" onClick={() => limparFiltro(["busca_venda", "status_venda"])}>Limpar</button>
-        <button className="toolbar-btn toolbar-btn--primary" type="button" onClick={sincronizarVendas}>Sincronizar Efí</button>
-      </form>
+        <button className="toolbar-btn" type="button" onClick={() => limparFiltro(["busca_venda", "status_venda", "pagina_venda"])}>Limpar</button>
+      </div>
 
       <div className="tabela-container">
         <table>

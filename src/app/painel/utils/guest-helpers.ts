@@ -43,10 +43,17 @@ export function convidadosIniciais(row?: Row): GuestRow[] {
   const lista = String(row?.nomes_lista || "").split(/\s*,\s*|\r?\n|;/).map((x) => x.trim()).filter(Boolean);
   const confirmados = new Set(String(row?.nomes_confirmados || "").split(/\s*,\s*|\r?\n|;/).map((x) => x.trim()).filter(Boolean));
   if (!lista.length) return [{ nome: "", idade: "adulto", status: "pendente" }];
+  // Uma vez que o convite RESPONDEU (status geral "confirmado" ou "recusado"),
+  // quem não está na lista de confirmados foi marcado como AUSENTE — não "pendente".
+  // O status por pessoa não é gravado individualmente; é derivado aqui a partir
+  // de nomes_confirmados + status geral. Enquanto o convite estiver "pendente"
+  // (ninguém respondeu ainda), todos ficam "pendente".
+  const respondido = row?.status === "confirmado" || row?.status === "recusado";
   return lista.map((item) => {
     const parsed = extrairIdade(item);
     const nomeCompleto = montarNomeComIdade(parsed.nomeBase, parsed.idade);
-    const status = confirmados.has(item) || confirmados.has(nomeCompleto) ? "confirmado" : (row?.status === "recusado" ? "recusado" : "pendente");
+    const confirmado = confirmados.has(item) || confirmados.has(nomeCompleto);
+    const status = confirmado ? "confirmado" : (respondido ? "recusado" : "pendente");
     return { nome: parsed.nomeBase, idade: parsed.idade, status };
   });
 }

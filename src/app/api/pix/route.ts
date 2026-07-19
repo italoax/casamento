@@ -1,6 +1,6 @@
 import { errorJson, json } from "@/lib/http";
-import { checkoutItems, clean, createEfiCustomer, createEfiPixCharge, extractIds, insertSale, newRefs, normalizeStatus, releaseStock, reserveStockAtomic, validateRecaptcha, type CheckoutPayload } from "@/lib/payment";
-import { env } from "@/lib/env";
+import { checkoutItems, clean, createAsaasCustomer, createAsaasPixCharge, extractIds, insertSale, newRefs, normalizeStatus, releaseStock, reserveStockAtomic, type CheckoutPayload } from "@/lib/payment";
+import { getCartaoValor } from "@/lib/cartao-config";
 import { Security, SafeLog } from "@/lib/security";
 import { enviarPix } from "@/lib/site-emails";
 
@@ -31,20 +31,19 @@ export async function POST(request: Request) {
 
     const payload = (await request.json().catch(() => null)) as CheckoutPayload | null;
     if (!payload) return errorJson("Payload JSON inválido.", 400, { headers: corsHeaders });
-    if (!(await validateRecaptcha(clean(payload.recaptchaToken, 3000), "checkout_pix", request))) return errorJson("Falha na verificação de segurança.", 422, { headers: corsHeaders });
 
     const idsProdutos = extractIds(payload);
     const itemData = await checkoutItems(idsProdutos);
-    const extraCard = payload.metadata?.cartao_personalizado ? Number(env("CARTAO_VALOR", "10")) : 0;
+    const extraCard = payload.metadata?.cartao_personalizado ? await getCartaoValor() : 0;
     const valor = Math.round((itemData.total + extraCard) * 100) / 100;
     if (valor <= 0) return errorJson("Total inválido.", 400, { headers: corsHeaders });
 
     // Reserva ATÔMICA antes de criar a cobrança (impede vender além do estoque em acessos simultâneos).
     await reserveStockAtomic(idsProdutos);
     try {
-      const customer = await createEfiCustomer(payload);
+      const customer = await createAsaasCustomer(payload);
       const refs = newRefs();
-      const payment = await createEfiPixCharge({
+      const payment = await createAsaasPixCharge({
         customer,
         valor,
         descricao: clean(payload.description || itemData.itens || "Presente de casamento", 120),

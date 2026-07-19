@@ -10,6 +10,17 @@ dist/
 npm-debug.log*
 server.log
 *.log
+tsconfig.tsbuildinfo
 .DS_Store
 
 certificates
+
+# Exportações com dados pessoais de convidados (LGPD) — nunca versionar
+lista_convidados*.csv
+*.csv
+
+# Backups do banco de dados (dados pessoais + vendas) — nunca versionar
+backups/
+
+# Listas de convidados por pessoa (dados pessoais, LGPD) — nunca versionar
+scripts/listas/*.txt

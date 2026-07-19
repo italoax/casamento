@@ -1,4 +1,18 @@
-import { spawnSync } from "node:child_process";
+/**
+ * Empacota o CÓDIGO-FONTE para deploy na Hostinger (Web App Node.js / Next.js).
+ *
+ * A Hostinger compila no servidor: ela roda `npm install` + `npm run build`
+ * (saída em `.next`) e inicia o app via Passenger (server.js). Por isso este ZIP
+ * NÃO inclui `.next` nem `node_modules`.
+ *
+ * Estrutura do ZIP (tudo na raiz, sem pasta dentro de pasta):
+ *   package.json, package-lock.json, next.config.ts, tsconfig.json, next-env.d.ts,
+ *   server.js, app.js, src/, public/
+ * NÃO incluso: node_modules/, .next/, .git/, .env, certificates/, scripts/
+ *
+ * Uso: npm run deploy  ->  gera deploys/casamento-hostinger.zip
+ * Suba em: hPanel -> Deployments -> Settings and redeploy.
+ */
 import fs from "node:fs";
 import path from "node:path";
 
@@ -6,10 +20,29 @@ const root = process.cwd();
 const deployDir = path.join(root, "deploys");
 const zipPath = path.join(deployDir, "casamento-hostinger.zip");
 
-function run(command) {
-  console.log(`[deploy] ${command}`);
-  const result = spawnSync(command, { cwd: root, stdio: "inherit", shell: true });
-  if (result.status !== 0) process.exit(result.status ?? 1);
+// Versão dos módulos JS deste build (cache-busting). Injetada nos `import` dos
+// arquivos public/js para que uma alteração force o navegador/Cloudflare a baixar
+// a versão nova (a URL do módulo muda). Muda a cada `npm run deploy`.
+const JS_ASSET_VERSION = Date.now().toString(36);
+
+/**
+ * Acrescenta `?v=<versão>` aos specifiers relativos (./x.js, ../y.js) dos imports
+ * de um módulo JS, para invalidar o cache a cada deploy. Cobre:
+ *   import ... from "./x.js" | export ... from "./x.js" | import "./x.js"
+ */
+function transformJsImports(rel, buf) {
+  if (!(rel.startsWith("public/js/") && rel.endsWith(".js"))) return buf;
+  const v = `?v=${JS_ASSET_VERSION}`;
+  let code = buf.toString("utf8");
+  code = code.replace(
+    /\bfrom(\s*)(['"])(\.{1,2}\/[^'"]+?\.js)\2/g,
+    (_m, s, q, spec) => `from${s}${q}${spec}${v}${q}`
+  );
+  code = code.replace(
+    /\bimport(\s+)(['"])(\.{1,2}\/[^'"]+?\.js)\2/g,
+    (_m, s, q, spec) => `import${s}${q}${spec}${v}${q}`
+  );
+  return Buffer.from(code, "utf8");
 }
 
 function crc32(buf) {
@@ -32,17 +65,38 @@ function shouldSkip(rel) {
   const p = rel.replaceAll("\\", "/");
   const name = path.posix.basename(p);
   if (!p) return true;
-  if (p === "deploys" || p.startsWith("deploys/")) return true;
+  // Gerado/instalado pela Hostinger no servidor — não enviar.
+  if (p === ".next" || p.startsWith(".next/")) return true;
   if (p === "node_modules" || p.startsWith("node_modules/")) return true;
+  if (p === "out" || p.startsWith("out/")) return true;
+  // Pastas que não fazem parte do app.
+  if (p === "deploys" || p.startsWith("deploys/")) return true;
+  // Backups do banco (dados pessoais) — nunca enviar no deploy.
+  if (p === "backups" || p.startsWith("backups/")) return true;
   if (p === ".git" || p.startsWith(".git/")) return true;
-  if (p === ".next/cache" || p.startsWith(".next/cache/")) return true;
-  if (p === ".next/dev" || p.startsWith(".next/dev/")) return true;
-  if (p.endsWith(".log") || p === "server.log") return true;
+  // Exceção: o script de backup precisa ir pro servidor (rodado diariamente pelo app).
+  // NÃO pulamos a pasta "scripts" inteira (senão o coletor nem entraria nela);
+  // mantemos só o backup-db.mjs e pulamos os demais arquivos de scripts/.
+  if (p === "scripts/backup-db.mjs") return false;
+  if (p.startsWith("scripts/")) return true;
+  // Scripts de setup do banco (schema.sql, criar-admin) — não fazem parte do runtime.
+  if (p === "database" || p.startsWith("database/")) return true;
+  if (p === ".claude" || p.startsWith(".claude/")) return true;
+  if (p === ".vscode" || p.startsWith(".vscode/")) return true;
+  if (p === ".github" || p.startsWith(".github/")) return true;
+  // Certificados de desenvolvimento (dev:https) — nunca enviar (segurança).
+  if (p === "certificates" || p.startsWith("certificates/")) return true;
+  // Segredos e lixo de build/dev.
   if (name.startsWith(".env")) return true;
+  if (p.endsWith(".log") || p === "server.log") return true;
   if (name.endsWith(".zip")) return true;
   if (name === ".deploy-version.json") return true;
   if (name === "tsconfig.tsbuildinfo") return true;
-  if (name === "lista_convidados_26-04-2026_16-58.csv") return true;
+  if (name === ".gitignore" || name === ".gitattributes") return true;
+  if (name === "README.md") return true;
+  // Exports com dados pessoais de convidados (LGPD) — nunca enviar no deploy.
+  // O app não lê CSV em runtime; o import roda via scripts/ (já ignorado).
+  if (name.endsWith(".csv")) return true;
   return false;
 }
 
@@ -57,19 +111,7 @@ function collectFiles(dir = root, out = []) {
   return out;
 }
 
-function packageJsonBuffer() {
-  const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
-  pkg.scripts = {
-    ...pkg.scripts,
-    build: "node -e \"console.log('Build ja incluido em .next/')\"",
-    start: "node server.js",
-  };
-  pkg.main = "server.js";
-  return Buffer.from(`${JSON.stringify(pkg, null, 2)}\n`, "utf8");
-}
-
 function fileBuffer(rel) {
-  if (rel === "package.json") return packageJsonBuffer();
   return fs.readFileSync(path.join(root, rel));
 }
 
@@ -81,7 +123,7 @@ function createZip(files) {
   const central = [];
   let offset = 0;
   for (const rel of files) {
-    const data = fileBuffer(rel);
+    const data = transformJsImports(rel, fileBuffer(rel));
     const name = Buffer.from(rel, "utf8");
     const crc = crc32(data);
     const stat = fs.statSync(path.join(root, rel));
@@ -139,15 +181,28 @@ function createZip(files) {
   fs.writeFileSync(zipPath, Buffer.concat([...chunks, ...central, end]));
 }
 
-run("npm run build");
 const files = collectFiles().sort();
-for (const required of ["package.json", "package-lock.json", "server.js", "app.js", "public/painel/css/painel-next.css", "public/painel/css/painel.css"]) {
+
+// Arquivos que o build da Hostinger precisa.
+for (const required of [
+  "package.json",
+  "package-lock.json",
+  "next.config.ts",
+  "tsconfig.json",
+  "server.js",
+  "app.js",
+  "public/painel/css/painel.css",
+]) {
   if (!files.includes(required)) throw new Error(`Arquivo obrigatorio ausente no ZIP: ${required}`);
 }
-if (!files.some((f) => f.startsWith(".next/"))) throw new Error("Build .next nao encontrado para empacotar.");
+if (!files.some((f) => f.startsWith("src/"))) throw new Error("Codigo-fonte (src/) ausente no ZIP.");
+if (files.some((f) => f === ".next" || f.startsWith(".next/"))) throw new Error("O ZIP nao deve conter .next (a Hostinger compila no servidor).");
+
 createZip(files);
 
 const sizeMb = fs.statSync(zipPath).size / 1024 / 1024;
-console.log(`[deploy] ZIP criado: ${zipPath}`);
+console.log(`[deploy] ZIP de codigo-fonte criado: ${zipPath}`);
 console.log(`[deploy] Arquivos: ${files.length}`);
 console.log(`[deploy] Tamanho: ${sizeMb.toFixed(2)} MB`);
+console.log(`[deploy] Versao dos modulos JS (cache-busting): ${JS_ASSET_VERSION}`);
+console.log(`[deploy] A Hostinger vai rodar: npm install + npm run build (saida .next).`);

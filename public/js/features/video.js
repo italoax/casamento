@@ -41,6 +41,8 @@ function iniciarVideoCasal() {
     if (!video || !botao || !overlay || !barra || !tempo) return;
     let ocultarTimer = null;
     let estavaTocando = false;
+    let interagindo = false;
+    let rafBarra = null;
     barra.disabled = true;
     const reproduzirComSeguranca = () => {
       const tentativa = video.play();
@@ -75,11 +77,31 @@ function iniciarVideoCasal() {
       tempo.textContent = formatarTempo(video.currentTime);
     };
     const atualizarBarra = () => {
+      if (interagindo) return;
       if (!Number.isFinite(video.duration) || video.duration === 0) {
         barra.value = 0;
         return;
       }
       barra.value = String(video.currentTime);
+    };
+    const iniciarRafBarra = () => {
+      if (rafBarra !== null) return;
+      const passo = () => {
+        if (video.paused || video.ended) {
+          rafBarra = null;
+          return;
+        }
+        atualizarBarra();
+        atualizarTempo();
+        rafBarra = requestAnimationFrame(passo);
+      };
+      rafBarra = requestAnimationFrame(passo);
+    };
+    const pararRafBarra = () => {
+      if (rafBarra !== null) {
+        cancelAnimationFrame(rafBarra);
+        rafBarra = null;
+      }
     };
     const alternarPlay = () => {
       if (video.paused || video.ended) {
@@ -95,6 +117,7 @@ function iniciarVideoCasal() {
     });
     const iniciarInteracaoBarra = event => {
       event.stopPropagation();
+      interagindo = true;
       estavaTocando = !video.paused && !video.ended;
       mostrarControles();
     };
@@ -118,13 +141,17 @@ function iniciarVideoCasal() {
     };
     barra.addEventListener("input", event => {
       event.stopPropagation();
+      interagindo = true;
       if (!estavaTocando && !video.paused && !video.ended) {
         estavaTocando = true;
       }
+      const alvo = Number(barra.value);
+      if (Number.isFinite(alvo)) tempo.textContent = formatarTempo(alvo);
       mostrarControles();
     });
     barra.addEventListener("change", event => {
       event.stopPropagation();
+      interagindo = false;
       const precisaRetomar = estavaTocando;
       aplicarSeekNaBarra();
       mostrarControles();
@@ -135,6 +162,7 @@ function iniciarVideoCasal() {
     });
     const finalizarInteracaoBarra = event => {
       event.stopPropagation();
+      interagindo = false;
       if (!estavaTocando) return;
       if (video.paused || video.ended) {
         reproduzirComSeguranca();
@@ -191,12 +219,24 @@ function iniciarVideoCasal() {
       }
     });
     video.addEventListener("timeupdate", () => {
+      if (rafBarra !== null) return;
       atualizarTempo();
       atualizarBarra();
     });
-    video.addEventListener("play", atualizarEstado);
-    video.addEventListener("pause", atualizarEstado);
-    video.addEventListener("ended", atualizarEstado);
+    video.addEventListener("play", () => {
+      atualizarEstado();
+      iniciarRafBarra();
+    });
+    video.addEventListener("pause", () => {
+      atualizarEstado();
+      pararRafBarra();
+      atualizarTempo();
+      atualizarBarra();
+    });
+    video.addEventListener("ended", () => {
+      atualizarEstado();
+      pararRafBarra();
+    });
     atualizarEstado();
     atualizarTempo();
     mostrarControles();

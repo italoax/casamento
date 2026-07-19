@@ -21,9 +21,46 @@
   --sombra: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.07);
   --sombra-suave: 0 10px 26px rgba(84, 75, 69, 0.08);
   --raio-borda: 8px;
+
+  /* Padrão "destaque champagne" (mesmo do modal de pagamento) */
+  --destaque-bg: linear-gradient(135deg, #fff8ec 0%, #f8ead3 100%); /* card destacado/selecionado */
+  --destaque-bg-plano: #faf6ee; /* fundo creme chapado (caixas de aviso/info) */
+  --destaque-borda: #c2a878; /* borda dourada */
+  --destaque-borda-suave: rgba(194, 168, 120, 0.20);
+  --destaque-sombra: 0 16px 32px rgba(194, 168, 120, 0.22);
   /* Controle de Tamanho do Carrossel (Edite aqui) */
   --altura-carrossel: 500px; /* Altura no Computador */
   --altura-carrossel-mobile: 300px; /* Altura no Celular */
+}
+
+/* ===============================
+   Padrão de destaque champagne (reutilizável)
+   =============================== */
+.selo-destaque {
+  display: inline-block;
+  padding: 0.42rem 0.8rem;
+  border-radius: 3px;
+  background: var(--destaque-borda);
+  color: #fff;
+  font-family: var(--fonte-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.aviso-destaque {
+  background: var(--destaque-bg-plano);
+  border: 1px solid var(--destaque-borda-suave);
+  border-left: 3px solid var(--destaque-borda);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: #6b5d44;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.card-destaque {
+  background: var(--destaque-bg);
+  border: 1px solid var(--destaque-borda);
+  box-shadow: var(--destaque-sombra);
 }
 
 /* ===============================
@@ -49,7 +86,10 @@ html {
   scroll-behavior: smooth;
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
-  background-color: var(--cor-fundo);
+  /* Fundo da RAIZ na cor da base do rodapé. No iOS Safari, a área de overscroll
+     e atrás da barra inferior usa a cor de fundo do <html> — assim o final embaixo
+     do rodapé fica escuro (sem a faixa creme). O conteúdo continua creme via body. */
+  background-color: #322b27;
 }
 body {
   font-family: var(--fonte-sans);
@@ -503,6 +543,52 @@ p.intro-secao {
   display: flex;
   gap: 1rem;
   justify-content: center;
+}
+/* Versículo do hero (onde antes ficavam os botões) */
+.versiculo-hero {
+  margin: 1.6rem auto 0;
+  max-width: 600px;
+  padding: 1.6rem 1.5rem 0;
+  text-align: center;
+  position: relative;
+}
+.versiculo-hero__texto {
+  font-family: var(--fonte-serifa);
+  font-style: italic;
+  font-size: 1.3rem;
+  line-height: 1.75;
+  color: var(--cor-primaria);
+  margin: 0;
+  position: relative;
+}
+.versiculo-hero__texto::before {
+  content: "\201C";
+  font-family: var(--fonte-serifa);
+  font-size: 4rem;
+  line-height: 1;
+  color: var(--cor-secundaria);
+  opacity: 0.4;
+  position: absolute;
+  top: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.versiculo-hero__ref {
+  margin-top: 1.2rem;
+  font-family: var(--fonte-sans);
+  font-size: 0.82rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--cor-secundaria);
+}
+.versiculo-hero__ref::before {
+  content: "";
+  display: block;
+  width: 44px;
+  height: 1px;
+  background: var(--cor-secundaria);
+  opacity: 0.6;
+  margin: 0 auto 0.9rem;
 }
 .container-contagem {
   display: flex;

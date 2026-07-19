@@ -2,9 +2,8 @@ import { errorJson, json } from "@/lib/http";
 import {
   checkoutItems,
   clean,
-  createEfiCardCharge,
-  createEfiCustomer,
-  customerDataFromPayload,
+  createAsaasCardCharge,
+  createAsaasCustomer,
   extractIds,
   insertSale,
   logPayment,
@@ -13,10 +12,9 @@ import {
   releaseStock,
   reserveStockAtomic,
   settleStockForPayment,
-  validateRecaptcha,
   type CheckoutPayload,
 } from "@/lib/payment";
-import { env } from "@/lib/env";
+import { getCartaoValor } from "@/lib/cartao-config";
 import { Security, SafeLog } from "@/lib/security";
 import { enviarCartaoRecusado, enviarComprovanteAprovado } from "@/lib/site-emails";
 
@@ -24,11 +22,6 @@ export const runtime = "nodejs";
 
 function money(value: number) {
   return Math.round(value * 100) / 100;
-}
-
-function efiCustomerId(value: unknown) {
-  const id = clean(value, 80);
-  return id;
 }
 
 export async function OPTIONS(request: Request) {
@@ -55,24 +48,20 @@ export async function POST(request: Request) {
 
     const payload = (await request.json().catch(() => null)) as CheckoutPayload | null;
     if (!payload) return errorJson("Payload JSON inválido.", 400, { headers: corsHeaders });
-    if (!(await validateRecaptcha(clean(payload.recaptchaToken, 3000), "checkout_cartao", request))) {
-      return errorJson("Falha na verificação de segurança.", 422, { headers: corsHeaders });
-    }
 
-    const creditCardToken = clean(payload.creditCardToken, 255);
-    if (!creditCardToken) {
-      return errorJson("Token do cartão inválido. Revise os dados do cartão e tente novamente.", 400, { headers: corsHeaders });
+    const card = payload.card || {};
+    if (!card.number || !card.ccv || !card.expiration) {
+      return errorJson("Dados do cartão inválidos. Revise e tente novamente.", 400, { headers: corsHeaders });
     }
 
     const idsProdutos = extractIds(payload);
     const itemData = await checkoutItems(idsProdutos);
-    const extraCard = payload.metadata?.cartao_personalizado ? Number(env("CARTAO_VALOR", "10")) : 0;
+    const extraCard = payload.metadata?.cartao_personalizado ? await getCartaoValor() : 0;
     const valor = money(itemData.total + extraCard);
     if (valor <= 0) return errorJson("Total inválido.", 400, { headers: corsHeaders });
 
     const parcelas = Math.max(1, Math.min(12, Number(payload.installments || 1)));
-    const tokenCustomerId = efiCustomerId(payload.efiCustomerId);
-    const customerData = tokenCustomerId ? customerDataFromPayload(payload) : await createEfiCustomer(payload);
+    const customerData = await createAsaasCustomer(payload);
     const refs = newRefs();
 
     // Reserva ATÔMICA antes de cobrar (impede vender além do estoque em acessos simultâneos).
@@ -81,8 +70,8 @@ export async function POST(request: Request) {
     let payment;
     let status: ReturnType<typeof normalizeStatus>;
     try {
-      payment = await createEfiCardCharge({
-        payload: { ...payload, installments: parcelas, creditCardToken },
+      payment = await createAsaasCardCharge({
+        payload: { ...payload, installments: parcelas },
         customer: customerData,
         valor,
         descricao: clean(payload.description || itemData.itens || "Presente de casamento", 120),

@@ -16,9 +16,9 @@ export type { CheckoutPayload, SaleData, DbRow, CustomerData } from "./payment/p
 export { digits, clean, normalizeStatus } from "./payment/payment-utils";
 
 // ============================================
-// Validação
+// Validação (captcha)
 // ============================================
-export { validateRecaptcha } from "./payment/payment-validation";
+export { validateCaptcha } from "./captcha";
 
 // ============================================
 // Checkout e Presentes
@@ -33,16 +33,16 @@ export { reserveStock, reserveStockAtomic, convertStock, releaseStock, settleSto
 // ============================================
 // Cliente
 // ============================================
-export { customerDataFromPayload, createEfiCustomer } from "./efi";
+export { customerDataFromPayload, createAsaasCustomer } from "./asaas";
 
 // ============================================
 // Vendas
 // ============================================
-export { insertSale, logPayment, newRefs, saleByStatusToken, updateSaleStatusByPayment, parseIds } from "./payment/payment-sales";
+export { insertSale, logPayment, newRefs, saleByStatusToken, updateSaleStatusByPayment, parseIds, pendingExpiredPixPaymentIds } from "./payment/payment-sales";
 
 // ============================================
-// Efí Pay
+// Gateway de pagamento (Asaas)
 // ============================================
 export { clientIp, cardExpiration } from "./payment/payment-card-utils";
-export { fetchEfiPayment, createEfiPixCharge, createEfiCardCharge, configureEfiPixWebhook } from "./efi";
+export { fetchAsaasPayment, createAsaasPixCharge, createAsaasCardCharge, configureAsaasWebhook, deleteAsaasPayment } from "./asaas";
 

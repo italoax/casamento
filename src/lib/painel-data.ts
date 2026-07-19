@@ -1,6 +1,7 @@
-import { columnExists, queryRows, queryOne, tableExists } from "./db";
+import { columnExists, execute, queryRows, queryOne, tableExists } from "./db";
 import { decryptCPF, decryptEmail, decryptPhone } from "./encryption";
 import { contarIdades } from "./painel-utils";
+import { getCartaoValor } from "./cartao-config";
 
 export type Row = Record<string, unknown>;
 
@@ -75,23 +76,35 @@ export async function getDashboardData() {
   const [kpisConv] = await queryRows<Row>(
     "SELECT COUNT(*) total_grupos, COALESCE(SUM(convites_disponiveis),0) total_pessoas, COALESCE(SUM(convites_confirmados),0) total_confirmados FROM convidados",
   );
-  const nomes = await queryRows<{ nomes_lista: string }>("SELECT nomes_lista FROM convidados");
+  const nomesRows = await queryRows<{ nomes_lista: string; nomes_confirmados: string; status: string }>(
+    "SELECT nomes_lista, nomes_confirmados, status FROM convidados",
+  );
   const idades = { adulto: 0, c0_5: 0, c6_10: 0 };
-  for (const row of nomes) {
+  const idadesConfirmados = { adulto: 0, c0_5: 0, c6_10: 0 };
+  for (const row of nomesRows) {
     const c = contarIdades(row.nomes_lista);
     idades.adulto += c.adulto;
     idades.c0_5 += c.c0_5;
     idades.c6_10 += c.c6_10;
+    if (row.status === "confirmado" && row.nomes_confirmados) {
+      const cc = contarIdades(row.nomes_confirmados);
+      idadesConfirmados.adulto += cc.adulto;
+      idadesConfirmados.c0_5 += cc.c0_5;
+      idadesConfirmados.c6_10 += cc.c6_10;
+    }
   }
 
   const presentesExiste = await tableExists("presentes");
   const vendasExiste = await tableExists("vendas");
   const taxa = await getTaxaPresentes();
-  const kpiPresentes = { total_geral: 0, qtd_vendidos: 0, total_vendido: 0, total_pendente: 0, qtd_vendido: 0, qtd_pendente: 0, taxa_atual: taxa };
+  const cartaoValor = await getCartaoValor();
+  const kpiPresentes = { total_geral: 0, qtd_vendidos: 0, total_vendido: 0, total_pendente: 0, qtd_vendido: 0, qtd_pendente: 0, taxa_atual: taxa, cartao_valor: cartaoValor, total_presentes: 0, presentes_disponiveis: 0 };
   if (presentesExiste) {
-    const [p] = await queryRows<Row>("SELECT COALESCE(SUM(preco),0) total_geral, COALESCE(SUM(quantidade_vendida),0) qtd_vendidos FROM presentes");
+    const [p] = await queryRows<Row>("SELECT COALESCE(SUM(preco),0) total_geral, COALESCE(SUM(quantidade_vendida),0) qtd_vendidos, COUNT(*) total_presentes, COALESCE(SUM(CASE WHEN (quantidade_disponivel IS NULL OR quantidade_vendida < quantidade_disponivel) THEN 1 ELSE 0 END),0) presentes_disponiveis FROM presentes");
     kpiPresentes.total_geral = Number(p?.total_geral || 0);
     kpiPresentes.qtd_vendidos = Number(p?.qtd_vendidos || 0);
+    kpiPresentes.total_presentes = Number(p?.total_presentes || 0);
+    kpiPresentes.presentes_disponiveis = Number(p?.presentes_disponiveis || 0);
   }
   if (vendasExiste) {
     const [v] = await queryRows<Row>(`SELECT
@@ -106,7 +119,7 @@ export async function getDashboardData() {
     kpiPresentes.qtd_pendente = Number(v?.qtd_pendente || 0);
   }
 
-  return { convidados: kpisConv || {}, idades, presentes: kpiPresentes };
+  return { convidados: kpisConv || {}, idades, idadesConfirmados, presentes: kpiPresentes };
 }
 
 export async function listarConvidados(busca = "", ordem = "recentes", pagina = 1, limite = 20) {
@@ -125,8 +138,9 @@ export async function listarConvidados(busca = "", ordem = "recentes", pagina = 
   const idadeOrdem = ["adultos_desc", "adultos_asc", "c0_5_desc", "c0_5_asc", "c6_10_desc", "c6_10_asc"].includes(ordem);
   const offset = (Math.max(1, pagina) - 1) * limite;
   const hasVisibilidade = await columnExists("convidados", "visibilidade");
+  const hasLista = await columnExists("convidados", "lista");
   const [count] = await queryRows<Row>(`SELECT COUNT(*) total FROM convidados ${where}`, params);
-  let rows = await queryRows<Row>(`SELECT id, nome, telefone, email, nomes_lista, nomes_confirmados, convites_disponiveis, convites_confirmados, status${hasVisibilidade ? ", visibilidade" : ""} FROM convidados ${where} ORDER BY ${idadeOrdem ? "nome ASC" : order}${idadeOrdem ? "" : " LIMIT ? OFFSET ?"}`, idadeOrdem ? params : [...params, limite, offset]);
+  let rows = await queryRows<Row>(`SELECT id, nome, telefone, email, nomes_lista, nomes_confirmados, convites_disponiveis, convites_confirmados, status${hasVisibilidade ? ", visibilidade" : ""}${hasLista ? ", lista" : ""} FROM convidados ${where} ORDER BY ${idadeOrdem ? "nome ASC" : order}${idadeOrdem ? "" : " LIMIT ? OFFSET ?"}`, idadeOrdem ? params : [...params, limite, offset]);
   if (idadeOrdem) {
     const [bucket, dir] = ordem.split("_").length === 3 ? [ordem.split("_").slice(0, 2).join("_"), ordem.split("_")[2]] : ["adulto", ordem.split("_")[1]];
     const key = bucket === "adultos" ? "adulto" : bucket;
@@ -175,7 +189,13 @@ export async function listarVendas(pagina = 1, limite = 20, busca = "", status =
 
 export async function listarRecados() {
   if (!(await tableExists("recados"))) return [];
-  return queryRows<Row>("SELECT id, nome, email, mensagem, aprovado, created_at FROM recados ORDER BY aprovado ASC, created_at DESC LIMIT 100");
+  // "visivel" separa a APROVAÇÃO (revisado/OK) da EXIBIÇÃO no site: um recado
+  // pode estar aprovado e mesmo assim ficar oculto do mural. Coluna criada
+  // on-demand (default 1) para os recados já aprovados continuarem aparecendo.
+  if (!(await columnExists("recados", "visivel"))) {
+    await execute("ALTER TABLE recados ADD COLUMN visivel TINYINT(1) NOT NULL DEFAULT 1").catch(() => undefined);
+  }
+  return queryRows<Row>("SELECT id, nome, email, mensagem, aprovado, visivel, created_at FROM recados ORDER BY aprovado ASC, created_at DESC LIMIT 100");
 }
 
 export async function listarLogs(pagina = 1, limite = 50, busca = "", tipo = "", status = "") {

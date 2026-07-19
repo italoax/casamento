@@ -1,6 +1,7 @@
 const { spawn, spawnSync } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
+const { pathToFileURL } = require("node:url");
 const process = require("node:process");
 
 const port = process.env.PORT || "3000";
@@ -113,3 +114,44 @@ process.on("SIGINT", () => {
   log("[SIGNAL] Recebido SIGINT, encerrando Next.js...");
   child.kill("SIGINT");
 });
+
+// ===========================================================================
+// Backup diário automático do banco de dados.
+// Confere de hora em hora e, se ainda não houver um backup do dia, gera um.
+// A retenção (manter só os 2 mais recentes ≈ 2 dias) é feita pelo próprio script.
+// Tudo protegido por try/catch — uma falha de backup NUNCA derruba o site.
+// ===========================================================================
+const backupScript = path.join(process.cwd(), "scripts", "backup-db.mjs");
+const backupsDir = path.join(process.cwd(), "backups");
+
+function backupFeitoHoje() {
+  try {
+    if (!fs.existsSync(backupsDir)) return false;
+    const hoje = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+    return fs
+      .readdirSync(backupsDir)
+      .some((nome) => nome.startsWith("backup-") && nome.includes(hoje) && nome.endsWith(".sql"));
+  } catch (error) {
+    return false;
+  }
+}
+
+function rodarBackupSeNecessario() {
+  try {
+    if (!fs.existsSync(backupScript)) return;
+    if (backupFeitoHoje()) return;
+    log("[backup] Gerando backup diário do banco...");
+    // Roda DENTRO deste processo (sem abrir processo-filho): mais confiável em
+    // hospedagem compartilhada e o erro real aparece no log se algo falhar.
+    import(pathToFileURL(backupScript).href)
+      .then((mod) => mod.gerarBackup({ log: (msg) => log(`[backup] ${msg}`) }))
+      .then(() => log("[backup] Finalizado com sucesso."))
+      .catch((error) => log(`[backup] Falha: ${error && error.message ? error.message : error}`));
+  } catch (error) {
+    log(`[backup] Erro inesperado: ${error.message}`);
+  }
+}
+
+// Primeira checagem 1 min após subir (não atrapalha o boot) e depois a cada hora.
+setTimeout(rodarBackupSeNecessario, 60 * 1000);
+setInterval(rodarBackupSeNecessario, 60 * 60 * 1000);

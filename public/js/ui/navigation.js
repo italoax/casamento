@@ -233,20 +233,20 @@ function configurarScrollHashSync() {
     } catch (e) {}
   };
   const ajustarParaHash = () => {
-    if (isReload) {
+    // No reload, NÃO restauramos a posição exata (que cairia "no meio" da seção).
+    // Em vez disso, garantimos que o hash aponte para a seção mais próxima de onde a
+    // pessoa estava (lido do scroll salvo ou do hash já sincronizado) e deixamos a
+    // lógica de hash abaixo rolar até ela — essa rota já realinha conforme as imagens
+    // carregam (reajustes em 500/1400/2600ms), então é robusta ao timing.
+    if (isReload && !window.location.hash) {
       let scrollSalvo = NaN;
-      try {
-        scrollSalvo = Number(sessionStorage.getItem(SCROLL_Y_ATUAL));
-      } catch (e) {
-        scrollSalvo = NaN;
-      }
+      try { scrollSalvo = Number(sessionStorage.getItem(SCROLL_Y_ATUAL)); } catch (e) { scrollSalvo = NaN; }
       if (Number.isFinite(scrollSalvo) && scrollSalvo >= 0) {
-        window.scrollTo({
-          top: Math.max(0, scrollSalvo),
-          behavior: "auto"
-        });
-        permitirAtualizacao = true;
-        return;
+        const referencia = obterOffsetHeader() + window.innerHeight * 0.35;
+        const secao = encontrarSecaoMaisProxima(secoes, scrollSalvo + referencia);
+        if (secao && secao.id) {
+          try { history.replaceState(null, "", `#${secao.id}`); } catch (e) { window.location.hash = `#${secao.id}`; }
+        }
       }
     }
     const hashAtual = window.location.hash;
@@ -328,7 +328,7 @@ function configurarScrollHashSync() {
       persistirScrollYAtual();
     }
   });
-  window.addEventListener("load", () => {
+  const aoCarregar = () => {
     requestAnimationFrame(() => {
       setTimeout(() => {
         ajustarParaHash();
@@ -339,9 +339,15 @@ function configurarScrollHashSync() {
         }
       }, 0);
     });
-  }, {
-    once: true
-  });
+  };
+  // Se o evento "load" já disparou antes deste módulo rodar (carga tardia do
+  // script ou recarga), o listener seria perdido e o scroll-na-seção não
+  // aconteceria. Por isso rodamos imediatamente nesse caso.
+  if (document.readyState === "complete") {
+    aoCarregar();
+  } else {
+    window.addEventListener("load", aoCarregar, { once: true });
+  }
   if (permitirAtualizacao) {
     atualizarHash();
     setTimeout(atualizarHash, 50);

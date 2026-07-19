@@ -106,13 +106,22 @@ export class Security {
   }
 
   /**
-   * Obter IP do cliente com fallback seguro
+   * Obter IP do cliente com fallback seguro.
+   *
+   * Atrás da Cloudflare, CF-Connecting-IP traz o IP real do visitante e não pode
+   * ser forjado (a Cloudflare o sobrescreve). É a fonte mais confiável para rate
+   * limiting. Antes usávamos o ÚLTIMO X-Forwarded-For, que com Cloudflare+Hostinger
+   * é o IP fixo do proxy — isso fazia todos os rate limits caírem num balde só.
    */
   static clientIp(request: Request): string {
+    const cf = request.headers.get('cf-connecting-ip');
+    if (cf) return cf.trim();
+    const real = request.headers.get('x-real-ip');
+    if (real) return real.trim();
     const xff = request.headers.get('x-forwarded-for');
     if (xff) {
-      const ips = xff.split(',').map(ip => ip.trim());
-      return ips[ips.length - 1] || 'unknown';
+      const ips = xff.split(',').map(ip => ip.trim()).filter(Boolean);
+      return ips[0] || 'unknown';
     }
     return 'unknown';
   }

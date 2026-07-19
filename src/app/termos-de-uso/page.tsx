@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function TermosDeUsoPage() {
   // Configuráveis pelo .env (com fallback caso não estejam definidos).
-  const CONTATO_EMAIL = env("LEGAL_CONTATO_EMAIL", "contato@emanuelleitalo.com");
+  const CONTATO_EMAIL = env("LEGAL_CONTATO_EMAIL", "suporte@emanuelleitalo.com");
   const ULTIMA_ATUALIZACAO = env("LEGAL_ATUALIZACAO", "7 de junho de 2026");
   return (
     <>
@@ -86,7 +86,7 @@ export default function TermosDeUsoPage() {
           <section className="legal-secao">
             <h2><span className="legal-num">5.</span> Pagamentos</h2>
             <p>
-              Os pagamentos são processados por meio de instituição financeira parceira (Efí), que
+              Os pagamentos são processados por meio de instituição financeira parceira (Asaas), que
               opera de forma segura e regulamentada. O site <strong>não armazena os dados completos
               do seu cartão de crédito</strong>; esses dados são tratados diretamente pelo provedor
               de pagamento.

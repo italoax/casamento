@@ -22,11 +22,20 @@ import { redirect } from "next/navigation";
 import { getPainelSession } from "@/lib/painel-auth";
 import { getDashboardData, getRsvpDeadline, listarConvidados, listarLogs, listarPresentes, listarRecados, listarVendas } from "@/lib/painel-data";
 import PainelClient from "./PainelClient";
+// CSS do painel importado pelo pipeline do Next (render-blocking no <head>).
+// Antes era carregado via <link> no corpo, o que causava FOUC: a tabela
+// aparecia gigante (sem estilo) ao logar e só "encolhia" no primeiro clique.
+import "../../../public/painel/css/painel.css";
+import "../../../public/painel/css/painel-next.css";
 
 // Force dynamic - não cachear (dados mudam com frequência)
 export const dynamic = "force-dynamic";
 
-export default async function PainelPage() {
+export default async function PainelPage({ searchParams }: { searchParams: Promise<{ aba?: string }> }) {
+  // Aba inicial vinda da URL (?aba=...). Como é query param (não hash), o servidor
+  // já renderiza a aba certa no refresh, sem mostrar o dashboard antes.
+  const { aba: abaInicial } = await searchParams;
+
   // Obtém sessão do usuário
   const session = await getPainelSession();
   
@@ -46,11 +55,9 @@ export default async function PainelPage() {
 
   return (
     <>
-      {/* CSS do painel */}
-      <link rel="stylesheet" href="/painel/css/painel.css" />
-      <link rel="stylesheet" href="/painel/css/painel-next.css" />
       {/* Componente cliente que renderiza o dashboard */}
       <PainelClient
+        initialAba={abaInicial}
         initialData={{
           session,
           dashboard,

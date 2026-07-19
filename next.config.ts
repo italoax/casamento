@@ -115,6 +115,31 @@ const nextConfig: NextConfig = {
         source: "/:path*",  // Aplica a todas as rotas
         headers: securityHeaders,
       },
+      {
+        // Mídia e fontes: conteúdo estável. Cache longo (1 ano) para performance.
+        // Cobre /img, /video, /padrinhos/img e os assets internos /_next/static/media.
+        // Para ATUALIZAR uma mídia, troque o NOME do arquivo (ex.: video1-web.mp4),
+        // que é o cache busting já adotado no projeto.
+        source: "/:path*.(mp4|webm|webp|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|otf|avif)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      // CSS/JS PRÓPRIOS do projeto (em /public, nome de arquivo fixo): o navegador
+      // poderia servir uma versão antiga em cache — o problema clássico no mobile de
+      // "atualizei o site mas continua o antigo". "no-cache" NÃO desliga o cache:
+      // obriga a revalidar com o servidor via ETag a cada carregamento — responde
+      // 304 (rápido, não rebaixa) se nada mudou, ou baixa a nova versão se mudou.
+      // Assim toda publicação aparece sem o usuário precisar limpar o cache.
+      // Mira só as pastas do projeto, então NÃO afeta /_next/static/*.js|css (que
+      // têm hash no nome e mantêm o cache longo "immutable" padrão do Next).
+      { source: "/js/:path*", headers: [{ key: "Cache-Control", value: "no-cache" }] },
+      { source: "/css/:path*", headers: [{ key: "Cache-Control", value: "no-cache" }] },
+      { source: "/painel/css/:path*", headers: [{ key: "Cache-Control", value: "no-cache" }] },
+      { source: "/padrinhos/style.css", headers: [{ key: "Cache-Control", value: "no-cache" }] },
+      // PWA: o service worker e o manifest precisam revalidar sempre, senão um SW
+      // antigo fica preso no cache do navegador/Cloudflare e nunca atualiza.
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache" }] },
+      { source: "/manifest.webmanifest", headers: [{ key: "Cache-Control", value: "no-cache" }] },
+      { source: "/offline.html", headers: [{ key: "Cache-Control", value: "no-cache" }] },
     ];
   },
 };

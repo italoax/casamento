@@ -21,6 +21,108 @@
   margin: 0 auto;
 }
 
+/* Botão "Ver tutorial" da confirmação de presença */
+.tutorial-confirmacao-acao {
+  text-align: center;
+  margin: 0 auto 1.6rem;
+}
+.botao-tutorial-confirmacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid var(--cor-secundaria);
+  background: #fff;
+  color: var(--cor-primaria);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.botao-tutorial-confirmacao:hover {
+  background: #faf6ef;
+  transform: translateY(-1px);
+}
+.tutorial-play {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 6px 0 6px 10px;
+  border-color: transparent transparent transparent var(--cor-secundaria);
+}
+/* Modal do vídeo tutorial (vertical / celular) */
+.tutorial-video-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(18, 12, 10, 0.82);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  animation: tutorialFadeIn 0.25s ease-out;
+}
+.tutorial-video-overlay.oculto {
+  display: none;
+}
+@keyframes tutorialFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.tutorial-video-caixa {
+  position: relative;
+}
+.tutorial-video {
+  display: block;
+  height: min(80vh, 760px);
+  width: auto;
+  max-width: 92vw;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  background: transparent;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+.tutorial-video-fechar {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  color: #333;
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 600px) {
+  .tutorial-video {
+    height: auto;
+    width: min(92vw, 430px);
+    max-height: 82vh;
+  }
+  .tutorial-video-fechar {
+    top: 6px;
+    right: 6px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
 .video-casal {
   margin: 2rem 0 0;
   width: 100%;
@@ -333,6 +435,12 @@
   box-shadow: var(--grande-dia-foto-sombra);
   border: 1px solid rgba(194, 168, 120, 0.2);
   background: #f7f2ed;
+  transition: transform 0.45s ease, box-shadow 0.45s ease, border-color 0.45s ease;
+}
+.foto-cerimonia:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 24px 46px rgba(84, 75, 69, 0.24);
+  border-color: rgba(194, 168, 120, 0.5);
 }
 .foto-cerimonia::after {
   content: "";
@@ -484,6 +592,69 @@
   height: 100%;
   display: block;
   filter: var(--grande-dia-mapa-filter);
+}
+/* Fachada do mapa (carrega o Google Maps só ao tocar) */
+.mapa-facade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 1.5rem;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  color: #6b5b45;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(194, 168, 120, 0.16), transparent 55%),
+    radial-gradient(circle at 75% 80%, rgba(194, 168, 120, 0.12), transparent 50%),
+    #f2ece1;
+  transition: background 0.2s ease;
+}
+.mapa-facade:hover {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(194, 168, 120, 0.24), transparent 55%),
+    radial-gradient(circle at 75% 80%, rgba(194, 168, 120, 0.18), transparent 50%),
+    #efe7da;
+}
+.mapa-facade__pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(84, 75, 69, 0.18);
+  animation: mapa-pin-pulso 1.6s ease-in-out infinite;
+}
+@keyframes mapa-pin-pulso {
+  0%, 100% { transform: translateY(0); box-shadow: 0 6px 16px rgba(84, 75, 69, 0.18); }
+  50% { transform: translateY(-4px); box-shadow: 0 12px 22px rgba(84, 75, 69, 0.22); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mapa-facade__pin { animation: none; }
+}
+.mapa-facade__pin svg {
+  width: 28px;
+  height: 28px;
+  fill: #b07d3a;
+}
+.mapa-facade__titulo {
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+}
+.mapa-facade__sub {
+  font-size: 0.8rem;
+  opacity: 0.72;
+}
+.mapa-facade--oculto {
+  display: none;
 }
 #link-local-evento {
   display: inline-flex;
@@ -736,14 +907,15 @@
   font-family: Lato, var(--fonte-sans), sans-serif;
   background: #fff;
   border-radius: 10px;
-  box-shadow: 0 8px 22px rgba(45, 58, 74, 0.08);
+  box-shadow: 0 8px 22px rgba(84, 75, 69, 0.08);
   overflow: clip;
   transition:
     transform 0.3s ease,
-    box-shadow 0.3s ease;
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
   display: flex;
   flex-direction: column;
-  border: 1px solid #c9d5e1;
+  border: 1px solid var(--destaque-borda-suave);
   padding: 16px;
   min-height: 440px;
   height: auto;
@@ -756,7 +928,8 @@
 .cartao-presente:hover,
 .presente.center-block:hover {
   transform: translateY(-4px);
-  box-shadow: 0 14px 28px rgba(45, 58, 74, 0.12);
+  border-color: var(--destaque-borda);
+  box-shadow: 0 16px 30px rgba(194, 168, 120, 0.20);
 }
 .cartao-presente img,
 .presente.center-block img {
@@ -783,6 +956,10 @@
   line-height: 1.28;
   min-height: 40px;
   overflow-wrap: anywhere;
+  /* O título cresce para ocupar o espaço livre do card, empurrando preço + botão
+     para o rodapé. Assim o PREÇO fica alinhado entre cards mesmo com títulos de
+     tamanhos diferentes (sem cortar texto). */
+  flex: 1 1 auto;
 }
 .cartao-presente .card-presente__preco,
 .presente.center-block .preco-presente,
@@ -915,15 +1092,57 @@
   box-shadow: 0 0 0 3px rgba(194, 168, 120, 0.1);
   background-color: #fff;
 }
+/* Campo de busca com botão de limpar (×) embutido — usado na busca ao vivo. */
+.busca-convite-wrap {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+.busca-convite-wrap .entrada-confirmacao {
+  margin-bottom: 0;
+  padding-right: 3rem;
+}
+.limpar-busca-convite {
+  position: absolute;
+  top: 50%;
+  right: 0.55rem;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(84, 75, 69, 0.08);
+  color: #6f6258;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.limpar-busca-convite:hover {
+  background: rgba(84, 75, 69, 0.16);
+  color: var(--cor-primaria);
+}
+.limpar-busca-convite.oculto {
+  display: none;
+}
 #btn-buscar-convite {
   position: relative;
   min-height: 44px;
 }
 .rsvp-disponibilidade-prazo {
-  margin: 1rem auto 0;
-  color: #6f6258;
+  margin: 1.1rem auto 0;
+  max-width: 540px;
+  background: var(--destaque-bg-plano);
+  border: 1px solid var(--destaque-borda-suave);
+  border-left: 3px solid var(--destaque-borda);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #6b5d44;
   font-size: 0.88rem;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 #btn-buscar-convite:disabled {
   cursor: not-allowed;
@@ -1329,11 +1548,16 @@
 }
 .recados-viewport {
   overflow: hidden;
-  padding: 2px;
+  /* Padding só na horizontal: com box-sizing border-box, padding vertical faria
+     a altura definida via JS recortar alguns px do rodapé do card. */
+  padding: 0 2px;
+  /* A altura acompanha o card atual (definida via JS) para não sobrar espaço
+     nem vazar um pedaço do próximo recado quando as alturas são diferentes. */
+  transition: height 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 .recados-track {
   display: flex;
-  align-items: center; /* cards de tamanhos diferentes ficam centralizados */
+  align-items: flex-start; /* cards alinhados ao topo; a viewport recorta na altura do atual */
   transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
   will-change: transform;
 }
@@ -1344,6 +1568,40 @@
 }
 .tem-carrossel .recado-item:hover {
   transform: none; /* evita corte do "pulo" dentro da viewport */
+}
+/* Altura uniforme: todos os cards com a mesma altura (definida via JS), para o
+   carrossel não pular de tamanho. Mensagem longa rola por dentro do card. */
+.recados-viewport.altura-fixa .recados-track {
+  height: 100%;
+  align-items: stretch;
+}
+.recados-viewport.altura-fixa .recado-slide {
+  height: 100%;
+}
+.recados-viewport.altura-fixa .recado-item {
+  height: 100%;
+  justify-content: center; /* centraliza o conteúdo: some o vão vazio nos recados curtos */
+}
+.recados-viewport.altura-fixa .recado-item h3 {
+  flex: 0 0 auto;
+}
+.recados-viewport.altura-fixa .recado-item p {
+  flex: 0 1 auto; /* encolhe e rola por dentro quando o texto é maior que o card */
+  min-height: 0;
+  overflow-y: auto;
+  /* Esconde a barra de rolagem (a rolagem continua; o fade indica que há mais). */
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* Edge antigo */
+}
+.recados-viewport.altura-fixa .recado-item p::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;                /* Chrome, Safari, Edge */
+}
+/* Fade sutil no rodapé só quando o texto ultrapassa a altura (indica que rola) */
+.recado-item--rola p {
+  -webkit-mask-image: linear-gradient(180deg, #000 84%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 84%, transparent 100%);
 }
 .recados-dots {
   display: flex;
@@ -1566,9 +1824,9 @@
 }
 .pix-grid {
   display: grid;
-  grid-template-columns: 168px 1fr;
+  grid-template-columns: 232px 1fr;
   gap: 18px;
-  align-items: center;
+  align-items: stretch;
   margin-bottom: 18px;
 }
 .pix-qr-area {
@@ -1579,12 +1837,12 @@
   border-radius: 16px;
   padding: 14px;
   background: #fff;
-  min-height: 176px;
+  min-height: 240px;
   box-shadow: 0 10px 24px rgba(84, 75, 69, 0.1);
 }
 .pix-qr {
-  width: 168px;
-  height: 168px;
+  width: 232px;
+  height: 232px;
   object-fit: contain;
   border-radius: 8px;
 }
@@ -1596,37 +1854,44 @@
 .pix-resumo {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
+  justify-content: center;
 }
-.pix-resumo-badge {
-  background: linear-gradient(180deg, #ffffff 0%, var(--cor-fundo, #f7f4ef) 100%);
-  color: var(--cor-texto-clara, #968b83);
-  border-radius: 14px;
-  padding: 14px 16px;
-  font-size: 0.8rem;
-  line-height: 1.35;
-  border: 1px solid var(--cor-borda, rgba(194, 168, 120, 0.32));
+.pix-resumo-badge,
+.pix-resumo-valor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: #faf6ef;
+  border: 1px solid rgba(194, 168, 120, 0.28);
+  border-radius: 12px;
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a89a8a;
+  line-height: 1.2;
+}
+.pix-resumo-badge strong,
+.pix-resumo-valor span {
+  font-family: var(--fonte-serifa);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
 }
 .pix-resumo-badge strong {
-  display: block;
-  margin-top: 5px;
-  font-family: var(--fonte-serifa);
-  font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  color: var(--cor-primaria, #544b45);
-}
-.pix-resumo-valor {
-  font-size: 0.92rem;
-  color: var(--cor-texto-clara, #968b83);
+  letter-spacing: 0.05em;
+  color: var(--dourado-acento, #b08d57);
 }
 .pix-resumo-valor span {
-  display: block;
-  margin-top: 2px;
-  font-family: var(--fonte-serifa);
-  font-size: 1.3rem;
-  color: #12a18a;
-  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--cor-primaria, #544b45);
 }
 .pix-copia {
   margin-bottom: 16px;
@@ -1643,15 +1908,28 @@
 }
 .pix-copia-input {
   flex: 1;
-  border: 1px solid var(--cor-borda, rgba(194, 168, 120, 0.32));
+  border: 1px solid rgba(194, 168, 120, 0.3);
   border-radius: 12px;
-  padding: 11px 12px;
-  font-size: 0.8rem;
+  padding: 11px 13px;
+  font-size: 0.74rem;
   resize: none;
-  background: #fff;
-  color: #6c625b;
-  line-height: 1.35;
-  font-family: var(--fonte-sans);
+  background: #faf6ef;
+  color: #8a7f76;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(194, 168, 120, 0.5) transparent;
+}
+.pix-copia-input::-webkit-scrollbar {
+  width: 7px;
+}
+.pix-copia-input::-webkit-scrollbar-thumb {
+  background: rgba(194, 168, 120, 0.45);
+  border-radius: 999px;
+}
+.pix-copia-input::-webkit-scrollbar-track {
+  background: transparent;
 }
 .pix-copia-input:focus {
   outline: none;
@@ -1708,27 +1986,30 @@
 }
 .pix-aprovado {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 12px;
-  align-items: flex-start;
-  background: #e9f7ef;
-  border: 1px solid #bfe6cc;
-  border-radius: 16px;
-  padding: 16px;
+  background: #f6f1e8;
+  border: 1px solid rgba(194, 168, 120, 0.34);
+  border-radius: 18px;
+  padding: 26px 22px;
   margin-bottom: 18px;
 }
 .pix-aprovado-icon {
-  width: 36px;
-  height: 36px;
+  width: 62px;
+  height: 62px;
   border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(84, 75, 69, 0.12), inset 0 0 0 1px rgba(194, 168, 120, 0.3);
   flex: 0 0 auto;
 }
 .pix-aprovado-img {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   display: block;
   object-fit: contain;
   user-select: none;
@@ -1738,29 +2019,43 @@
 .pix-aprovado-texto strong {
   display: block;
   font-family: var(--fonte-serifa);
-  font-size: 1.05rem;
-  color: #204b2a;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--cor-primaria, #544b45);
   margin-bottom: 4px;
 }
 .pix-aprovado-texto p {
   margin: 0;
-  color: #3c5c45;
+  color: #766d65;
+  font-size: 0.95rem;
+  line-height: 1.55;
 }
 .pix-aprovado.is-erro {
-  background: #fdecee;
-  border-color: #f5b5bd;
+  background: #fbeeee;
+  border-color: rgba(190, 120, 120, 0.42);
+}
+.pix-aprovado.is-erro .pix-aprovado-icon {
+  box-shadow: 0 8px 18px rgba(84, 75, 69, 0.1), inset 0 0 0 1px rgba(190, 120, 120, 0.35);
 }
 .pix-aprovado.is-erro .pix-aprovado-texto strong {
-  color: #8f1d2c;
+  color: #8f3a3a;
 }
 .pix-aprovado.is-erro .pix-aprovado-texto p {
-  color: #9b2f3d;
+  color: #9b5050;
 }
 .pix-aprovado-hora {
   display: block;
-  margin-top: 6px;
-  font-size: 0.85rem;
-  color: #4b6b55;
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: #a89a8a;
+}
+/* No modal de cartão, quando o resultado aparece (aprovado/recusado), oculta o
+   cabeçalho (que repetiria o título) e o rodapé "A confirmação pode levar alguns
+   instantes." — que só faz sentido durante o processamento. */
+#cartao-processando-overlay:has(#cartao-processo-resultado:not(.oculto)) .pix-header,
+#cartao-processando-overlay:has(#cartao-processo-resultado:not(.oculto)) .pix-rodape {
+  display: none;
 }
 .pix-rodape {
   margin: 0;

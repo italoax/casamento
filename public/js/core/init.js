@@ -6,6 +6,8 @@ import { aplicarConteudoSite, preencherDadosEvento, removerPreloader, iniciarCon
 
 import { iniciarVideoCasal } from "../features/video.js";
 
+import { iniciarTutorialConfirmacao } from "../features/tutorial-confirmacao.js";
+
 import { carregarPresentes, iniciarAtualizacaoAutomaticaPresentes } from "../features/presentes.js";
 
 import { carregarCarrinhoPersistido, atualizarResumoCarrinho, configurarAcoesCarrinho } from "../cart/cart.js";
@@ -33,6 +35,7 @@ function iniciar() {
   iniciarContagem();
   iniciarCarrossel();
   iniciarVideoCasal();
+  iniciarTutorialConfirmacao();
   carregarPresentes();
   iniciarAtualizacaoAutomaticaPresentes();
   removerPreloader();

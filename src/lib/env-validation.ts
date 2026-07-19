@@ -23,11 +23,8 @@ export function validateEnvironment() {
     "DB_PASSWORD",
     "DB_NAME",
     "BASE_URL",
-    "EFI_CLIENT_ID",
-    "EFI_CLIENT_SECRET",
-    "EFI_PIX_KEY",
-    "EFI_ACCOUNT_ID",
-    "RECAPTCHA_SECRET",
+    "ASAAS_ENV",
+    "TURNSTILE_SECRET",
     "SMTP_HOST",
     "SMTP_USER",
     "SMTP_PASS",
@@ -39,8 +36,10 @@ export function validateEnvironment() {
   // Verificar variáveis obrigatórias
   const missing = required.filter((key) => !env(key));
 
-  if (!env("EFI_CERTIFICATE_BASE64") && !env("EFI_CERTIFICATE_PATH")) {
-    missing.push("EFI_CERTIFICATE_BASE64 ou EFI_CERTIFICATE_PATH");
+  // A chave do Asaas pode vir como ASAAS_API_KEY ou ASAAS_API_KEY_B64 (base64,
+  // usada quando o "$" inicial é corrompido pelo ambiente). Basta uma delas.
+  if (!env("ASAAS_API_KEY") && !env("ASAAS_API_KEY_B64")) {
+    missing.push("ASAAS_API_KEY");
   }
 
   if (missing.length > 0) {
@@ -63,12 +62,10 @@ export function validateEnvironment() {
   const secrets = [
     "SESSION_SECRET",
     "RSVP_TOKEN_SECRET",
-    "EFI_WEBHOOK_TOKEN",
   ];
 
   for (const secret of secrets) {
     const value = env(secret);
-    if (!value && secret === "EFI_WEBHOOK_TOKEN") continue;
     const insecurePatterns = [
       /^(.)\1+$/,
       /^(0123|1234|abc)/i,
@@ -82,6 +79,13 @@ export function validateEnvironment() {
         `❌ ERRO: ${secret} muito fraca ou placeholder (mínimo 64 caracteres)`
       );
     }
+  }
+
+  // ASAAS_WEBHOOK_TOKEN é definido no painel do Asaas (não é um segredo gerado por nós);
+  // exigimos só um mínimo razoável e a ausência de placeholders óbvios.
+  const asaasWebhookToken = env("ASAAS_WEBHOOK_TOKEN");
+  if (asaasWebhookToken && (asaasWebhookToken.length < 16 || /troque|change|placeholder|exemplo/i.test(asaasWebhookToken))) {
+    throw new Error("❌ ERRO: ASAAS_WEBHOOK_TOKEN inválido (mínimo 16 caracteres, sem placeholder)");
   }
 
   // Validar URL base

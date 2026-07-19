@@ -12,6 +12,7 @@ function iniciarConfirmacao() {
   const formBuscaContainer = areaBusca ? areaBusca.querySelector(".grupo-formulario") : null;
   const areaConfirmacao = document.getElementById("area-processo-confirmacao");
   const nomeConvidadoDestaque = document.getElementById("nome-convidado-destaque");
+  const textoValidacaoTelefone = document.getElementById("texto-validacao-telefone");
   const stepValidacao = document.getElementById("step-validacao");
   const stepConfirmacao = document.getElementById("step-confirmacao");
   const inputValidacao = document.getElementById("input-validacao-telefone");
@@ -30,10 +31,12 @@ function iniciarConfirmacao() {
   const mensagens = textos.mensagens;
   const ui = textos.ui;
   const cooldownValidacaoSegundos = 30;
-  const tempoMinimoCarregamentoBuscaMs = 900;
+  const tempoMinimoCarregamentoBuscaMs = 1500;
   const mensagemConfirmacaoEncerradaPadrao = "As confirmações de presença foram encerradas.";
   let confirmacaoEncerrada = false;
   let consultaStatusEmAndamento = false;
+  let btnLimparBusca = null;
+  let buscaSeq = 0; // descarta respostas fora de ordem (busca mais nova vence)
   normalizarEstadoMenuMobile();
   window.addEventListener("pageshow", normalizarEstadoMenuMobile);
   window.addEventListener("focus", () => sincronizarDisponibilidadeConfirmacao({
@@ -48,13 +51,16 @@ function iniciarConfirmacao() {
   definirBuscaDisponivel(false);
   sincronizarDisponibilidadeConfirmacao();
   if (btnBuscar && inputNome) {
-    btnBuscar.addEventListener("click", buscarConvite);
+    btnBuscar.addEventListener("click", () => buscarConvite());
     inputNome.addEventListener("keydown", e => {
       if (e.key === "Enter") {
         e.preventDefault();
         buscarConvite();
       }
     });
+    // Apenas mostra/esconde o "×" de limpar conforme o usuário digita.
+    inputNome.addEventListener("input", atualizarBotaoLimpar);
+    criarBotaoLimparBusca();
   }
   if (btnValidar && inputValidacao) {
     btnValidar.addEventListener("click", validarConvite);
@@ -144,7 +150,9 @@ function iniciarConfirmacao() {
       disponibilidadePrazo.classList.add("oculto");
       return;
     }
-    disponibilidadePrazo.textContent = `Disponível para confirmação até ${prazoTexto}.`;
+    // Insere "às" entre data e hora (ex.: "01/07/2026 21:00" -> "01/07/2026 às 21:00").
+    const prazoLegivel = prazoTexto.replace(/(\d{2}\/\d{2}\/\d{4})\s+(\d{1,2}:\d{2})/, "$1 às $2");
+    disponibilidadePrazo.textContent = `Pedimos a gentileza de confirmar sua presença até ${prazoLegivel}. Após essa data, as confirmações serão encerradas.`;
     disponibilidadePrazo.classList.remove("oculto");
   }
   function mensagemIndicaEncerramentoRsvp(mensagem) {
@@ -211,6 +219,33 @@ function iniciarConfirmacao() {
     ocultarFeedbackValidacao();
     ocultarFeedback();
   }
+  function criarBotaoLimparBusca() {
+    if (!inputNome || !inputNome.parentElement || btnLimparBusca) return;
+    // Embrulha o input para posicionar o "×" de limpar dentro do campo.
+    const wrap = document.createElement("div");
+    wrap.className = "busca-convite-wrap";
+    inputNome.parentElement.insertBefore(wrap, inputNome);
+    wrap.appendChild(inputNome);
+    btnLimparBusca = document.createElement("button");
+    btnLimparBusca.type = "button";
+    btnLimparBusca.className = "limpar-busca-convite oculto";
+    btnLimparBusca.setAttribute("aria-label", "Limpar busca");
+    btnLimparBusca.textContent = "×";
+    wrap.appendChild(btnLimparBusca);
+    btnLimparBusca.addEventListener("click", () => {
+      inputNome.value = "";
+      buscaSeq++; // invalida buscas em voo
+      mostrarLoader(false);
+      limparResultados();
+      ocultarFeedback();
+      atualizarBotaoLimpar();
+      inputNome.focus();
+    });
+  }
+  function atualizarBotaoLimpar() {
+    if (!btnLimparBusca || !inputNome) return;
+    btnLimparBusca.classList.toggle("oculto", inputNome.value.trim().length === 0);
+  }
   async function buscarConvite() {
     if (!inputNome) return;
     if (confirmacaoEncerrada) {
@@ -222,18 +257,22 @@ function iniciarConfirmacao() {
       mostrarFeedback(mensagens.buscaMinimo, "erro");
       return;
     }
+    // Fecha o teclado do celular ao pesquisar (libera a tela para a lista).
+    inputNome.blur();
+    const seq = ++buscaSeq;
     const inicioCarregamento = Date.now();
+    const esperaMin = () => aguardarTempoMinimoCarregamento(inicioCarregamento);
     mostrarLoader(true);
-    limparResultados();
     ocultarFeedback();
     if (btnBuscar) btnBuscar.disabled = true;
-    inputNome.disabled = true;
     try {
       const response = await fetch(`/api/convidados?acao=buscar&nome=${encodeURIComponent(termo)}`);
       const dados = await lerJsonSeguro(response);
+      if (seq !== buscaSeq) return; // chegou uma busca mais nova — ignora esta
       const erroResposta = dados && dados.erro || mensagens.buscaFalha;
       if (dados && dados.encerrado === true || mensagemIndicaEncerramentoRsvp(erroResposta)) {
-        await aguardarTempoMinimoCarregamento(inicioCarregamento);
+        await esperaMin();
+        if (seq !== buscaSeq) return;
         mostrarLoader(false);
         bloquearConfirmacaoPorPrazo(erroResposta);
         return;
@@ -244,28 +283,33 @@ function iniciarConfirmacao() {
       if (!dados) {
         throw new Error(mensagens.buscaFalha);
       }
-      await aguardarTempoMinimoCarregamento(inicioCarregamento);
+      await esperaMin();
+      if (seq !== buscaSeq) return;
       mostrarLoader(false);
       if (dados.erro) {
+        limparResultados();
         mostrarFeedback(dados.erro, "erro");
       } else if (dados.length === 0) {
+        limparResultados();
         mostrarFeedback(mensagens.buscaNaoEncontrado, "aviso");
       } else {
         exibirResultados(dados);
       }
     } catch (error) {
-      await aguardarTempoMinimoCarregamento(inicioCarregamento);
+      if (seq !== buscaSeq) return;
+      await esperaMin();
       mostrarLoader(false);
       const mensagemErro = error && error.message ? error.message : mensagens.conexaoErro;
       if (mensagemIndicaEncerramentoRsvp(mensagemErro)) {
         bloquearConfirmacaoPorPrazo(mensagemErro);
         return;
       }
+      limparResultados();
       mostrarFeedback(mensagemErro, "erro");
     } finally {
-      if (!confirmacaoEncerrada) {
-        if (btnBuscar) btnBuscar.disabled = false;
-        inputNome.disabled = false;
+      if (seq === buscaSeq) {
+        mostrarLoader(false);
+        if (!confirmacaoEncerrada && btnBuscar) btnBuscar.disabled = false;
       }
     }
   }
@@ -273,8 +317,7 @@ function iniciarConfirmacao() {
     if (!listaResultados) return;
     listaResultados.classList.remove("oculto");
     listaResultados.innerHTML = "";
-    if (formBuscaContainer) formBuscaContainer.classList.add("oculto");
-    if (btnBuscar) btnBuscar.classList.add("oculto");
+    // Mantém o campo de busca visível para o convidado refinar enquanto digita.
     const liResumo = document.createElement("li");
     liResumo.className = "resultado-resumo";
     const totalConvites = convidados.length;
@@ -319,23 +362,34 @@ function iniciarConfirmacao() {
       li.appendChild(btn);
       listaResultados.appendChild(li);
     });
-    const liNova = document.createElement("li");
-    liNova.className = "resultado-nova";
-    const linkNova = document.createElement("a");
-    linkNova.href = "#";
-    linkNova.textContent = ui.linkNovaPesquisa;
-    linkNova.className = "resultado-nova-link";
-    linkNova.addEventListener("click", e => {
-      e.preventDefault();
-      limparResultados();
-      const input = document.getElementById("nome-convite");
-      if (input) {
-        input.value = "";
-        input.focus();
-      }
-    });
-    liNova.appendChild(linkNova);
-    listaResultados.appendChild(liNova);
+    // Com o teclado já fechado, desce suavemente até a lista de resultados.
+    rolarParaElemento(listaResultados, "smooth");
+  }
+  function rolarParaElemento(el, behavior = "smooth") {
+    if (!el) return;
+    const cabecalho = document.querySelector(".cabecalho-principal");
+    const headerOffset = cabecalho ? cabecalho.getBoundingClientRect().height + 12 : 90;
+    const alinhar = () => {
+      const rect = el.getBoundingClientRect();
+      const alvo = Math.max(0, window.pageYOffset + rect.top - headerOffset);
+      window.scrollTo({ top: alvo, behavior });
+    };
+    // Recalcula após o teclado fechar / o layout assentar.
+    requestAnimationFrame(alinhar);
+    setTimeout(alinhar, 320);
+  }
+  function atualizarTextoValidacao(telefoneMascarado) {
+    if (!textoValidacaoTelefone) return;
+    const tel = String(telefoneMascarado || "").trim();
+    if (!tel) {
+      textoValidacaoTelefone.textContent = textos.textoValidacao;
+      return;
+    }
+    // O telefone já vem mascarado do servidor (ex.: "(82) 99999-XXXX").
+    // Trocamos os X finais por "_" para indicar os 4 dígitos que faltam digitar.
+    const telExibicao = tel.replace(/X+\s*$/i, m => "_".repeat(m.trim().length));
+    textoValidacaoTelefone.textContent =
+      `Para sua segurança, informe os últimos 4 dígitos do telefone cadastrado neste convite: ${telExibicao}`;
   }
   function iniciarConfirmacaoInline(convidado) {
     if (!areaBusca || !areaConfirmacao || !nomeConvidadoDestaque || !inputValidacao || !stepValidacao || !stepConfirmacao) {
@@ -344,12 +398,16 @@ function iniciarConfirmacao() {
     idSelecionado = convidado.id;
     tokenConfirmacao = "";
     nomeConvidadoDestaque.textContent = convidado.nome;
+    atualizarTextoValidacao(convidado.telefone);
     inputValidacao.value = "";
     ocultarFeedbackValidacao();
     stepValidacao.classList.remove("oculto");
     stepConfirmacao.classList.add("oculto");
     areaBusca.classList.add("oculto");
     areaConfirmacao.classList.remove("oculto");
+    // Sobe até o topo da seção para o card de validação não abrir cortado.
+    const secao = document.getElementById("confirmacao");
+    rolarParaElemento(secao || areaConfirmacao, "smooth");
   }
   async function validarConvite() {
     if (!inputValidacao || !btnValidar || btnValidar.disabled || validacaoEmAndamento) return;
@@ -389,6 +447,10 @@ function iniciarConfirmacao() {
         preencherDadosConfirmacao(resultado.dados);
         stepValidacao.classList.add("oculto");
         stepConfirmacao.classList.remove("oculto");
+        if (inputValidacao) inputValidacao.blur();
+        // Formulário é mais longo: rola direto pro CARD (não pro título da seção),
+        // assim já mostra mais campos logo abaixo do cabeçalho.
+        rolarParaElemento(areaConfirmacao || document.getElementById("confirmacao"), "smooth");
       } else {
         mostrarFeedbackValidacao(resultado.erro || mensagens.validarErro, "erro");
         if (ehRateLimit(resultado.erro)) {
@@ -517,9 +579,6 @@ function iniciarConfirmacao() {
     container.appendChild(divEmail);
     const formContainer = document.createElement("div");
     formContainer.id = "lista-convidados-form";
-    formContainer.style.maxHeight = "300px";
-    formContainer.style.overflowY = "auto";
-    formContainer.style.paddingRight = "5px";
     container.appendChild(formContainer);
     const nomesPredefinidos = convidado.nomes_lista ? convidado.nomes_lista.split(",").map(n => n.trim()) : [];
     const totalSlots = convidado.convites_disponiveis;
@@ -530,9 +589,6 @@ function iniciarConfirmacao() {
       const idadeTexto = dadosIdade.idadeTexto;
       const card = document.createElement("div");
       card.className = "guest-card";
-      const titulo = document.createElement("h4");
-      titulo.textContent = ui.convidadoLabel.replace("{{numero}}", i + 1);
-      card.appendChild(titulo);
       const campoNome = document.createElement("div");
       campoNome.className = "guest-field";
       const labelNome = document.createElement("label");
@@ -563,13 +619,20 @@ function iniciarConfirmacao() {
       labelStatus.textContent = ui.labelStatus;
       const selectStatus = document.createElement("select");
       selectStatus.className = "select-status-guest";
+      selectStatus.required = true;
+      // Opção em branco pré-selecionada: o convidado precisa escolher.
+      const optVazio = document.createElement("option");
+      optVazio.value = "";
+      optVazio.textContent = ui.statusPlaceholder || "Selecione…";
+      optVazio.disabled = true;
+      optVazio.selected = true;
       const optConfirmado = document.createElement("option");
       optConfirmado.value = "Confirmado";
       optConfirmado.textContent = ui.statusConfirmado;
       const optNaoIrei = document.createElement("option");
       optNaoIrei.value = "não irei";
       optNaoIrei.textContent = ui.statusNaoIrei;
-      selectStatus.append(optConfirmado, optNaoIrei);
+      selectStatus.append(optVazio, optConfirmado, optNaoIrei);
       campoStatus.append(labelStatus, selectStatus);
       linha.append(campoIdade, campoStatus);
       card.appendChild(linha);
@@ -577,6 +640,7 @@ function iniciarConfirmacao() {
     }
     const divTermos = document.createElement("div");
     divTermos.className = "pix-termo";
+    divTermos.style.marginTop = "1.25rem";
     const checkTermos = document.createElement("input");
     checkTermos.type = "checkbox";
     checkTermos.id = "check-termos-confirmacao";
@@ -610,19 +674,27 @@ function iniciarConfirmacao() {
       let adultosCancelados = 0;
       let criancasCanceladas = 0;
       let idadeInvalida = false;
+      let statusNaoSelecionado = false;
       const cards = document.querySelectorAll(".guest-card");
       const listaConfirmados = [];
       cards.forEach(card => {
         const nome = card.querySelector(".input-nome-guest").value.trim();
         const idadeEl = card.querySelector(".input-idade-guest");
         const idade = idadeEl ? idadeEl.value : "";
-        const status = card.querySelector(".select-status-guest").value;
+        const statusEl = card.querySelector(".select-status-guest");
+        const status = statusEl ? statusEl.value : "";
         if (!idade) {
           idadeInvalida = true;
           if (idadeEl) idadeEl.classList.add("entrada-erro");
           return;
         }
         if (idadeEl) idadeEl.classList.remove("entrada-erro");
+        if (!status) {
+          statusNaoSelecionado = true;
+          if (statusEl) statusEl.classList.add("entrada-erro");
+          return;
+        }
+        if (statusEl) statusEl.classList.remove("entrada-erro");
         const isCrianca = /crian/i.test(idade);
         if (status === "Confirmado" && nome !== "") {
           qtdFinal++;
@@ -642,6 +714,10 @@ function iniciarConfirmacao() {
       });
       if (idadeInvalida) {
         mostrarErroFinal(mensagens.faixaEtariaObrigatoria || "Selecione a faixa etária de todos os convidados.");
+        return;
+      }
+      if (statusNaoSelecionado) {
+        mostrarErroFinal(mensagens.statusObrigatorio || "Selecione o status (Confirmado ou Não irei) de todos os convidados.");
         return;
       }
       if (qtdFinal === 0) {
@@ -888,6 +964,7 @@ function iniciarConfirmacao() {
     listaResultados.classList.add("oculto");
     if (formBuscaContainer) formBuscaContainer.classList.remove("oculto");
     if (btnBuscar) btnBuscar.classList.remove("oculto");
+    atualizarBotaoLimpar();
   }
   function mostrarFeedbackValidacao(msg, tipo) {
     if (feedbackValidacao) {

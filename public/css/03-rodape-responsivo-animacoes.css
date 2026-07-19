@@ -197,6 +197,14 @@
     font-size: 2rem;
   }
 
+  .versiculo-hero {
+    padding: 1.4rem 0.5rem 0;
+  }
+  .versiculo-hero__texto {
+    font-size: 1.1rem;
+    line-height: 1.7;
+  }
+
   .cartao-contagem {
     width: 80px;
     height: 80px;
@@ -345,6 +353,9 @@
   animation-delay: 1.6s;
 }
 .conteudo-destaque.hero-animado .botoes-destaque {
+  animation-delay: 1.9s;
+}
+.conteudo-destaque.hero-animado .versiculo-hero {
   animation-delay: 1.9s;
 }
 /* Classe para animação ao rolar a página (Scroll) */
@@ -518,13 +529,14 @@
 #btn-confirmar-presenca,
 #btn-cancelar-confirmacao {
   display: block;
-  width: min(100%, 320px);
+  width: min(100%, 260px);
   margin-inline: auto;
   text-align: center;
 }
 #btn-confirmar-presenca {
-  min-height: 52px;
-  font-size: 1.04rem;
+  min-height: 44px;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.95rem;
 }
 #btn-confirmar-presenca:hover,
 #btn-confirmar-presenca:focus,
@@ -639,12 +651,12 @@
 }
 .aviso-alteracao {
   font-size: 0.85rem;
-  color: #d9534f; /* Vermelho suave */
-  background: #fdf7f7;
-  padding: 10px;
-  border-radius: 4px;
+  color: #8a6d3b; /* Âmbar/atenção (menos alarmante que vermelho) */
+  background: #fdf8ef;
+  padding: 10px 12px;
+  border-radius: 6px;
   margin-bottom: 15px;
-  border-left: 3px solid #d9534f;
+  border-left: 3px solid #c2a878;
   text-align: left;
   line-height: 1.4;
 }

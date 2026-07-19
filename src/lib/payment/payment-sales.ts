@@ -35,8 +35,8 @@ async function ensureSalesTable() {
     ids_produtos TEXT,
     valor_total DECIMAL(10,2),
     email VARCHAR(255),
-    cpf VARCHAR(20),
-    telefone VARCHAR(20),
+    cpf VARCHAR(255),
+    telefone VARCHAR(255),
     cep VARCHAR(12) NULL,
     numero_endereco VARCHAR(20) NULL,
     data_compra DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -55,6 +55,19 @@ async function ensureSalesTable() {
     INDEX idx_status_token (status_token),
     INDEX idx_external_reference (external_reference)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+  await ampliarColunasSensiveis("vendas");
+}
+
+// CPF/telefone são guardados criptografados (~78 chars). Versões antigas das
+// tabelas criaram essas colunas como VARCHAR(20), o que TRUNCAVA o valor cifrado
+// e o tornava impossível de descriptografar. Aqui ampliamos para VARCHAR(255)
+// nas tabelas já existentes (idempotente; roda uma vez por processo por tabela).
+const colunasAmpliadas = new Set<string>();
+async function ampliarColunasSensiveis(tabela: "vendas" | "site_logs") {
+  if (colunasAmpliadas.has(tabela)) return;
+  colunasAmpliadas.add(tabela);
+  await db().execute(`ALTER TABLE ${tabela} MODIFY cpf VARCHAR(255) NULL`).catch(() => undefined);
+  await db().execute(`ALTER TABLE ${tabela} MODIFY telefone VARCHAR(255) NULL`).catch(() => undefined);
 }
 
 export async function insertSale(sale: SaleData): Promise<void> {
@@ -99,10 +112,11 @@ export async function logPayment(data: DbRow): Promise<void> {
     id INT AUTO_INCREMENT PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     tipo VARCHAR(30), status VARCHAR(30), mensagem TEXT,
-    nome_comprador VARCHAR(255) NULL, email VARCHAR(255) NULL, cpf VARCHAR(20) NULL, telefone VARCHAR(20) NULL,
+    nome_comprador VARCHAR(255) NULL, email VARCHAR(255) NULL, cpf VARCHAR(255) NULL, telefone VARCHAR(255) NULL,
     itens TEXT NULL, valor DECIMAL(10,2) NULL,
     gateway_payment_id VARCHAR(80) NULL, external_reference VARCHAR(80) NULL, payload JSON NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`).catch(() => undefined);
+  await ampliarColunasSensiveis("site_logs");
 
   const values: Array<string | number | null> = [
     data.tipo ? String(data.tipo) : null,
@@ -195,6 +209,25 @@ async function notificarPixExpirado(anterior: DbRow | null, novoStatus: string):
   } catch {
     // E-mail é best-effort: nunca interrompe a atualização de status.
   }
+}
+
+/**
+ * IDs de cobranças (gateway_payment_id) de Pix ainda pendentes e já vencidos,
+ * para apagá-las no Asaas (o cron de expiração faz a limpeza). Limita o lote.
+ */
+export async function pendingExpiredPixPaymentIds(limite = 200): Promise<string[]> {
+  await ensureSalesTable();
+  const lim = Math.min(Math.max(1, Math.trunc(limite)), 500);
+  const rows = await queryRows<{ gateway_payment_id: string }>(
+    `SELECT gateway_payment_id FROM vendas
+     WHERE (status IS NULL OR status = '' OR status = 'pending' OR status = 'in_process')
+       AND date_of_expiration IS NOT NULL
+       AND date_of_expiration < NOW()
+       AND payment_method = 'pix'
+       AND gateway_payment_id IS NOT NULL AND gateway_payment_id <> ''
+     LIMIT ${lim}`,
+  ).catch(() => [] as { gateway_payment_id: string }[]);
+  return rows.map((r) => String(r.gateway_payment_id)).filter(Boolean);
 }
 
 export async function parseIds(value: unknown): Promise<number[]> {

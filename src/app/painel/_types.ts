@@ -28,16 +28,20 @@ export type DashboardPresentes = Row & {
   qtd_vendido?: number;
   qtd_pendente?: number;
   taxa_atual?: number;
+  cartao_valor?: number;
+  total_presentes?: number;
+  presentes_disponiveis?: number;
 };
 
 export type Dashboard = {
   convidados?: DashboardConvidados;
   idades?: DashboardIdades;
+  idadesConfirmados?: DashboardIdades;
   presentes?: DashboardPresentes;
 };
 
 export type PainelData = {
-  session: { usuario: string };
+  session: { id: number; usuario: string; role: string; permissoes: string[] };
   dashboard: Dashboard;
   convidados: PageSet;
   presentes: Row[];

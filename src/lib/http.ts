@@ -42,9 +42,19 @@ export function cleanText(value: unknown, max = 255) {
 }
 
 /**
- * Extrai IP do cliente a partir do header X-Forwarded-For
- * Usado quando a aplicação está atrás de um proxy (nginx, cloudflare, etc)
+ * Extrai o IP real do cliente quando o app está atrás de um proxy.
+ *
+ * Atrás da Cloudflare, o IP confiável é o CF-Connecting-IP: a Cloudflare o
+ * define e o SOBRESCREVE, então o cliente não consegue forjá-lo. Confiar no
+ * primeiro X-Forwarded-For seria inseguro — qualquer um pode mandar esse header
+ * e, com isso, burlar rate limit / bloqueio de força-bruta (ex.: dígitos do RSVP).
  */
 export function clientIp(request: Request) {
+  const cf = request.headers.get("cf-connecting-ip");
+  if (cf) return cf.trim();
+  const real = request.headers.get("x-real-ip");
+  if (real) return real.trim();
+  // Fallback (sem Cloudflare): primeiro hop do XFF. Spoofável, mas é o melhor
+  // disponível e nessa hospedagem o tráfego passa pela Cloudflare.
   return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "";
 }

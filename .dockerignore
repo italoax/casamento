@@ -1,0 +1,29 @@
+# Arquivos que NÃO vão para o build da imagem (deixa o build rápido e evita vazar
+# segredos/dados). Não afeta os volumes montados no docker-compose.
+
+# Dependências e build (são recriados dentro do container)
+node_modules
+.next
+
+# Segredos e dados sensíveis (LGPD) — nunca dentro da imagem
+.env
+.env.*
+backups
+deploys
+
+# Git e editores
+.git
+.gitignore
+.vscode
+.idea
+
+# Logs e temporários
+*.log
+server.log
+npm-debug.log*
+tsconfig.tsbuildinfo
+
+# Os próprios arquivos de Docker/documentação
+Dockerfile*
+docker-compose*
+.dockerignore

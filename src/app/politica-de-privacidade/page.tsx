@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function PoliticaDePrivacidadePage() {
   // Configuráveis pelo .env (com fallback caso não estejam definidos).
-  const CONTATO_EMAIL = env("LEGAL_CONTATO_EMAIL", "contato@emanuelleitalo.com");
+  const CONTATO_EMAIL = env("LEGAL_CONTATO_EMAIL", "suporte@emanuelleitalo.com");
   const ULTIMA_ATUALIZACAO = env("LEGAL_ATUALIZACAO", "7 de junho de 2026");
   return (
     <>
@@ -84,12 +84,10 @@ export default function PoliticaDePrivacidadePage() {
             <h2><span className="legal-num">4.</span> Cookies e tecnologias semelhantes</h2>
             <p>
               Utilizamos tecnologias essenciais para o funcionamento do site e para sua segurança,
-              incluindo o serviço <strong>reCAPTCHA do Google</strong>, que ajuda a distinguir
-              acessos humanos de acessos automatizados (robôs). O uso do reCAPTCHA está sujeito à{" "}
-              <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Política de
-              Privacidade</a> e aos{" "}
-              <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Termos de
-              Serviço</a> do Google.
+              incluindo o serviço <strong>Cloudflare Turnstile</strong>, que ajuda a distinguir
+              acessos humanos de acessos automatizados (robôs). O uso do Turnstile está sujeito à{" "}
+              <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">Política de
+              Privacidade</a> da Cloudflare.
             </p>
           </section>
 
@@ -100,9 +98,9 @@ export default function PoliticaDePrivacidadePage() {
               apenas com parceiros necessários para o funcionamento do site:
             </p>
             <ul>
-              <li><strong>Instituição de pagamento (Efí):</strong> para processar pagamentos via Pix e
+              <li><strong>Instituição de pagamento (Asaas):</strong> para processar pagamentos via Pix e
               cartão de crédito;</li>
-              <li><strong>Google (reCAPTCHA):</strong> para verificação de segurança;</li>
+              <li><strong>Cloudflare (Turnstile):</strong> para verificação de segurança;</li>
               <li><strong>Provedores de hospedagem e de envio de e-mail:</strong> para manter o site no
               ar e enviar comprovantes e notificações;</li>
               <li><strong>Autoridades públicas:</strong> quando houver obrigação legal ou ordem
@@ -113,7 +111,7 @@ export default function PoliticaDePrivacidadePage() {
           <section className="legal-secao">
             <h2><span className="legal-num">6.</span> Transferência internacional</h2>
             <p>
-              Alguns parceiros, como o Google, podem processar dados em servidores localizados fora do
+              Alguns parceiros, como a Cloudflare, podem processar dados em servidores localizados fora do
               Brasil. Nesses casos, a transferência é realizada por empresas que adotam padrões de
               proteção compatíveis com a legislação aplicável.
             </p>

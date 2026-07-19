@@ -118,6 +118,7 @@
         .confirmado { background-color: #d4edda; color: #155724; }
         .recusado { background-color: #f8d7da; color: #721c24; }
         .expirado { background-color: #f8d7da; color: #721c24; }
+        .estornado { background-color: #fde4cf; color: #8a4b1e; }
         .esgotado { background-color: #f8d7da; color: #721c24; }
         .oculto-badge { background-color: #e2e6ea; color: #6c757d; }
         

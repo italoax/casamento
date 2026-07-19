@@ -24,9 +24,9 @@ export async function GET(request: Request) {
 
   const [dashboard, convidados, presentes, vendas, recados, logs, rsvpDeadline] = await Promise.all([
     getDashboardData(),
-    listarConvidados(busca, ordem, pagina, 10),
+    listarConvidados(busca, ordem, pagina, 20),
     listarPresentes(buscaPresente, ordemPresente),
-    listarVendas(paginaVenda, 10, buscaVenda, statusVenda),
+    listarVendas(paginaVenda, 20, buscaVenda, statusVenda),
     listarRecados(),
     listarLogs(paginaLog, 50, buscaLog, tipoLog, statusLog),
     getRsvpDeadline(),

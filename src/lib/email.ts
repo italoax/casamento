@@ -1,18 +1,13 @@
 /**
  * EMAIL SERVICE - Envio de E-mails
- * 
+ *
  * Centraliza o envio de e-mails da aplicação.
- * Suporta dois tipos de conta SMTP:
- * - "pagamento": Para e-mails de transações e pagamentos
- * - "convite": Para e-mails de convites e confirmações
- * 
- * Cada tipo pode ter suas próprias credenciais SMTP diferentes.
+ * Todos os e-mails são enviados pela mesma conta SMTP (SMTP_USER/SMTP_PASS).
  * Exemplo de uso:
  * await sendEmail({
  *   to: "usuario@email.com",
  *   subject: "Confirmação de Presença",
  *   html: "<p>Sua presença foi confirmada!</p>",
- *   userType: "convite"
  * });
  */
 
@@ -26,6 +21,7 @@ type EmailAttachment = {
   contentType?: string;
 };
 
+/** Mantido apenas por compatibilidade com chamadas existentes; não altera o remetente. */
 type EmailUserType = "pagamento" | "convite";
 
 type SendEmailOptions = {
@@ -33,41 +29,46 @@ type SendEmailOptions = {
   subject: string;
   html: string;
   text?: string;
-  userType: EmailUserType;
+  userType?: EmailUserType;
   replyTo?: string;
   attachments?: EmailAttachment[];
 };
 
 /**
- * Retorna as credenciais SMTP baseado no tipo de conta
- * Cada tipo pode ter usuário/senha diferentes
+ * Defesa em profundidade contra injeção de cabeçalho (CRLF).
+ * Rejeita CR/LF em valores que viram cabeçalhos de e-mail (to, subject, etc.).
+ * O fluxo do site só passa strings simples nesses campos, então qualquer
+ * \r ou \n indica entrada maliciosa — falhamos em vez de enviar.
  */
-function accountFor(type: EmailUserType) {
-  if (type === "pagamento") {
-    const user = env("SMTP_USER_PAGAMENTO");
-    return {
-      user,
-      pass: env("SMTP_PASS_PAGAMENTO"),
-      from: env("SMTP_FROM_PAGAMENTO", user),
-    };
+function assertSemCRLF(campo: string, valor: string | undefined) {
+  if (valor && /[\r\n]/.test(valor)) {
+    throw new Error(`Valor inválido em "${campo}": quebra de linha não permitida.`);
   }
+}
 
-  const user = env("SMTP_USER_CONVITE");
+/** Conta SMTP única do site (suporte@). */
+function smtpAccount() {
+  const user = env("SMTP_USER");
   return {
     user,
-    pass: env("SMTP_PASS_CONVITE"),
-    from: env("SMTP_FROM_CONVITE", user),
+    pass: env("SMTP_PASS"),
+    from: env("SMTP_FROM", user),
   };
 }
 
 export async function sendEmail(options: SendEmailOptions) {
-  // Obtém credenciais SMTP do tipo de conta
-  const account = accountFor(options.userType);
+  const account = smtpAccount();
 
   // Valida se as credenciais estão configuradas
   if (!account.user || !account.pass) {
-    throw new Error(`SMTP ${options.userType} não configurado.`);
+    throw new Error("SMTP não configurado (SMTP_USER/SMTP_PASS).");
   }
+
+  // Defesa em profundidade: bloqueia injeção de cabeçalho via CRLF.
+  assertSemCRLF("to", options.to);
+  assertSemCRLF("subject", options.subject);
+  assertSemCRLF("replyTo", options.replyTo);
+  assertSemCRLF("from", account.from);
 
   // Cria transportador (conexão SMTP reutilizável)
   const transporter = nodemailer.createTransport({

@@ -34,11 +34,8 @@ export function Rsvp({ data, api }: RsvpProps) {
 
   return (
     <div id="tab-confirmacao" className="tab-conteudo ativo rsvp-tab">
-      <div className="painel-header compact rsvp-heading">
-        <div>
-          <span className="rsvp-eyebrow">RSVP</span>
-          <h3 className="painel-subtitulo">Prazo da confirmação de presença</h3>
-        </div>
+      <div className="painel-header compact">
+        <h3 className="painel-subtitulo">Prazo da confirmação de presença</h3>
       </div>
 
       <div className="painel-card-form rsvp-config-card">

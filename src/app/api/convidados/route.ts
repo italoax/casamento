@@ -68,6 +68,51 @@ function clearRsvpFailures(request: Request, id: number) {
   rsvpAttempts.delete(rsvpRateKey(request, id));
 }
 
+/**
+ * Debounce do log de busca por IP.
+ *
+ * Com a busca ao vivo, cada pausa na digitação vira uma consulta. Para não
+ * poluir a aba "Logs" com termos parciais ("mar", "maria", "maria santos"),
+ * só gravamos a ÚLTIMA busca de cada sequência: ao receber uma busca, agendamos
+ * o log; se chegar outra do mesmo IP dentro da janela, cancelamos e reagendamos.
+ * Estado em memória (servidor único na Hostinger), igual ao rate-limit acima.
+ */
+type PendingSearchLog = {
+  timer: ReturnType<typeof setTimeout>;
+  nome: string;
+  resultados: number;
+  itens: string;
+  userAgent: string | null;
+  referer: string | null;
+};
+const pendingSearchLogs = new Map<string, PendingSearchLog>();
+const SEARCH_LOG_DEBOUNCE_MS = 4000;
+
+function scheduleSearchLog(ip: string, data: Omit<PendingSearchLog, "timer">) {
+  const existing = pendingSearchLogs.get(ip);
+  if (existing) clearTimeout(existing.timer);
+  const timer = setTimeout(() => {
+    const pend = pendingSearchLogs.get(ip);
+    pendingSearchLogs.delete(ip);
+    if (!pend) return;
+    void logPayment({
+      tipo: "busca",
+      status: "info",
+      mensagem: `Busca na lista de convidados: "${pend.nome}" — ${pend.resultados} resultado(s) — IP ${ip}`,
+      nome_comprador: pend.nome,
+      itens: pend.itens || "Nenhum resultado",
+      payload: {
+        termo: pend.nome,
+        resultados: pend.resultados,
+        ip,
+        userAgent: pend.userAgent,
+        referer: pend.referer,
+      },
+    }).catch(() => undefined);
+  }, SEARCH_LOG_DEBOUNCE_MS);
+  pendingSearchLogs.set(ip, { timer, ...data });
+}
+
 function maskPhone(phone: unknown) {
   const digits = String(phone || "").replace(/\D/g, "");
   if (digits.length < 2) return null;
@@ -186,33 +231,51 @@ export async function GET(request: Request) {
 
     if (acao === "buscar") {
       const nome = cleanText(url.searchParams.get("nome"), 80);
-      if (nome.length < 3 || !/^[\p{L}\s]+$/u.test(nome)) return json({ erro: "Nome inválido." }, { headers: corsHeaders });
+      // Aceita letras, espaços e os sinais comuns em nomes (apóstrofo e hífen),
+      // ex.: "Sant'Ana", "Ana-Júlia".
+      if (nome.length < 3 || !/^[\p{L}\s'-]+$/u.test(nome)) return json({ erro: "Nome inválido." }, { headers: corsHeaders });
       const visibility = await hasVisibility();
       const whereVisibility = visibility ? " AND (visibilidade IS NULL OR visibilidade = '' OR visibilidade = 'disponivel')" : "";
-      
-      // Escapar caracteres especiais do LIKE para segurança
-      const nomeSafe = escapeLikeTerm(nome);
+
+      // Busca por PONTUAÇÃO: cada palavra digitada vale 1 ponto se aparecer no
+      // nome do convite OU na lista de acompanhantes (nomes_lista). Somamos os
+      // pontos e trazemos primeiro quem mais bateu, em vez de exigir que TODAS
+      // as palavras apareçam (o antigo AND dava "zero" quando uma palavra a mais
+      // — um sobrenome, um acompanhante — não batia). Assim "Lazaro Rivera Valido"
+      // ainda encontra "Lázaro Rivera" (2 de 3 palavras). Limita a 4 palavras para
+      // não montar uma query gigante; cada termo é escapado para o LIKE e a query
+      // é sempre parametrizada (sem SQL injection).
+      const palavras = nome.split(/\s+/).map((p) => p.trim()).filter((p) => p.length > 0).slice(0, 4);
+      const termos = palavras.length > 0 ? palavras : [nome];
+      // Uma parcela por palavra: (bate no nome OU na lista) → 1, senão 0.
+      const scoreExpr = termos
+        .map(() => "(nome LIKE ? ESCAPE '\\\\' OR COALESCE(nomes_lista, '') LIKE ? ESCAPE '\\\\')")
+        .join(" + ");
+      // Dois params por palavra (nome e nomes_lista), ambos com o mesmo curinga %...%.
+      const params = termos.flatMap((p) => {
+        const like = `%${escapeLikeTerm(p)}%`;
+        return [like, like];
+      });
       const convidados = await queryRows<Convidado>(
-        `SELECT id, nome, status, convites_disponiveis, telefone FROM convidados WHERE nome LIKE ? ESCAPE '\\\\'${whereVisibility} LIMIT 10`,
-        [`%${nomeSafe}%`],
+        `SELECT id, nome, status, convites_disponiveis, telefone, (${scoreExpr}) AS score
+           FROM convidados
+          WHERE 1=1${whereVisibility}
+         HAVING score > 0
+          ORDER BY score DESC, nome ASC
+          LIMIT 10`,
+        params,
       );
 
-      // Registra a busca nos logs do painel: termo pesquisado, IP e nº de resultados.
+      // Registra a busca nos logs do painel (agrupando termos parciais da mesma
+      // digitação: só a última busca de cada sequência por IP é gravada).
       const ipBusca = Security.clientIp(request);
-      void logPayment({
-        tipo: "busca",
-        status: "info",
-        mensagem: `Busca na lista de convidados: "${nome}" — ${convidados.length} resultado(s) — IP ${ipBusca}`,
-        nome_comprador: nome,
-        itens: convidados.map((c) => String(c.nome)).join(", ") || "Nenhum resultado",
-        payload: {
-          termo: nome,
-          resultados: convidados.length,
-          ip: ipBusca,
-          userAgent: request.headers.get("user-agent") || null,
-          referer: request.headers.get("referer") || null,
-        },
-      }).catch(() => undefined);
+      scheduleSearchLog(ipBusca, {
+        nome,
+        resultados: convidados.length,
+        itens: convidados.map((c) => String(c.nome)).join(", "),
+        userAgent: request.headers.get("user-agent") || null,
+        referer: request.headers.get("referer") || null,
+      });
 
       return json(convidados.map(publicConvidado), { headers: corsHeaders });
     }
@@ -309,6 +372,16 @@ export async function POST(request: Request) {
       nomesConfirmados: nomes,
       observacoes,
     });
+    // Registra no painel (aba Logs) que o convite confirmou presença.
+    void logPayment({
+      tipo: "confirmacao",
+      status: "sucesso",
+      mensagem: `Confirmação de presença: "${convidado.nome}" — ${qtd} lugar(es) confirmado(s)`,
+      nome_comprador: String(convidado.nome || "Convidado"),
+      email: email || null,
+      itens: nomes || `${qtd} lugar(es) confirmado(s)`,
+      payload: { convidadoId: id, qtd, nomesConfirmados: nomes, observacoes },
+    }).catch(() => undefined);
     return json({ sucesso: true }, { headers: corsHeaders });
   } catch (error) {
     SafeLog.error("POST /api/convidados", error);

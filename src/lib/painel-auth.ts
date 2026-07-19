@@ -80,11 +80,14 @@ function secretKey() {
 }
 
 /**
- * Normaliza/valida o role do usuário
- * Padrão = "admin" se inválido
+ * Normaliza/valida o role do usuário.
+ * Padrão = "assistente" (MENOR privilégio) se inválido — falha segura. Um role
+ * inválido só ocorreria em token corrompido/adulterado (que já é barrado pela
+ * verificação de assinatura); ainda assim, na dúvida damos o menor acesso.
+ * Os usuários reais têm role explícito no banco, então isto não rebaixa ninguém.
  */
 function normalizeRole(value: unknown): PainelRole {
-  return value === "gerente" || value === "assistente" || value === "admin" ? value : "admin";
+  return value === "gerente" || value === "assistente" || value === "admin" ? value : "assistente";
 }
 
 /**

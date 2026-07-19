@@ -172,6 +172,7 @@ window.siteConfig = {
     resumoTitulo: "Resumo da sua compra",
     valorPresentes: "Valor Total dos Presentes",
     valorCartaoLabel: "Valor do Cartão Postal",
+    cartaoNaoIncluido: "Não incluído",
     subtotalLabel: "Subtotal",
     cartaoRemovidoLabel: "Cartão removido",
     totalLabel: "Total",
@@ -181,6 +182,10 @@ window.siteConfig = {
     mensagemPlaceholder: "Escreva sua mensagem",
     botaoIA: "Gerar mensagem com IA",
     mensagemGerando: "Gerando...",
+    // IA real (Claude) no botão "Gerar mensagem". Deixe false para usar apenas
+    // os modelos locais (grátis). Só ative (true) se ANTHROPIC_API_KEY estiver
+    // configurada no servidor.
+    iaMensagens: false,
     cartaoInstrucao: "Escolha um cartão para acompanhar seu presente:",
     cartaoPadraoTag: "Padrão",
     cartaoPadraoTexto: "Cartão simples",
@@ -191,12 +196,6 @@ window.siteConfig = {
       tag: "Padrão",
       texto: "Cartão simples",
       imagem: "img/cartao/img1.webp"
-    }, {
-      id: "classico",
-      tag: "Recomendado",
-      texto: "Cartão especial",
-      destaque: true,
-      imagem: "img/cartao/img2.webp"
     }, {
       id: "floral",
       tag: "Florido",
@@ -231,7 +230,7 @@ window.siteConfig = {
     erroNome: "Informe seu nome.",
     erroNomeCompleto: "Digite nome e sobrenome.",
     erroMensagem: "Escreva uma mensagem.",
-    valorCartao: 10
+    valorCartao: 21.9
   },
   pagamento: {
     titulo: "Selecione como deseja pagar",
@@ -244,9 +243,10 @@ window.siteConfig = {
     formas: [ {
       id: "pix",
       label: "Pague com Pix",
-      subtitle: "Pagamento à vista. Aprovação imediata.",
+      subtitle: "Aprovação na hora — a forma mais rápida e prática.",
       detail: "Aprovação em segundos e confirmação rápida.",
-      badge: "Novo"
+      badge: "Recomendado",
+      recomendado: true
     }, {
       id: "cartao",
       label: "Cartões de Crédito",
@@ -393,7 +393,7 @@ window.siteConfig = {
   confirmacao: {
     titulo: "Confirme sua presença",
     intro: "Para que possamos organizar tudo com muito carinho, por favor, confirme sua presença pesquisando seu nome abaixo.",
-    labelNome: "Nome do convite (Ex.: Jandira e Nilson)",
+    labelNome: "Nome do convite",
     placeholderNome: "Digite o nome aqui",
     botaoBuscar: "Pesquisar",
     tituloConfirmar: "Confirmar presença?",
@@ -406,7 +406,7 @@ window.siteConfig = {
       tituloLista: "Informe quem irá comparecer:",
       aviso: "Após o envio da confirmação de presença, não será possível realizar alterações.",
       infoLimite: "Você pode confirmar até <strong>{{limite}}</strong> convidados.",
-      labelEmail: "E-mail: (Preenchimento obrigatório)",
+      labelEmail: "E-mail (obrigatório)",
       placeholderEmail: "Digite seu e-mail aqui",
       textoEmail: "Você receberá a confirmação de presença neste e-mail.",
       termos: 'Declaro que tive acesso, li e concordo com os <a href="/termos-de-uso" target="_blank" rel="noopener">Termos de uso</a> e a <a href="/politica-de-privacidade" target="_blank" rel="noopener">Política de Privacidade</a>.'
@@ -421,7 +421,7 @@ window.siteConfig = {
       carregandoValidacao: "Verificando...",
       carregandoConfirmacao: "Enviando...",
       convidadoLabel: "Convidado {{numero}}",
-      labelNomeCompleto: "Nome completo",
+      labelNomeCompleto: "Nome no convite",
       placeholderNomeConvidado: "Nome do convidado",
       labelIdade: "Idade",
       idadePlaceholder: "Selecione a faixa",
@@ -429,6 +429,7 @@ window.siteConfig = {
       idadeCrianca05: "Criança 0-5",
       idadeCrianca610: "Criança 6-10",
       labelStatus: "Status",
+      statusPlaceholder: "Selecione…",
       statusConfirmado: "Confirmado",
       statusNaoIrei: "Não irei"
     },
@@ -446,6 +447,7 @@ window.siteConfig = {
       emailInvalido: "Por favor, preencha o campo de E-mail corretamente para receber sua confirmação.",
       termosObrigatorio: "Para prosseguir é necessário confirmar que os dados foram revisados.",
       faixaEtariaObrigatoria: "Selecione a faixa etária de todos os convidados.",
+      statusObrigatorio: 'Selecione o status (Confirmado ou Não irei) de todos os convidados.',
       confirmarErroPrefixo: "Erro ao confirmar: ",
       confirmarFalha: "Falha ao confirmar presença.",
       confirmarErro: "Erro de conexão. Verifique sua internet e tente novamente."
@@ -462,7 +464,8 @@ window.siteConfig = {
     }
   },
   recados: {
-    recaptchaSiteKey: "6LcgwXUsAAAAAJCNhihHWEq2FYrodb_MSTdgSuVm"
+    // Cloudflare Turnstile (site key pública do widget).
+    turnstileSiteKey: "0x4AAAAAADmFjx84Lu24WEVJ"
   },
   rodape: {
     mensagem: "Com carinho, esperamos por você!",

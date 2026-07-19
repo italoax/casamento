@@ -23,6 +23,13 @@ import { HeroSection } from "@/components/sections/HeroSection";
 import { MessagesSection } from "@/components/sections/MessagesSection";
 import { RsvpSection } from "@/components/sections/RsvpSection";
 
+// A home é cacheada e revalidada a cada 5 min (ISR), em vez de renderizar do
+// zero + consultar o banco a CADA visita (force-dynamic). Isso reduz muito o uso
+// de CPU/banco na hospedagem compartilhada. O valor do cartão postal (lido do
+// banco pelo layout) passa a refletir edições do painel em até 5 min — e o
+// Cloudflare já é purgado após alterar o valor, então aparece na hora.
+export const revalidate = 300;
+
 export default function Home() {
   return (
     <div id="site-root">
