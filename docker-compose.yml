@@ -5,8 +5,12 @@
 # com "$") quebra/confunde o parser do Compose. O ./.env real continua indo pro
 # container pela montagem read-only abaixo e é lido pelo próprio Next.js.
 #
+# Cada ambiente tem seu profile: os dois usam a porta 3000, então só um sobe
+# por vez (sem profile, o Compose subiria o de produção junto e daria erro de
+# "port is already allocated").
+#
 # PRODUÇÃO (build otimizado, igual à Hostinger):
-#   docker compose --env-file .env.docker up --build -d
+#   docker compose --env-file .env.docker --profile prod up --build -d
 #   -> http://localhost:3000
 #
 # DESENVOLVIMENTO (hot-reload, edita no PC e recarrega):
@@ -16,8 +20,12 @@
 # Parar:  docker compose --env-file .env.docker down
 
 services:
-  # ---- Produção (padrão) ----
+  # ---- Produção (docker compose --profile prod up) ----
   casamento:
+    # Sem este profile, o Compose trataria o serviço como "padrão" e tentaria
+    # subi-lo junto com o casamento-dev — os dois disputam a porta 3000 e um
+    # falha com "port is already allocated".
+    profiles: ["prod"]
     build:
       context: .
       dockerfile: Dockerfile
