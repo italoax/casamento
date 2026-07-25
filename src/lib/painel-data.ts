@@ -76,35 +76,71 @@ export async function getDashboardData() {
   const [kpisConv] = await queryRows<Row>(
     "SELECT COUNT(*) total_grupos, COALESCE(SUM(convites_disponiveis),0) total_pessoas, COALESCE(SUM(convites_confirmados),0) total_confirmados FROM convidados",
   );
-  const nomesRows = await queryRows<{ nomes_lista: string; nomes_confirmados: string; status: string }>(
-    "SELECT nomes_lista, nomes_confirmados, status FROM convidados",
+  const nomesRows = await queryRows<{ nome: string; nomes_lista: string; nomes_confirmados: string; status: string }>(
+    "SELECT nome, nomes_lista, nomes_confirmados, status FROM convidados ORDER BY nome ASC",
   );
+  // FONTE ÚNICA de todas as contagens de convidados: a lista de nomes.
+  //
+  // Antes o dashboard misturava dois sistemas — o número `convites_confirmados`
+  // e os nomes de `nomes_confirmados` — que podiam discordar. Agora tudo (KPIs,
+  // faixas etárias e o controle por convite) deriva do MESMO cálculo abaixo, então
+  // os números sempre batem entre si.
+  //
+  // O status por pessoa não é gravado individualmente; é derivado de nomes_lista +
+  // nomes_confirmados. Só é "não vai" quando o convite RESPONDEU; enquanto está
+  // pendente, os nomes ficam em "pendentes" (não em "não vai").
+  const splitNomes = (s: string) => String(s || "").split(/\s*,\s*|\r?\n|;/).map((x) => x.trim()).filter(Boolean);
+  const convites = nomesRows.map((row) => {
+    const lista = splitNomes(row.nomes_lista);
+    const confirmadosSet = new Set(splitNomes(row.nomes_confirmados));
+    const respondido = row.status === "confirmado" || row.status === "recusado";
+    const vao = lista.filter((n) => confirmadosSet.has(n));
+    const naoVao = respondido ? lista.filter((n) => !confirmadosSet.has(n)) : [];
+    const pendentes = respondido ? [] : lista;
+    return { nome: String(row.nome || "Sem nome"), status: row.status, total: lista.length, vao, naoVao, pendentes };
+  });
+
   const idades = { adulto: 0, c0_5: 0, c6_10: 0 };
   const idadesConfirmados = { adulto: 0, c0_5: 0, c6_10: 0 };
-  for (const row of nomesRows) {
-    const c = contarIdades(row.nomes_lista);
-    idades.adulto += c.adulto;
-    idades.c0_5 += c.c0_5;
-    idades.c6_10 += c.c6_10;
-    if (row.status === "confirmado" && row.nomes_confirmados) {
-      const cc = contarIdades(row.nomes_confirmados);
-      idadesConfirmados.adulto += cc.adulto;
-      idadesConfirmados.c0_5 += cc.c0_5;
-      idadesConfirmados.c6_10 += cc.c6_10;
-    }
+  const pessoas = { total: 0, vao: 0, naoVao: 0, pendentes: 0 };
+  const grupos = { total: convites.length, respondidos: 0, pendentes: 0 };
+  const somaIdades = (alvo: typeof idades, nomes: string[]) => {
+    const c = contarIdades(nomes.join("\n"));
+    alvo.adulto += c.adulto; alvo.c0_5 += c.c0_5; alvo.c6_10 += c.c6_10;
+  };
+  for (const cv of convites) {
+    pessoas.total += cv.total;
+    pessoas.vao += cv.vao.length;
+    pessoas.naoVao += cv.naoVao.length;
+    pessoas.pendentes += cv.pendentes.length;
+    if (cv.status === "pendente") grupos.pendentes++; else grupos.respondidos++;
+    somaIdades(idades, [...cv.vao, ...cv.naoVao, ...cv.pendentes]);
+    somaIdades(idadesConfirmados, cv.vao);
   }
 
   const presentesExiste = await tableExists("presentes");
   const vendasExiste = await tableExists("vendas");
   const taxa = await getTaxaPresentes();
   const cartaoValor = await getCartaoValor();
-  const kpiPresentes = { total_geral: 0, qtd_vendidos: 0, total_vendido: 0, total_pendente: 0, qtd_vendido: 0, qtd_pendente: 0, taxa_atual: taxa, cartao_valor: cartaoValor, total_presentes: 0, presentes_disponiveis: 0 };
+  const kpiPresentes = { total_geral: 0, qtd_vendidos: 0, total_vendido: 0, total_pendente: 0, qtd_vendido: 0, qtd_pendente: 0, taxa_atual: taxa, cartao_valor: cartaoValor, total_presentes: 0, presentes_disponiveis: 0, esgotados: 0, ocultos: 0 };
+  let categoriasPresentes: string[] = [];
   if (presentesExiste) {
-    const [p] = await queryRows<Row>("SELECT COALESCE(SUM(preco),0) total_geral, COALESCE(SUM(quantidade_vendida),0) qtd_vendidos, COUNT(*) total_presentes, COALESCE(SUM(CASE WHEN (quantidade_disponivel IS NULL OR quantidade_vendida < quantidade_disponivel) THEN 1 ELSE 0 END),0) presentes_disponiveis FROM presentes");
+    const [p] = await queryRows<Row>(`SELECT
+      COALESCE(SUM(preco),0) total_geral,
+      COALESCE(SUM(quantidade_vendida),0) qtd_vendidos,
+      COUNT(*) total_presentes,
+      COALESCE(SUM(CASE WHEN status <> 'oculto' AND (quantidade_disponivel IS NULL OR quantidade_disponivel = 0 OR quantidade_vendida < quantidade_disponivel) THEN 1 ELSE 0 END),0) presentes_disponiveis,
+      COALESCE(SUM(CASE WHEN status <> 'oculto' AND quantidade_disponivel IS NOT NULL AND quantidade_disponivel > 0 AND quantidade_vendida >= quantidade_disponivel THEN 1 ELSE 0 END),0) esgotados,
+      COALESCE(SUM(CASE WHEN status = 'oculto' THEN 1 ELSE 0 END),0) ocultos
+      FROM presentes`);
     kpiPresentes.total_geral = Number(p?.total_geral || 0);
     kpiPresentes.qtd_vendidos = Number(p?.qtd_vendidos || 0);
     kpiPresentes.total_presentes = Number(p?.total_presentes || 0);
     kpiPresentes.presentes_disponiveis = Number(p?.presentes_disponiveis || 0);
+    kpiPresentes.esgotados = Number(p?.esgotados || 0);
+    kpiPresentes.ocultos = Number(p?.ocultos || 0);
+    const cats = await queryRows<Row>("SELECT DISTINCT categoria FROM presentes WHERE categoria IS NOT NULL AND categoria <> '' ORDER BY categoria");
+    categoriasPresentes = cats.map((c) => String(c.categoria));
   }
   if (vendasExiste) {
     const [v] = await queryRows<Row>(`SELECT
@@ -119,16 +155,43 @@ export async function getDashboardData() {
     kpiPresentes.qtd_pendente = Number(v?.qtd_pendente || 0);
   }
 
-  return { convidados: kpisConv || {}, idades, idadesConfirmados, presentes: kpiPresentes };
+  return { convidados: kpisConv || {}, idades, idadesConfirmados, convites, pessoas, grupos, presentes: kpiPresentes, categoriasPresentes };
 }
 
-export async function listarConvidados(busca = "", ordem = "recentes", pagina = 1, limite = 20) {
+export type FiltrosConvidados = { presenca?: string; lista?: string; comCrianca?: boolean };
+
+// Deriva quem vai / não vai / pendente de um convite (mesma regra do dashboard).
+function derivarPresencaRow(row: Row) {
+  const split = (s: unknown) => String(s || "").split(/\s*,\s*|\r?\n|;/).map((x) => x.trim()).filter(Boolean);
+  const lista = split(row.nomes_lista);
+  const confirmados = new Set(split(row.nomes_confirmados));
+  const respondido = row.status === "confirmado" || row.status === "recusado";
+  const vao = lista.filter((n) => confirmados.has(n));
+  return { vao: vao.length, naoVao: respondido ? lista.length - vao.length : 0, pendentes: respondido ? 0 : lista.length };
+}
+
+export async function listarConvidados(busca = "", ordem = "recentes", pagina = 1, limite = 20, filtros: FiltrosConvidados = {}) {
+  // Colunas opcionais checadas antes, pois o filtro por lista depende disso.
+  const hasVisibilidade = await columnExists("convidados", "visibilidade");
+  const hasLista = await columnExists("convidados", "lista");
+
   const params: unknown[] = [];
   let where = "WHERE 1=1";
   if (busca.trim()) {
-    where += " AND (nome LIKE ? OR telefone LIKE ? OR email LIKE ?)";
+    // Inclui nomes_lista: assim "Miguel" encontra o convite onde ele está,
+    // não só quando o nome do convite/telefone/email casa.
+    where += " AND (nome LIKE ? OR telefone LIKE ? OR email LIKE ? OR nomes_lista LIKE ?)";
     const like = `%${busca.trim()}%`;
-    params.push(like, like, like);
+    params.push(like, like, like, like);
+  }
+  if (filtros.lista && hasLista) {
+    where += " AND lista = ?";
+    params.push(filtros.lista);
+  }
+  if (filtros.comCrianca) {
+    // A anotação de idade é "(Criança 0-5)" / "(Criança 6-10)"; o LIKE é
+    // acento/maiúscula-insensível pela collation do banco.
+    where += " AND nomes_lista LIKE '%(Crian%'";
   }
   let order = "id DESC";
   if (ordem === "az") order = "nome ASC";
@@ -137,23 +200,43 @@ export async function listarConvidados(busca = "", ordem = "recentes", pagina = 
   if (ordem === "status_desc") order = "CASE status WHEN 'recusado' THEN 1 WHEN 'pendente' THEN 2 WHEN 'confirmado' THEN 3 ELSE 4 END, id DESC";
   const idadeOrdem = ["adultos_desc", "adultos_asc", "c0_5_desc", "c0_5_asc", "c6_10_desc", "c6_10_asc"].includes(ordem);
   const offset = (Math.max(1, pagina) - 1) * limite;
-  const hasVisibilidade = await columnExists("convidados", "visibilidade");
-  const hasLista = await columnExists("convidados", "lista");
-  const [count] = await queryRows<Row>(`SELECT COUNT(*) total FROM convidados ${where}`, params);
-  let rows = await queryRows<Row>(`SELECT id, nome, telefone, email, nomes_lista, nomes_confirmados, convites_disponiveis, convites_confirmados, status${hasVisibilidade ? ", visibilidade" : ""}${hasLista ? ", lista" : ""} FROM convidados ${where} ORDER BY ${idadeOrdem ? "nome ASC" : order}${idadeOrdem ? "" : " LIMIT ? OFFSET ?"}`, idadeOrdem ? params : [...params, limite, offset]);
-  if (idadeOrdem) {
-    const [bucket, dir] = ordem.split("_").length === 3 ? [ordem.split("_").slice(0, 2).join("_"), ordem.split("_")[2]] : ["adulto", ordem.split("_")[1]];
-    const key = bucket === "adultos" ? "adulto" : bucket;
-    rows = rows.sort((a, b) => {
-      const ca = contarIdades(String(a.nomes_lista || ""))[key as "adulto" | "c0_5" | "c6_10"] || 0;
-      const cb = contarIdades(String(b.nomes_lista || ""))[key as "adulto" | "c0_5" | "c6_10"] || 0;
-      return dir === "asc" ? ca - cb : cb - ca;
-    }).slice(offset, offset + limite);
+
+  // O filtro de presença (vão / não vão / aguardando) é por PESSOA, não por
+  // status do convite — um convite confirmado pode conter alguém que não vai.
+  // Como isso depende de comparar nomes, filtramos em JS. A ordenação por idade
+  // já usa o mesmo caminho (busca tudo, ordena e pagina na memória).
+  const presenca = ["vao", "naovai", "aguardando"].includes(String(filtros.presenca)) ? String(filtros.presenca) : "";
+  const selectCols = `id, nome, telefone, email, nomes_lista, nomes_confirmados, convites_disponiveis, convites_confirmados, status${hasVisibilidade ? ", visibilidade" : ""}${hasLista ? ", lista" : ""}`;
+
+  if (idadeOrdem || presenca) {
+    let rows = await queryRows<Row>(`SELECT ${selectCols} FROM convidados ${where} ORDER BY ${idadeOrdem ? "nome ASC" : order}`, params);
+    if (presenca) {
+      rows = rows.filter((r) => {
+        const d = derivarPresencaRow(r);
+        return presenca === "vao" ? d.vao > 0 : presenca === "naovai" ? d.naoVao > 0 : d.pendentes > 0;
+      });
+    }
+    if (idadeOrdem) {
+      const [bucket, dir] = ordem.split("_").length === 3 ? [ordem.split("_").slice(0, 2).join("_"), ordem.split("_")[2]] : ["adulto", ordem.split("_")[1]];
+      const key = bucket === "adultos" ? "adulto" : bucket;
+      rows.sort((a, b) => {
+        const ca = contarIdades(String(a.nomes_lista || ""))[key as "adulto" | "c0_5" | "c6_10"] || 0;
+        const cb = contarIdades(String(b.nomes_lista || ""))[key as "adulto" | "c0_5" | "c6_10"] || 0;
+        return dir === "asc" ? ca - cb : cb - ca;
+      });
+    }
+    const total = rows.length;
+    return { rows: rows.slice(offset, offset + limite), total, pagina: Math.max(1, pagina), limite, hasVisibilidade, hasLista };
   }
-  return { rows, total: Number(count?.total || 0), pagina: Math.max(1, pagina), limite, hasVisibilidade };
+
+  const [count] = await queryRows<Row>(`SELECT COUNT(*) total FROM convidados ${where}`, params);
+  const rows = await queryRows<Row>(`SELECT ${selectCols} FROM convidados ${where} ORDER BY ${order} LIMIT ? OFFSET ?`, [...params, limite, offset]);
+  return { rows, total: Number(count?.total || 0), pagina: Math.max(1, pagina), limite, hasVisibilidade, hasLista };
 }
 
-export async function listarPresentes(busca = "", ordem = "recentes") {
+export type FiltrosPresentes = { categoria?: string; disponibilidade?: string };
+
+export async function listarPresentes(busca = "", ordem = "recentes", filtros: FiltrosPresentes = {}) {
   if (!(await tableExists("presentes"))) return [];
   const params: unknown[] = [];
   let where = "WHERE 1=1";
@@ -161,6 +244,19 @@ export async function listarPresentes(busca = "", ordem = "recentes") {
     where += " AND (nome LIKE ? OR categoria LIKE ?)";
     const like = `%${busca.trim()}%`;
     params.push(like, like);
+  }
+  if (filtros.categoria) {
+    where += " AND categoria = ?";
+    params.push(filtros.categoria);
+  }
+  // Disponibilidade: oculto (não aparece no site), esgotado (limite atingido) ou
+  // disponível (visível e ainda com vaga). "Sem limite" nunca esgota.
+  if (filtros.disponibilidade === "oculto") {
+    where += " AND status = 'oculto'";
+  } else if (filtros.disponibilidade === "esgotado") {
+    where += " AND status <> 'oculto' AND quantidade_disponivel IS NOT NULL AND quantidade_disponivel > 0 AND quantidade_vendida >= quantidade_disponivel";
+  } else if (filtros.disponibilidade === "disponivel") {
+    where += " AND status <> 'oculto' AND (quantidade_disponivel IS NULL OR quantidade_disponivel = 0 OR quantidade_vendida < quantidade_disponivel)";
   }
   let order = "id DESC";
   if (ordem === "az") order = "nome ASC";

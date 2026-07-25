@@ -2,7 +2,7 @@ import { aplicarSecaoSolicitadaPorQuery, aplicarRetornoModalPagamento, configura
 
 import { bloquearCopiaImagens, iniciarRecados } from "../features/recados.js";
 
-import { aplicarConteudoSite, preencherDadosEvento, removerPreloader, iniciarContagem, iniciarCarrossel } from "../rendering/content.js";
+import { aplicarConteudoSite, preencherDadosEvento, removerPreloader, iniciarContagem, iniciarAtualizacaoFaseEvento, iniciarCarrossel } from "../rendering/content.js";
 
 import { iniciarVideoCasal } from "../features/video.js";
 
@@ -33,6 +33,10 @@ function iniciar() {
   configurarScrollHashSync();
   preencherDadosEvento();
   iniciarContagem();
+  // Assíncrono de propósito: não seguramos a home esperando a API. Consulta ao
+  // abrir e a cada minuto, então a virada aparece sozinha para quem já está com
+  // o site aberto — sem precisar recarregar.
+  iniciarAtualizacaoFaseEvento();
   iniciarCarrossel();
   iniciarVideoCasal();
   iniciarTutorialConfirmacao();

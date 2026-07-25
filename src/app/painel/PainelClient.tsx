@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import { ConvidadoModal } from "./components/modals/ConvidadoModal";
 import { PresenteModal } from "./components/modals/PresenteModal";
 import { TabelaVendas } from "./components/tables/TabelaVendas";
@@ -9,6 +9,8 @@ import { TabelaLogs } from "./components/tables/TabelaLogs";
 import { Rsvp } from "./components/Rsvp";
 import { Seguranca } from "./components/Seguranca";
 import { Backups } from "./components/Backups";
+import { Evento } from "./components/Evento";
+import { ControleConvites } from "./components/ControleConvites";
 import { Usuarios } from "./components/Usuarios";
 import { FestaFotos } from "./components/FestaFotos";
 import { Whatsapp } from "./components/Whatsapp";
@@ -16,7 +18,8 @@ import { Input } from "./components/common/Input";
 import { Paginacao } from "./components/common/Paginacao";
 import { Modal } from "./components/common/Modal";
 import { badge, imagemPresente, labelStatus, money, phone } from "./utils/formatting";
-import { contarIdades } from "./utils/guest-helpers";
+import { contarIdades, derivarPresenca } from "./utils/guest-helpers";
+import { LISTAS } from "./utils/whatsapp-helpers";
 import type { PainelData, Row } from "./_types";
 
 function nomeBonitoDeArquivoPresente(valor: unknown) {
@@ -44,7 +47,7 @@ function nomePresenteExibicao(presente: Row) {
   return nomeBonitoDeArquivoPresente(nome || presente.imagem_thumb || presente.imagem);
 }
 
-const ABAS_VALIDAS = new Set(["dashboard", "convidados", "presentes", "vendas", "recados", "logs", "confirmacao", "whatsapp", "festa", "seguranca", "usuarios", "backups"]);
+const ABAS_VALIDAS = new Set(["dashboard", "convidados", "presentes", "vendas", "recados", "logs", "confirmacao", "evento", "whatsapp", "festa", "seguranca", "usuarios", "backups"]);
 
 export default function PainelClient({ initialData, initialAba }: { initialData: PainelData; initialAba?: string }) {
   // A aba inicial vem do servidor (?aba=... na URL), então o HTML já nasce na aba
@@ -54,7 +57,9 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
   const [data, setData] = useState(initialData);
   const [toast, setToast] = useState("");
   const [modal, setModal] = useState<null | { tipo: "convidado" | "presente"; row?: Row }>(null);
-  const [filtros, setFiltros] = useState({ busca: "", ordem: "recentes", pagina: "1", busca_presente: "", ordem_presente: "recentes", busca_venda: "", status_venda: "", pagina_venda: "1", busca_log: "", tipo_log: "", status_log: "", pagina_log: "1" });
+  const [filtros, setFiltros] = useState({ busca: "", ordem: "recentes", pagina: "1", presenca_convidado: "", lista_convidado: "", com_crianca: "", busca_presente: "", ordem_presente: "recentes", categoria_presente: "", disp_presente: "", busca_venda: "", status_venda: "", pagina_venda: "1", busca_log: "", tipo_log: "", status_log: "", pagina_log: "1" });
+  // Linhas expandidas na lista (mostram quem vai / não vai). Set de ids.
+  const [expandidos, setExpandidos] = useState<Set<number>>(new Set());
 
   const dashboard = data.dashboard || {};
   const convidados = data.convidados?.rows || [];
@@ -160,8 +165,23 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
     if (ok) form.reset();
   }
 
+  function toggleExpandido(id: number) {
+    setExpandidos((old) => {
+      const next = new Set(old);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
   function exportarConvidados() {
-    const params = new URLSearchParams({ busca: filtros.busca, ordem: filtros.ordem });
+    // Exporta respeitando os filtros ativos na tela.
+    const params = new URLSearchParams({
+      busca: filtros.busca,
+      ordem: filtros.ordem,
+      presenca_convidado: filtros.presenca_convidado,
+      lista_convidado: filtros.lista_convidado,
+      com_crianca: filtros.com_crianca,
+    });
     window.open(`/api/painel/export/convidados?${params.toString()}`, "_blank");
   }
 
@@ -197,6 +217,7 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
     ["recados", "Recados do Site", ["admin", "gerente", "assistente"]],
     ["logs", "Logs do Site", ["admin", "gerente"]],
     ["confirmacao", "Configuração RSVP", ["admin", "gerente"]],
+    ["evento", "Fases do Evento", ["admin", "gerente"]],
     ["whatsapp", "WhatsApp", ["admin", "gerente"]],
     ["festa", "Fotos da Festa", ["admin", "gerente"]],
     ["seguranca", "Segurança", ["admin"]],
@@ -226,10 +247,10 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
 
         <main className="conteudo-principal">
           {aba === "dashboard" ? (() => {
-            const totalP = dashboard.convidados?.total_pessoas || 0;
-            const totalConf = dashboard.convidados?.total_confirmados || 0;
-            const pendentes = totalP - totalConf;
-            const pctConf = totalP ? Math.round((totalConf / totalP) * 100) : 0;
+            const p = dashboard.pessoas || { total: 0, vao: 0, naoVao: 0, pendentes: 0 };
+            const g = dashboard.grupos || { total: 0, respondidos: 0, pendentes: 0 };
+            const pctVao = p.total ? Math.round((p.vao / p.total) * 100) : 0;
+            const pctGrupos = g.total ? Math.round((g.respondidos / g.total) * 100) : 0;
             const adConf = dashboard.idadesConfirmados?.adulto || 0;
             const c05Conf = dashboard.idadesConfirmados?.c0_5 || 0;
             const c610Conf = dashboard.idadesConfirmados?.c6_10 || 0;
@@ -239,10 +260,23 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
             return <div id="tab-dashboard" className="tab-conteudo ativo">
             <div className="painel-header compact"><h3 className="painel-subtitulo">Resumo de Convidados</h3></div>
             <div className="resumo-grid">
-              <div className="card-info"><h3>{dashboard.convidados?.total_grupos || 0}</h3><p>Grupos/Famílias</p></div>
-              <div className="card-info"><h3>{totalP}</h3><p>Total de Pessoas</p></div>
-              <div className="card-info card-info--confirmed"><h3>{totalConf}</h3><p>Confirmados ({pctConf}%)</p></div>
-              <div className="card-info card-info--pending"><h3>{pendentes}</h3><p>Faltam Confirmar</p></div>
+              <div className="card-info"><h3>{g.total}</h3><p>Grupos/Famílias</p></div>
+              <div className="card-info"><h3>{p.total}</h3><p>Total de Pessoas</p></div>
+              <div className="card-info card-info--confirmed"><h3>{p.vao}</h3><p>Vão ({pctVao}%)</p></div>
+              <div className="card-info card-info--declined"><h3>{p.naoVao}</h3><p>Não vão</p></div>
+              <div className="card-info card-info--pending"><h3>{p.pendentes}</h3><p>Aguardando resposta</p></div>
+            </div>
+            <div className="dash-progresso">
+              <div className="dash-progresso__cabecalho">
+                <span>Presença confirmada</span>
+                <strong>{p.vao} de {p.total} pessoas ({pctVao}%)</strong>
+              </div>
+              <div className="dash-progresso__barra"><span className="dash-progresso__fill--vai" style={{ width: `${pctVao}%` }} /></div>
+              <div className="dash-progresso__cabecalho" style={{ marginTop: 10 }}>
+                <span>Convites que já responderam</span>
+                <strong>{g.respondidos} de {g.total} ({pctGrupos}%)</strong>
+              </div>
+              <div className="dash-progresso__barra"><span className="dash-progresso__fill--grupo" style={{ width: `${pctGrupos}%` }} /></div>
             </div>
             <div className="painel-header compact"><h3 className="painel-subtitulo">Pessoas por Faixa Etária</h3></div>
             <div className="resumo-grid dash-faixa-grid">
@@ -271,34 +305,77 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
               <div className="card-info"><h3>{dashboard.presentes?.presentes_disponiveis || 0}</h3><p>Disponíveis</p></div>
               <div className="card-info"><h3>{dashboard.presentes?.total_presentes || 0}</h3><p>Total na Lista</p></div>
             </div>
+            {dashboard.convites?.length ? <>
+              <div className="painel-header compact"><h3 className="painel-subtitulo">Controle por Convite — quem vai e quem não vai</h3></div>
+              <ControleConvites convites={dashboard.convites} />
+            </> : null}
           </div>;
           })() : null}
 
           {aba === "convidados" ? <div id="tab-convidados" className="tab-conteudo ativo">
             <div className="painel-header compact"><h3 className="painel-subtitulo">Lista de Convidados</h3></div>
-            <div className="resumo-mini resumo-mini--stats"><span className="toolbar-pill"><span className="rp-label">Convidados</span><span className="rp-num">{data.convidados?.total || 0}</span></span><span className="toolbar-pill"><span className="rp-label">Pessoas</span><span className="rp-num">{dashboard.convidados?.total_pessoas || 0}</span></span><span className="toolbar-pill"><span className="rp-label">Confirmados</span><span className="rp-num">{dashboard.convidados?.total_confirmados || 0}</span></span></div>
+            <div className="resumo-mini resumo-mini--stats"><span className="toolbar-pill"><span className="rp-label">Convites</span><span className="rp-num">{dashboard.grupos?.total ?? data.convidados?.total ?? 0}</span></span><span className="toolbar-pill"><span className="rp-label">Pessoas</span><span className="rp-num">{dashboard.pessoas?.total ?? 0}</span></span><span className="toolbar-pill"><span className="rp-label">Vão</span><span className="rp-num">{dashboard.pessoas?.vao ?? 0}</span></span><span className="toolbar-pill"><span className="rp-label">Não vão</span><span className="rp-num">{dashboard.pessoas?.naoVao ?? 0}</span></span><span className="toolbar-pill"><span className="rp-label">Aguardando</span><span className="rp-num">{dashboard.pessoas?.pendentes ?? 0}</span></span></div>
             <form className="barra-ferramentas barra-ferramentas--mini painel-filtros" onSubmit={aplicarFiltros}>
               <div className={`campo-busca ${buscando ? "campo-busca--carregando" : ""}`}>
-                <input name="busca" placeholder="Buscar por nome, telefone ou email..." value={filtros.busca} onChange={(e) => atualizarFiltro({ busca: e.target.value }, { debounce: true, resetPagina: "pagina" })} autoComplete="off" />
+                <input name="busca" placeholder="Buscar por nome do convite ou de qualquer pessoa..." value={filtros.busca} onChange={(e) => atualizarFiltro({ busca: e.target.value }, { debounce: true, resetPagina: "pagina" })} autoComplete="off" />
                 {filtros.busca ? <button type="button" className="campo-busca__limpar" aria-label="Limpar busca" onClick={() => atualizarFiltro({ busca: "" }, { resetPagina: "pagina" })}>×</button> : null}
               </div>
+              <select name="presenca_convidado" value={filtros.presenca_convidado} onChange={(e) => atualizarFiltro({ presenca_convidado: e.target.value }, { resetPagina: "pagina" })}><option value="">Todas as presenças</option><option value="vao">Tem quem vai</option><option value="naovai">Tem quem não vai</option><option value="aguardando">Aguardando resposta</option></select>
+              {data.convidados?.hasLista ? <select name="lista_convidado" value={filtros.lista_convidado} onChange={(e) => atualizarFiltro({ lista_convidado: e.target.value }, { resetPagina: "pagina" })}><option value="">Todas as listas</option>{LISTAS.map((l) => <option key={l.key} value={l.key}>{l.label}</option>)}</select> : null}
+              <button type="button" className={`toolbar-btn${filtros.com_crianca ? " toolbar-btn--primary" : ""}`} onClick={() => atualizarFiltro({ com_crianca: filtros.com_crianca ? "" : "1" }, { resetPagina: "pagina" })}>👶 Com criança</button>
               <select name="ordem" value={filtros.ordem} onChange={(e) => atualizarFiltro({ ordem: e.target.value }, { resetPagina: "pagina" })}><option value="recentes">Mais recentes</option><option value="az">A-Z</option><option value="za">Z-A</option><option value="status_asc">Status</option><option value="adultos_desc">Mais adultos</option><option value="c0_5_desc">Mais crianças 0-5</option><option value="c6_10_desc">Mais crianças 6-10</option></select>
               <button className="toolbar-btn" type="button" onClick={exportarConvidados}>Exportar CSV</button>
               <button className="toolbar-btn toolbar-btn--primary" type="button" onClick={() => setModal({ tipo: "convidado" })}>Adicionar</button>
             </form>
-            <div className="tabela-container"><table><thead><tr><th>Nome</th><th>Telefone</th><th>Email</th><th>Confirmados</th><th>Adultos</th><th>0-5</th><th>6-10</th><th>Status</th>{data.convidados?.hasVisibilidade ? <th>Visibilidade</th> : null}<th>Ações</th></tr></thead><tbody>
-              {convidados.length ? convidados.map((c) => { const idades = contarIdades(c.nomes_lista); return <tr key={c.id}><td data-label="Nome">{c.nome}</td><td data-label="Telefone">{phone(c.telefone)}</td><td data-label="Email">{c.email || "-"}</td><td data-label="Confirmados">{c.convites_confirmados || 0} / {c.convites_disponiveis || 0}</td><td data-label="Adultos">{idades.adulto}</td><td data-label="0-5">{idades.c0_5}</td><td data-label="6-10">{idades.c6_10}</td><td data-label="Status"><span className={`status-badge ${badge(c.status)}`}>{labelStatus(c.status)}</span></td>{data.convidados?.hasVisibilidade ? <td data-label="Visibilidade"><span className={`status-badge ${c.visibilidade === "oculto" ? "oculto-badge" : "confirmado"}`}>{c.visibilidade === "oculto" ? "Oculto" : "Visível"}</span></td> : null}<td data-label="Ações"><div className="acoes-btn"><button className="btn-acao btn-edit" onClick={() => setModal({ tipo: "convidado", row: c })}>✎</button><button className="btn-acao btn-trash" onClick={() => confirm("Excluir este convidado?") && api(`/api/painel/convidados?id=${c.id}`, { method: "DELETE" }, "Convidado excluído.")}>×</button></div></td></tr>; }) : <tr><td colSpan={data.convidados?.hasVisibilidade ? 10 : 9} className="table-empty">Nenhum convidado encontrado.</td></tr>}
+            <div className="tabela-container"><table><thead><tr><th>Nome</th><th>Telefone</th><th>Email</th><th>Vão</th><th>Adultos</th><th>0-5</th><th>6-10</th><th>Status</th>{data.convidados?.hasVisibilidade ? <th>Visibilidade</th> : null}<th>Ações</th></tr></thead><tbody>
+              {convidados.length ? convidados.map((c) => {
+                const idades = contarIdades(c.nomes_lista);
+                const presenca = derivarPresenca(c);
+                const aberto = expandidos.has(c.id);
+                const colSpan = data.convidados?.hasVisibilidade ? 10 : 9;
+                return <Fragment key={c.id}>
+                  <tr className={aberto ? "linha-convidado linha-convidado--aberta" : "linha-convidado"}>
+                    <td data-label="Nome"><button type="button" className="btn-expandir" aria-expanded={aberto} aria-label={aberto ? "Recolher" : "Ver quem vai"} onClick={() => toggleExpandido(c.id)}>{aberto ? "▾" : "▸"}</button>{c.nome}</td>
+                    <td data-label="Telefone">{phone(c.telefone)}</td>
+                    <td data-label="Email">{c.email || "-"}</td>
+                    <td data-label="Vão">{presenca.vao.length} / {idades.adulto + idades.c0_5 + idades.c6_10}</td>
+                    <td data-label="Adultos">{idades.adulto}</td>
+                    <td data-label="0-5">{idades.c0_5}</td>
+                    <td data-label="6-10">{idades.c6_10}</td>
+                    <td data-label="Status"><span className={`status-badge ${badge(c.status)}`}>{labelStatus(c.status)}</span></td>
+                    {data.convidados?.hasVisibilidade ? <td data-label="Visibilidade"><span className={`status-badge ${c.visibilidade === "oculto" ? "oculto-badge" : "confirmado"}`}>{c.visibilidade === "oculto" ? "Oculto" : "Visível"}</span></td> : null}
+                    <td data-label="Ações"><div className="acoes-btn"><button className="btn-acao btn-edit" onClick={() => setModal({ tipo: "convidado", row: c })}>✎</button><button className="btn-acao btn-trash" onClick={() => confirm("Excluir este convidado?") && api(`/api/painel/convidados?id=${c.id}`, { method: "DELETE" }, "Convidado excluído.")}>×</button></div></td>
+                  </tr>
+                  {aberto ? <tr className="linha-detalhe"><td colSpan={colSpan}>
+                    <div className="convite-detalhe">
+                      {presenca.vao.length ? <div className="convite-card__grupo"><span className="convite-card__rotulo convite-card__rotulo--vai">✓ Vão ({presenca.vao.length})</span><div className="convite-card__pessoas">{presenca.vao.map((n, k) => <span key={k} className="pessoa-chip pessoa-chip--vai">{n}</span>)}</div></div> : null}
+                      {presenca.naoVao.length ? <div className="convite-card__grupo"><span className="convite-card__rotulo convite-card__rotulo--nao">✗ Não vão ({presenca.naoVao.length})</span><div className="convite-card__pessoas">{presenca.naoVao.map((n, k) => <span key={k} className="pessoa-chip pessoa-chip--nao">{n}</span>)}</div></div> : null}
+                      {presenca.pendentes.length ? <div className="convite-card__grupo"><span className="convite-card__rotulo convite-card__rotulo--pend">• Aguardando resposta ({presenca.pendentes.length})</span><div className="convite-card__pessoas">{presenca.pendentes.map((n, k) => <span key={k} className="pessoa-chip pessoa-chip--pend">{n}</span>)}</div></div> : null}
+                      {!presenca.vao.length && !presenca.naoVao.length && !presenca.pendentes.length ? <p className="convite-detalhe__vazio">Sem nomes cadastrados neste convite.</p> : null}
+                    </div>
+                  </td></tr> : null}
+                </Fragment>;
+              }) : <tr><td colSpan={data.convidados?.hasVisibilidade ? 10 : 9} className="table-empty">Nenhum convidado encontrado.</td></tr>}
             </tbody></table></div><Paginacao pagina={Number(filtros.pagina || 1)} total={data.convidados?.total || 0} limite={data.convidados?.limite || 10} onChange={(pg: number) => paginar("pagina", pg)} />
           </div> : null}
 
           {aba === "presentes" ? <div id="tab-presentes" className="tab-conteudo ativo">
             <div className="painel-header compact"><h3 className="painel-subtitulo">Lista de Presentes</h3></div>
-            <div className="resumo-mini resumo-mini--stats"><span className="toolbar-pill"><span className="rp-label">Presentes</span><span className="rp-num">{presentes.length}</span></span><span className="toolbar-pill"><span className="rp-label">Total da lista</span><span className="rp-num">{money(totalLista)}</span></span><span className="toolbar-pill"><span className="rp-label">Recebido</span><span className="rp-num">{money(dashboard.presentes?.total_vendido)}</span></span></div>
+            <div className="resumo-mini resumo-mini--stats">
+              <span className="toolbar-pill"><span className="rp-label">Presentes</span><span className="rp-num">{dashboard.presentes?.total_presentes ?? presentes.length}</span></span>
+              <span className="toolbar-pill"><span className="rp-label">Total da lista</span><span className="rp-num">{money(dashboard.presentes?.total_geral)}</span></span>
+              <span className="toolbar-pill"><span className="rp-label">Comprados</span><span className="rp-num">{dashboard.presentes?.qtd_vendidos ?? 0}</span></span>
+              <span className="toolbar-pill"><span className="rp-label">Recebido</span><span className="rp-num">{money(dashboard.presentes?.total_vendido)}</span></span>
+              <span className="toolbar-pill"><span className="rp-label">PIX pendente</span><span className="rp-num">{money(dashboard.presentes?.total_pendente)}</span></span>
+              <span className="toolbar-pill"><span className="rp-label">Esgotados</span><span className="rp-num">{dashboard.presentes?.esgotados ?? 0}</span></span>
+            </div>
             <form className="barra-ferramentas barra-ferramentas--mini painel-filtros" onSubmit={aplicarFiltros}>
               <div className={`campo-busca ${buscando ? "campo-busca--carregando" : ""}`}>
                 <input name="busca_presente" placeholder="Buscar presente ou categoria..." value={filtros.busca_presente} onChange={(e) => atualizarFiltro({ busca_presente: e.target.value }, { debounce: true })} autoComplete="off" />
                 {filtros.busca_presente ? <button type="button" className="campo-busca__limpar" aria-label="Limpar busca" onClick={() => atualizarFiltro({ busca_presente: "" })}>×</button> : null}
               </div>
+              {dashboard.categoriasPresentes?.length ? <select name="categoria_presente" value={filtros.categoria_presente} onChange={(e) => atualizarFiltro({ categoria_presente: e.target.value })}><option value="">Todas as categorias</option>{dashboard.categoriasPresentes.map((c) => <option key={c} value={c}>{c}</option>)}</select> : null}
+              <select name="disp_presente" value={filtros.disp_presente} onChange={(e) => atualizarFiltro({ disp_presente: e.target.value })}><option value="">Todos</option><option value="disponivel">Disponíveis</option><option value="esgotado">Esgotados</option><option value="oculto">Ocultos</option></select>
               <select name="ordem_presente" value={filtros.ordem_presente} onChange={(e) => atualizarFiltro({ ordem_presente: e.target.value })}><option value="recentes">Mais recentes</option><option value="az">A-Z</option><option value="za">Z-A</option><option value="menor_valor">Menor valor</option><option value="maior_valor">Maior valor</option></select>
               <button className="toolbar-btn toolbar-btn--primary" type="button" onClick={() => setModal({ tipo: "presente" })}>Adicionar</button>
             </form>
@@ -346,7 +423,33 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
               </form>
             </div>
             <div className="presentes-grid-wrap"><div className="presentes-grid">
-              {presentes.length ? presentes.map((p) => { const img = imagemPresente(p.imagem_thumb || p.imagem); const nomeExibicao = nomePresenteExibicao(p); const qtd = p.quantidade_disponivel ?? "Sem limite"; const vendido = p.quantidade_disponivel ? `${p.quantidade_vendida || 0} de ${p.quantidade_disponivel}` : (p.quantidade_vendida || 0); const usaCotas = p.modo_exibicao === "cotas"; return <article className="presente-card" key={p.id}><div className="presente-card__acoes"><button className="btn-acao btn-edit" onClick={() => setModal({ tipo: "presente", row: p })}>✎</button><button className="btn-acao btn-trash" onClick={() => confirm("Excluir este presente?") && api(`/api/painel/presentes?id=${p.id}`, { method: "DELETE" }, "Presente excluído.")}>×</button></div><div className="presente-card__media">{img ? <img src={img} className="img-thumb" alt={nomeExibicao} /> : <div className="presente-card__sem-foto">Sem foto</div>}</div><div className="presente-card__body"><h4 className="presente-card__titulo">{nomeExibicao}</h4><div className="presente-card__categoria"><span className="badge-category">{p.categoria || "Outros"}</span></div><div className="presente-card__preco">{money(p.preco)}</div>{usaCotas ? <div className="presente-card__preco-context">Valor por cota</div> : null}<div className="presente-card__meta"><span className="presente-card__meta-label">{usaCotas ? "Qtd. de cotas" : "Limite"}</span><span className="presente-card__meta-valor">{qtd}</span></div><div className="presente-card__meta"><span className="presente-card__meta-label">Visibilidade</span><span className="presente-card__meta-valor"><span className={`status-badge ${p.status === "oculto" ? "oculto-badge" : "confirmado"}`}>{p.status === "oculto" ? "Oculto" : "Visível"}</span></span></div><div className="presente-card__meta"><span className="presente-card__meta-label">{usaCotas ? "Cotas presenteadas" : "Comprados"}</span><span className="presente-card__meta-valor">{vendido}</span></div></div></article>; }) : <div className="presentes-empty">Nenhum presente encontrado.</div>}
+              {presentes.length ? presentes.map((p) => {
+                const img = imagemPresente(p.imagem_thumb || p.imagem);
+                const nomeExibicao = nomePresenteExibicao(p);
+                const qtd = p.quantidade_disponivel ?? "Sem limite";
+                const vendidas = Number(p.quantidade_vendida || 0);
+                const reservadas = Number(p.quantidade_reservada || 0);
+                const limite = p.quantidade_disponivel != null && Number(p.quantidade_disponivel) > 0 ? Number(p.quantidade_disponivel) : null;
+                const vendido = limite ? `${vendidas} de ${limite}` : vendidas;
+                const usaCotas = p.modo_exibicao === "cotas";
+                const esgotado = limite != null && vendidas >= limite && p.status !== "oculto";
+                const arrecadado = Number(p.preco || 0) * vendidas;
+                return <article className={`presente-card${esgotado ? " presente-card--esgotado" : ""}`} key={p.id}>
+                  <div className="presente-card__acoes"><button className="btn-acao btn-edit" onClick={() => setModal({ tipo: "presente", row: p })}>✎</button><button className="btn-acao btn-trash" onClick={() => confirm("Excluir este presente?") && api(`/api/painel/presentes?id=${p.id}`, { method: "DELETE" }, "Presente excluído.")}>×</button></div>
+                  <div className="presente-card__media">{img ? <img src={img} className="img-thumb" alt={nomeExibicao} /> : <div className="presente-card__sem-foto">Sem foto</div>}{esgotado ? <span className="presente-card__selo">Esgotado</span> : null}</div>
+                  <div className="presente-card__body">
+                    <h4 className="presente-card__titulo">{nomeExibicao}</h4>
+                    <div className="presente-card__categoria"><span className="badge-category">{p.categoria || "Outros"}</span></div>
+                    <div className="presente-card__preco">{money(p.preco)}</div>
+                    {usaCotas ? <div className="presente-card__preco-context">Valor por cota</div> : null}
+                    <div className="presente-card__meta"><span className="presente-card__meta-label">{usaCotas ? "Qtd. de cotas" : "Limite"}</span><span className="presente-card__meta-valor">{qtd}</span></div>
+                    <div className="presente-card__meta"><span className="presente-card__meta-label">Visibilidade</span><span className="presente-card__meta-valor"><span className={`status-badge ${p.status === "oculto" ? "oculto-badge" : "confirmado"}`}>{p.status === "oculto" ? "Oculto" : "Visível"}</span></span></div>
+                    <div className="presente-card__meta"><span className="presente-card__meta-label">{usaCotas ? "Cotas presenteadas" : "Comprados"}</span><span className="presente-card__meta-valor">{vendido}</span></div>
+                    {reservadas > 0 ? <div className="presente-card__meta"><span className="presente-card__meta-label">Reservados (PIX)</span><span className="presente-card__meta-valor">{reservadas}</span></div> : null}
+                    <div className="presente-card__meta presente-card__meta--destaque"><span className="presente-card__meta-label">Arrecadado</span><span className="presente-card__meta-valor">{money(arrecadado)}</span></div>
+                  </div>
+                </article>;
+              }) : <div className="presentes-empty">Nenhum presente encontrado.</div>}
             </div></div>
           </div> : null}
 
@@ -354,6 +457,7 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
           {aba === "recados" ? <TabelaRecados recados={recados} api={api} /> : null}
           {aba === "logs" ? <TabelaLogs logs={logs} data={data} filtros={filtros} aplicarFiltros={aplicarFiltros} limparFiltro={limparFiltro} atualizarFiltro={atualizarFiltro} api={api} paginar={paginar} /> : null}
           {aba === "confirmacao" ? <Rsvp data={data} api={api} /> : null}
+          {aba === "evento" ? <Evento onToast={setToast} /> : null}
           {aba === "whatsapp" ? <Whatsapp onToast={setToast} /> : null}
           {aba === "festa" ? <FestaFotos onToast={setToast} /> : null}
           {aba === "seguranca" ? <Seguranca onToast={setToast} /> : null}

@@ -39,6 +39,22 @@ export function montarNomeComIdade(nome: string, idade: string) {
   return `${nomeLimpo} (${idade === "crianca_0_5" ? "Criança 0-5" : "Criança 6-10"})`;
 }
 
+/**
+ * Deriva quem vai / não vai / está pendente de um convite, a partir de
+ * nomes_lista + nomes_confirmados + status. Mesma regra do dashboard: só é
+ * "não vai" quando o convite RESPONDEU; enquanto pendente, fica em "pendentes".
+ */
+export function derivarPresenca(row?: Row): { vao: string[]; naoVao: string[]; pendentes: string[] } {
+  const split = (s: any) => String(s || "").split(/\s*,\s*|\r?\n|;/).map((x) => x.trim()).filter(Boolean);
+  const lista = split(row?.nomes_lista);
+  const confirmados = new Set(split(row?.nomes_confirmados));
+  const respondido = row?.status === "confirmado" || row?.status === "recusado";
+  const vao = lista.filter((n) => confirmados.has(n));
+  const naoVao = respondido ? lista.filter((n) => !confirmados.has(n)) : [];
+  const pendentes = respondido ? [] : lista;
+  return { vao, naoVao, pendentes };
+}
+
 export function convidadosIniciais(row?: Row): GuestRow[] {
   const lista = String(row?.nomes_lista || "").split(/\s*,\s*|\r?\n|;/).map((x) => x.trim()).filter(Boolean);
   const confirmados = new Set(String(row?.nomes_confirmados || "").split(/\s*,\s*|\r?\n|;/).map((x) => x.trim()).filter(Boolean));

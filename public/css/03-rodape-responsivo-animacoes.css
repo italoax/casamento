@@ -352,6 +352,14 @@
 .conteudo-destaque.hero-animado .container-contagem {
   animation-delay: 1.6s;
 }
+/* Os textos da fase do evento ocupam o lugar do contador na cascata, com os
+   mesmos atrasos — assim entram junto com o resto do topo, e não depois. */
+.conteudo-destaque.hero-animado .fase-evento__titulo {
+  animation-delay: 1.4s;
+}
+.conteudo-destaque.hero-animado .fase-evento__mensagem {
+  animation-delay: 1.6s;
+}
 .conteudo-destaque.hero-animado .botoes-destaque {
   animation-delay: 1.9s;
 }

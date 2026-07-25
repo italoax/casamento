@@ -1,11 +1,14 @@
 /**
  * MURAL DE FOTOS DA FESTA
  *
- * GET  /api/festa/fotos  -> lista as fotos publicadas (aparecem na hora).
+ * GET  /api/festa/fotos  -> lista só as fotos JÁ APROVADAS.
  * POST /api/festa/fotos  -> convidado envia uma foto (nome + Turnstile).
  *
- * As fotos aparecem imediatamente (sem moderação prévia). O casal pode apagar
- * qualquer foto pelo painel (aba "Fotos da Festa").
+ * Envio sem cadastro nem verificação de e-mail: numa festa, mandar o convidado
+ * abrir a caixa de entrada para buscar um código custa a maior parte das fotos.
+ * O captcha barra robôs; contra conteúdo indevido a proteção é a MODERAÇÃO —
+ * toda foto entra com `aprovado = 0` e só aparece no álbum após o aval do casal
+ * na aba "Fotos da Festa" do painel.
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
@@ -17,7 +20,7 @@ import { execute, queryRows } from "@/lib/db";
 import { cleanText } from "@/lib/http";
 import { Security, SafeLog } from "@/lib/security";
 import { festaUploadsDir } from "@/lib/uploads";
-import { emailVerificado } from "@/lib/festa-auth";
+import { aparelhoLiberado } from "@/lib/festa-auth";
 
 export const runtime = "nodejs";
 
@@ -71,10 +74,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Só envia quem já confirmou o e-mail (cookie assinado liberado por aparelho).
-    const email = emailVerificado(request);
-    if (!email) {
-      return Response.json({ sucesso: false, erro: "Verifique seu e-mail antes de enviar fotos." }, { status: 401, headers: corsHeaders });
+    // Aparelho liberado em /api/festa/sessao (um Turnstile, válido 24h). O token
+    // do captcha é de uso único, então validá-lo por foto impediria o envio de
+    // várias de uma vez — daí a sessão.
+    if (!aparelhoLiberado(request)) {
+      return Response.json({ sucesso: false, erro: "Confirme a verificação de segurança para enviar." }, { status: 401, headers: corsHeaders });
     }
 
     const ip = Security.clientIp(request);
@@ -94,6 +98,7 @@ export async function POST(request: NextRequest) {
     if (nome.length < 2) {
       return Response.json({ sucesso: false, erro: "Informe seu nome." }, { status: 422, headers: corsHeaders });
     }
+
     if (!(arquivo instanceof File) || arquivo.size <= 0) {
       return Response.json({ sucesso: false, erro: "Selecione uma foto." }, { status: 422, headers: corsHeaders });
     }
@@ -125,13 +130,15 @@ export async function POST(request: NextRequest) {
     const caminho = `img/festa/${filename}`;
 
     const [result] = await execute(
-      "INSERT INTO festa_fotos (nome, email, arquivo, ip, aprovado) VALUES (?, ?, ?, ?, 1)",
-      [nome, email, caminho, ip],
+      "INSERT INTO festa_fotos (nome, email, arquivo, ip, aprovado) VALUES (?, ?, ?, ?, 0)",
+      [nome, "", caminho, ip],
     );
     const id = Number((result as { insertId?: number }).insertId || 0);
 
+    // `foto` não vai na resposta de propósito: como entra pendente, o álbum do
+    // convidado não deve exibi-la ainda (senão ele vê algo que os outros não).
     return Response.json(
-      { sucesso: true, foto: { id, nome, arquivo: caminho, created_at: new Date().toISOString() } },
+      { sucesso: true, pendente: true, id },
       { status: 201, headers: corsHeaders },
     );
   } catch (error) {

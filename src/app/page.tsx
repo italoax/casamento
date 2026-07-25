@@ -22,6 +22,8 @@ import { GiftsSection } from "@/components/sections/GiftsSection";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { MessagesSection } from "@/components/sections/MessagesSection";
 import { RsvpSection } from "@/components/sections/RsvpSection";
+import { ThanksPage } from "@/components/sections/ThanksPage";
+import { calcularFase, getEventoConfig, EVENTO_DEFAULTS } from "@/lib/evento-fases";
 
 // A home é cacheada e revalidada a cada 5 min (ISR), em vez de renderizar do
 // zero + consultar o banco a CADA visita (force-dynamic). Isso reduz muito o uso
@@ -30,7 +32,20 @@ import { RsvpSection } from "@/components/sections/RsvpSection";
 // Cloudflare já é purgado após alterar o valor, então aparece na hora.
 export const revalidate = 300;
 
-export default function Home() {
+export default async function Home() {
+  // Fase "encerrado": passados os dias configurados no painel, o site inteiro
+  // vira a página de agradecimento. Falha de banco cai no fluxo normal — é
+  // melhor mostrar o site completo do que uma home vazia.
+  let config = EVENTO_DEFAULTS;
+  try {
+    config = await getEventoConfig();
+  } catch {
+    config = EVENTO_DEFAULTS;
+  }
+  if (calcularFase(config) === "encerrado") {
+    return <ThanksPage titulo={config.agradecimentoTitulo} mensagem={config.agradecimentoMensagem} />;
+  }
+
   return (
     <div id="site-root">
       <Preloader />

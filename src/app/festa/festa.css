@@ -107,11 +107,13 @@ html:has(.festa) body { background: #f7f4ef !important; }
 /* ---------- Barra de Upload fixa ---------- */
 .festa-uploadbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
-  display: flex; justify-content: center;
+  display: flex; justify-content: center; gap: 10px;
   padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(180deg, rgba(247,244,239,0) 0%, var(--festa-fundo) 38%);
   pointer-events: none;
 }
+/* Os dois botões dividem a largura que antes era só do "Upload". */
+.festa-uploadbar .festa-uploadbtn { flex: 1 1 0; max-width: 219px; }
 .festa-uploadbtn {
   pointer-events: auto;
   width: 100%; max-width: 448px; height: 56px;
@@ -124,6 +126,57 @@ html:has(.festa) body { background: #f7f4ef !important; }
 }
 .festa-uploadbtn:active { transform: translateY(1px); }
 .festa-uploadbtn__icone { font-size: 1.2rem; }
+/* Prévias do lote (mostra até 4 + contador do restante). */
+.festa-previas {
+  display: flex; gap: 6px; justify-content: center; align-items: center;
+  flex-wrap: wrap; margin-bottom: 4px;
+}
+.festa-previas__item {
+  width: 68px; height: 68px; object-fit: cover;
+  border-radius: 10px; border: 1px solid rgba(84,75,69,0.14);
+}
+.festa-previas__mais {
+  width: 68px; height: 68px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(84,75,69,0.08); color: var(--festa-primaria);
+  font-weight: 700; font-size: 0.95rem;
+}
+
+/* Progresso da fila de envio. */
+.festa-progresso { display: flex; flex-direction: column; gap: 6px; }
+.festa-progresso__barra {
+  height: 6px; border-radius: 999px; overflow: hidden;
+  background: rgba(84,75,69,0.12);
+}
+.festa-progresso__barra span {
+  display: block; height: 100%; border-radius: 999px;
+  background: var(--festa-primaria);
+  transition: width 0.25s ease;
+}
+.festa-progresso__texto {
+  margin: 0; font-size: 0.82rem; font-weight: 600; text-align: center;
+  color: var(--festa-primaria);
+}
+
+/* "Trocar foto" no sheet: as duas origens, lado a lado. */
+.festa-trocar {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  flex-wrap: wrap;
+}
+.festa-trocar__sep { color: rgba(84,75,69,0.4); }
+
+/* Galeria em tom mais discreto: "Tirar foto" segue sendo a ação principal. */
+.festa-uploadbtn--secundario {
+  background: #fff;
+  color: var(--festa-primaria);
+  border: 1px solid rgba(84,75,69,0.18);
+  box-shadow: 0 14px 30px rgba(84,75,69,0.16);
+}
+/* Telas bem estreitas: fonte menor para "Tirar foto" não quebrar em duas linhas. */
+@media (max-width: 360px) {
+  .festa-uploadbtn { font-size: 0.95rem; gap: 6px; }
+  .festa-uploadbtn__icone { font-size: 1.05rem; }
+}
 
 /* ---------- Campos / botões compartilhados ---------- */
 .festa-campo { display: flex; flex-direction: column; gap: 6px; text-align: left; }

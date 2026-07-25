@@ -539,6 +539,217 @@ p.intro-secao {
   margin-top: 1.5rem;
   font-weight: 400;
 }
+/* Página de agradecimento (fase "encerrado"): o site inteiro vira só isto.
+   Ocupa a tela toda e centraliza — não há cabeçalho nem rodapé para equilibrar. */
+.pagina-agradecimento {
+  /* Brilho champagne saindo do centro: dá profundidade ao fundo chapado, que
+     numa página sem imagens ficava lavado. */
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(194, 168, 120, 0.13) 0%, transparent 62%),
+    var(--cor-fundo);
+}
+/* Centraliza DENTRO do <main>: a regra global `main { flex: 1 0 auto }` faz ele
+   esticar por toda a altura, então centralizar o main dentro do #site-root não
+   surtiria efeito — o conteúdo ficaria colado no topo. */
+.pagina-agradecimento .agradecimento-conteudo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+/* Moldura fina dourada, no espírito de um convite impresso. */
+.agradecimento-moldura {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: clamp(3rem, 8vw, 4.5rem) clamp(1.5rem, 6vw, 3.5rem);
+  border: 1px solid var(--destaque-borda-suave);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: var(--sombra-suave);
+}
+/* Segunda linha interna: o detalhe que remete a papelaria fina. */
+.agradecimento-moldura::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(194, 168, 120, 0.22);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+/* Entrada em cascata, no mesmo espírito do hero. */
+.agradecimento-moldura > * {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: aparecerSubindo 1s ease-out forwards;
+}
+.agradecimento-monograma {
+  font-family: var(--fonte-cursiva);
+  font-size: clamp(2rem, 5vw, 2.6rem);
+  color: var(--cor-secundaria);
+  line-height: 1;
+  margin-bottom: 1.4rem;
+  animation-delay: 0.1s;
+}
+.agradecimento-rotulo {
+  font-family: var(--fonte-serifa);
+  font-size: 0.78rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--cor-texto-clara);
+  margin: 0 0 1.4rem;
+  animation-delay: 0.28s;
+}
+.agradecimento-titulo {
+  font-family: var(--fonte-cursiva);
+  font-size: clamp(2.6rem, 7vw, 4.2rem);
+  font-weight: 400;
+  color: var(--cor-primaria);
+  line-height: 1.15;
+  margin: 0;
+  animation-delay: 0.46s;
+}
+/* Mesmo ornamento do hero: linha que esmaece nas pontas com o ponto dourado. */
+.agradecimento-divisor {
+  position: relative;
+  width: 110px;
+  height: 2px;
+  margin: 2.2rem 0;
+  background: linear-gradient(90deg, transparent, var(--cor-secundaria), transparent);
+  opacity: 0.7;
+  animation-delay: 0.62s;
+}
+.agradecimento-divisor::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--cor-secundaria);
+  transform: translate(-50%, -50%) rotate(45deg);
+  box-shadow: 0 0 0 3px rgba(194, 168, 120, 0.15);
+}
+.agradecimento-mensagem {
+  font-size: 1.15rem;
+  line-height: 1.85;
+  color: var(--cor-primaria);
+  margin: 0 0 2.6rem;
+  max-width: 46ch;
+  animation-delay: 0.78s;
+}
+.agradecimento-data {
+  font-family: var(--fonte-serifa);
+  font-size: 0.88rem;
+  letter-spacing: 0.34em;
+  color: var(--cor-secundaria);
+  margin: 0;
+  animation-delay: 0.94s;
+}
+@media (max-width: 600px) {
+  .pagina-agradecimento .agradecimento-conteudo {
+    padding: 1.5rem 1rem;
+  }
+  .agradecimento-moldura::before {
+    inset: 7px;
+  }
+  .agradecimento-mensagem {
+    font-size: 1.02rem;
+  }
+  .agradecimento-divisor {
+    margin: 1.6rem 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agradecimento-moldura > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Fases do evento — substituem o contador quando a festa começa/termina.
+   O servidor já decide qual par nasce visível, então estes textos entram na
+   MESMA cascata de animação do hero (os atrasos ficam no 03-...animacoes.css). */
+.fase-evento__titulo {
+  font-family: var(--fonte-cursiva);
+  font-size: 3rem;
+  color: var(--cor-primaria);
+  margin: 1.5rem 0 0.6rem;
+  font-weight: 400;
+}
+.fase-evento__mensagem {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--cor-primaria);
+  max-width: 620px;
+  margin: 0 auto;
+}
+/* O atributo `hidden` sozinho NÃO esconde estes elementos: ele vale pela folha
+   de estilo do navegador, que perde para qualquer regra do projeto — e
+   `.container-contagem` declara `display: flex` mais abaixo. Por isso o seletor
+   usa ID, que ganha em especificidade. */
+#contagem-regressiva[hidden],
+#titulo-contagem-hero[hidden],
+#fase-evento-titulo[hidden],
+#fase-evento-mensagem[hidden] {
+  display: none;
+}
+/* Entrada para quando a virada acontece com a página JÁ aberta (o content.js
+   troca os blocos ao vivo). Aí a cascata do hero há muito terminou, então estes
+   elementos precisam de animação própria e sem atraso. ID para vencer a regra
+   da cascata, que está num arquivo carregado depois. */
+#fase-evento-titulo.fase-evento--visivel,
+#fase-evento-mensagem.fase-evento--visivel {
+  animation: aparecerSubindo 0.9s ease-out forwards;
+  animation-delay: 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  #fase-evento-titulo.fase-evento--visivel,
+  #fase-evento-mensagem.fase-evento--visivel {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+.fase-evento {
+  margin-top: 1.5rem;
+  max-width: 620px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.fase-evento__titulo {
+  font-family: var(--fonte-cursiva);
+  font-size: 3rem;
+  color: var(--cor-primaria);
+  margin: 0 0 0.6rem;
+  font-weight: 400;
+}
+.fase-evento__mensagem {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--cor-primaria);
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .fase-evento__titulo {
+    font-size: 2.2rem;
+  }
+  .fase-evento__mensagem {
+    font-size: 1rem;
+  }
+}
+
 .botoes-destaque {
   display: flex;
   gap: 1rem;

@@ -6,6 +6,7 @@ export type PageSet = {
   pagina?: number;
   limite?: number;
   hasVisibilidade?: boolean;
+  hasLista?: boolean;
 };
 
 export type DashboardIdades = {
@@ -31,13 +32,31 @@ export type DashboardPresentes = Row & {
   cartao_valor?: number;
   total_presentes?: number;
   presentes_disponiveis?: number;
+  esgotados?: number;
+  ocultos?: number;
 };
+
+export type ConviteControle = {
+  nome: string;
+  status: string;
+  total: number;
+  vao: string[];
+  naoVao: string[];
+  pendentes: string[];
+};
+
+export type DashboardPessoas = { total: number; vao: number; naoVao: number; pendentes: number };
+export type DashboardGrupos = { total: number; respondidos: number; pendentes: number };
 
 export type Dashboard = {
   convidados?: DashboardConvidados;
   idades?: DashboardIdades;
   idadesConfirmados?: DashboardIdades;
+  convites?: ConviteControle[];
+  pessoas?: DashboardPessoas;
+  grupos?: DashboardGrupos;
   presentes?: DashboardPresentes;
+  categoriasPresentes?: string[];
 };
 
 export type PainelData = {

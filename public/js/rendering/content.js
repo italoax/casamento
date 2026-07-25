@@ -349,4 +349,108 @@ function iniciarCarrossel() {
   }
 }
 
-export { aplicarConteudoSite, atualizarMetadados, atualizarMetaTag, atualizarNav, animarHero, atualizarHero, atualizarCasal, atualizarCerimonia, atualizarGrandeDia, atualizarPresentes, atualizarConfirmacao, atualizarRodape, preencherDadosEvento, removerPreloader, iniciarContagem, iniciarCarrossel };
+/**
+ * Troca o bloco do contador pela mensagem da fase do evento.
+ *
+ * A fase vem de /api/evento (configurável na aba "Fases do Evento" do painel):
+ *   contagem      -> nada muda; o contador segue na tela
+ *   acontecendo   -> "o casamento está acontecendo agora"
+ *   agradecimento -> mensagem de agradecimento
+ *
+ * Falha de rede/API é silenciosa de propósito: o contador continua visível, que
+ * é o estado seguro. Nunca deixa o topo do site vazio.
+ */
+/** Última fase já pintada na tela — evita refazer o DOM a cada consulta. */
+let faseAplicada = null;
+
+async function aplicarFaseEvento() {
+  const titulo = document.getElementById("fase-evento-titulo");
+  const mensagem = document.getElementById("fase-evento-mensagem");
+  const contador = document.getElementById("contagem-regressiva");
+  const tituloContador = document.getElementById("titulo-contagem-hero");
+  if (!titulo || !mensagem || !contador) return;
+
+  let dados = null;
+  try {
+    const resposta = await fetch("/api/evento", { cache: "no-store" });
+    if (!resposta.ok) return;
+    dados = await resposta.json();
+  } catch {
+    return;
+  }
+  if (!dados || !dados.fase) return;
+
+  // Na primeira execução o HTML já veio do servidor na fase certa: só guardamos
+  // qual é, sem refazer o DOM (o que mataria a animação da cascata).
+  if (faseAplicada === null) {
+    faseAplicada = titulo.hidden ? "contagem" : dados.fase;
+    if (faseAplicada === dados.fase) return;
+  }
+  if (dados.fase === faseAplicada) return;
+  faseAplicada = dados.fase;
+
+  // "encerrado" troca a página inteira, não só o topo — quem monta isso é o
+  // servidor. Recarregamos para buscar a versão nova. Sem risco de laço: na
+  // página de agradecimento os elementos do hero não existem e a função para
+  // logo no início.
+  if (dados.fase === "encerrado") {
+    window.location.reload();
+    return;
+  }
+
+  const daFase = [ titulo, mensagem ];
+
+  // Volta para a contagem (fase forçada no painel, ou correção de horário).
+  if (dados.fase === "contagem") {
+    daFase.forEach(el => {
+      el.hidden = true;
+      el.classList.remove("fase-evento--visivel");
+    });
+    contador.hidden = false;
+    if (tituloContador) tituloContador.hidden = false;
+    return;
+  }
+
+  titulo.textContent = dados.titulo || "";
+  mensagem.textContent = dados.mensagem || "";
+  titulo.dataset.fase = dados.fase;
+
+  contador.hidden = true;
+  if (tituloContador) tituloContador.hidden = true;
+
+  daFase.forEach(el => {
+    el.hidden = false;
+    el.classList.remove("fase-evento--visivel");
+    // Lê offsetWidth para forçar o reflow: sem isso o navegador processa a saída
+    // do display:none e a classe da animação no mesmo frame, e a animação não
+    // roda (o texto apareceria pronto, sem o fade).
+    void el.offsetWidth;
+    el.classList.add("fase-evento--visivel");
+  });
+}
+
+/**
+ * Mantém a fase em dia sem recarregar a página.
+ *
+ * Consulta a cada minuto, para que a virada (contagem -> acontecendo ->
+ * agradecimento) apareça sozinha em quem estiver com o site aberto — cenário
+ * provável no dia, às 15:30 e à meia-noite.
+ *
+ * Só consulta com a aba em primeiro plano: aba esquecida em segundo plano não
+ * fica batendo no servidor (a hospedagem é compartilhada). Ao voltar para a aba,
+ * consulta na hora, cobrindo o tempo em que ficou parada.
+ */
+const INTERVALO_FASE_MS = 60 * 1e3;
+
+function iniciarAtualizacaoFaseEvento() {
+  void aplicarFaseEvento();
+  setInterval(() => {
+    if (document.hidden) return;
+    void aplicarFaseEvento();
+  }, INTERVALO_FASE_MS);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) void aplicarFaseEvento();
+  });
+}
+
+export { aplicarConteudoSite, atualizarMetadados, atualizarMetaTag, atualizarNav, animarHero, atualizarHero, atualizarCasal, atualizarCerimonia, atualizarGrandeDia, atualizarPresentes, atualizarConfirmacao, atualizarRodape, preencherDadosEvento, removerPreloader, iniciarContagem, aplicarFaseEvento, iniciarAtualizacaoFaseEvento, iniciarCarrossel };

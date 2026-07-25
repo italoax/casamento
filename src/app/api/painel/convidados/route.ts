@@ -29,6 +29,10 @@ export async function POST(request: Request) {
   const telefone = cleanText(body.telefone, 30).replace(/\D+/g, "");
   const email = cleanText(body.email, 150);
   const nomesLista = cleanText(body.nomes_lista, 5000);
+  // Sem isto o campo era descartado: o modal enviava os nomes confirmados, mas
+  // só a QUANTIDADE era gravada. Ao reabrir, com nomes_confirmados vazio e o
+  // grupo "confirmado", guest-helpers marcava todos como "recusado" (Não irei).
+  const nomesConfirmados = cleanText(body.nomes_confirmados, 5000);
   const qtd = Math.max(0, Number(body.convites_disponiveis || body.qtd || 0));
   const status = ["pendente", "confirmado", "recusado"].includes(String(body.status)) ? String(body.status) : "pendente";
   const confirmados = Math.max(0, Number(body.convites_confirmados || 0));
@@ -40,8 +44,8 @@ export async function POST(request: Request) {
   const hasLista = await ensureColunaLista();
 
   // Monta colunas dinamicamente (visibilidade e lista são opcionais conforme o schema).
-  const cols = ["nome", "telefone", "email", "nomes_lista", "convites_disponiveis", "status", "convites_confirmados"];
-  const vals: unknown[] = [nome, telefone, email, nomesLista, qtd, status, confirmados];
+  const cols = ["nome", "telefone", "email", "nomes_lista", "nomes_confirmados", "convites_disponiveis", "status", "convites_confirmados"];
+  const vals: unknown[] = [nome, telefone, email, nomesLista, nomesConfirmados, qtd, status, confirmados];
   if (hasVis) { cols.push("visibilidade"); vals.push(visibilidade); }
   if (hasLista) { cols.push("lista"); vals.push(lista || null); }
 

@@ -39,9 +39,19 @@ export function PresenteModal({ row, onSubmit, onCancel, ordem, busca, taxaPerce
   const qtd = row?.quantidade_disponivel;
   const sugerirCotas = row?.modo_exibicao === "cotas" || (!row?.modo_exibicao && qtd !== undefined && qtd !== null && qtd !== "" && Number(qtd) > 1);
   const previewAtual = imagemPresente(row?.imagem_thumb || row?.imagem);
+  // O campo de preço é o VALOR BASE (sem taxa) — a taxa é aplicada pelo backend
+  // e mostrada no preview. Carregar row.preco (que JÁ inclui a taxa) fazia o
+  // backend reaplicar a taxa a cada edição, inflando o preço a cada save.
+  // Para cotas, o campo é o valor base TOTAL = base por cota × nº de cotas.
+  const precoBaseNum = row?.preco_base != null && String(row?.preco_base) !== "" ? Number(row.preco_base) : Number(row?.preco || 0);
+  const precoInicial = !row
+    ? ""
+    : sugerirCotas && qtd != null && Number(qtd) > 0
+      ? String(Math.round(precoBaseNum * Number(qtd) * 100) / 100)
+      : (precoBaseNum ? String(precoBaseNum) : "");
   const [modo, setModo] = useState(sugerirCotas ? "cotas" : "padrao");
   const [nome, setNome] = useState(String(row?.nome || ""));
-  const [preco, setPreco] = useState(String(row?.preco || ""));
+  const [preco, setPreco] = useState(precoInicial);
   const [preview, setPreview] = useState(previewAtual);
 
   function atualizarPreviewArquivo(file?: File | null) {

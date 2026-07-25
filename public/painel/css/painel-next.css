@@ -278,7 +278,33 @@
   background: rgba(216, 184, 115, 0.1);
   border: 1px dashed rgba(216, 184, 115, 0.5);
 }
+.painel-next .card-info--declined {
+  background: rgba(201, 82, 75, 0.07);
+  border: 1px dashed rgba(201, 82, 75, 0.4);
+}
 .painel-next .dash-de { font-size: 0.55em; font-weight: 400; opacity: 0.55; }
+
+/* Barras de progresso do dashboard (presença e taxa de resposta). */
+.painel-next .dash-progresso {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.06);
+  padding: 14px 16px;
+  margin-top: 12px;
+}
+.painel-next .dash-progresso__cabecalho {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  font-size: 0.86rem; color: var(--text-main); margin-bottom: 6px;
+}
+.painel-next .dash-progresso__cabecalho strong { color: var(--cor-primaria); }
+.painel-next .dash-progresso__barra {
+  height: 10px; border-radius: 999px; overflow: hidden;
+  background: rgba(84, 75, 69, 0.1);
+}
+.painel-next .dash-progresso__barra span { display: block; height: 100%; border-radius: 999px; transition: width 0.4s ease; }
+.painel-next .dash-progresso__fill--vai { background: linear-gradient(90deg, #2f9e58, #52c07d); }
+.painel-next .dash-progresso__fill--grupo { background: linear-gradient(90deg, #c2a878, #d9be92); }
 
 .painel-next .btn-acao {
   border: 0;
@@ -311,6 +337,28 @@
 
 .painel-next #tab-logs table {
   min-width: 1180px;
+}
+
+/* Tabela de convidados: com muitas colunas, os cabeçalhos curtos (Vão,
+   Adultos, 0-5, 6-10) quebravam em várias linhas no desktop. Damos um
+   min-width (a tabela rola dentro do container quando aperta) e travamos
+   a quebra, centralizando as colunas numéricas. */
+.painel-next #tab-convidados table {
+  min-width: 880px;
+}
+.painel-next #tab-convidados th {
+  white-space: nowrap;
+}
+.painel-next #tab-convidados th:nth-child(4),
+.painel-next #tab-convidados th:nth-child(5),
+.painel-next #tab-convidados th:nth-child(6),
+.painel-next #tab-convidados th:nth-child(7),
+.painel-next #tab-convidados td[data-label="Vão"],
+.painel-next #tab-convidados td[data-label="Adultos"],
+.painel-next #tab-convidados td[data-label="0-5"],
+.painel-next #tab-convidados td[data-label="6-10"] {
+  text-align: center;
+  white-space: nowrap;
 }
 
 .painel-next #tab-logs .log-nowrap-cell {
@@ -372,6 +420,23 @@
 
 .painel-next .presente-card__preco {
   color: var(--cor-primaria);
+}
+/* Esgotado: card levemente esmaecido + selo sobre a imagem. */
+.painel-next .presente-card { position: relative; }
+.painel-next .presente-card--esgotado { opacity: 0.82; }
+.painel-next .presente-card__media { position: relative; }
+.painel-next .presente-card__selo {
+  position: absolute; top: 8px; left: 8px; z-index: 1;
+  background: rgba(201, 82, 75, 0.95); color: #fff;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+  padding: 3px 8px; border-radius: 999px;
+}
+/* Linha "Arrecadado" com leve destaque dourado. */
+.painel-next .presente-card__meta--destaque {
+  margin-top: 4px; padding-top: 6px; border-top: 1px dashed var(--border-color);
+}
+.painel-next .presente-card__meta--destaque .presente-card__meta-valor {
+  color: #2f7a52; font-weight: 700;
 }
 
 .painel-next .painel-card-form {
@@ -2115,6 +2180,88 @@
   display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 7px 9px;
 }
 .painel-next .festa-admin__nome { font-size: 0.8rem; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Moderação das fotos da festa ---------- */
+.painel-next .festa-admin__item { position: relative; }
+/* Pendente ganha contorno âmbar: dá para varrer a grade e ver o que falta. */
+.painel-next .festa-admin__item--pendente {
+  border-color: #d9a441;
+  box-shadow: 0 0 0 2px rgba(217, 164, 65, 0.18), var(--sombra);
+}
+.painel-next .festa-admin__selo {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(217, 164, 65, 0.95); color: #fff;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+  padding: 3px 8px; border-radius: 999px;
+}
+.painel-next .festa-admin__botoes { display: inline-flex; gap: 4px; flex-shrink: 0; }
+.painel-next .btn-acao.btn-ok { color: #2f7a52; border-color: rgba(47, 122, 82, 0.35); font-weight: 700; }
+.painel-next .btn-acao.btn-ok:hover { background: rgba(47, 122, 82, 0.1); }
+.painel-next .toolbar-pill--alerta { background: rgba(217, 164, 65, 0.16); color: #8a6112; font-weight: 700; }
+
+/* ---------- Controle por convite (fim do dashboard) ---------- */
+.painel-next .controle-convites { margin-top: 14px; }
+.painel-next .controle-convites__barra {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  margin-bottom: 14px;
+}
+.painel-next .controle-convites__busca {
+  flex: 1 1 220px; min-width: 200px;
+  padding: 9px 12px; border: 1px solid var(--border-color);
+  border-radius: 10px; font-size: 0.9rem; background: #fff; color: var(--text-main);
+}
+.painel-next .controle-convites__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.painel-next .controle-convites__lista {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;
+}
+.painel-next .convite-card {
+  background: #fff; border: 1px solid var(--border-color); border-radius: 12px;
+  padding: 12px 14px; box-shadow: var(--sombra);
+  border-left: 4px solid var(--border-color);
+}
+/* Faixa lateral colorida = status geral do convite, dá pra varrer a lista de relance. */
+.painel-next .convite-card--confirmado { border-left-color: #2f9e58; }
+.painel-next .convite-card--pendente { border-left-color: #d9a441; }
+.painel-next .convite-card--recusado { border-left-color: #c9524b; }
+
+.painel-next .convite-card__topo {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-bottom: 10px;
+}
+.painel-next .convite-card__nome { font-weight: 700; color: var(--cor-primaria); font-size: 0.98rem; }
+.painel-next .convite-card__status--confirmado { background: #d4edda; color: #155724; }
+.painel-next .convite-card__status--pendente { background: #fff3cd; color: #856404; }
+.painel-next .convite-card__status--recusado { background: #f8d7da; color: #721c24; }
+
+.painel-next .convite-card__grupo { margin-top: 8px; }
+.painel-next .convite-card__rotulo {
+  display: block; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.02em;
+  margin-bottom: 5px; text-transform: uppercase;
+}
+.painel-next .convite-card__rotulo--vai { color: #2f7a52; }
+.painel-next .convite-card__rotulo--nao { color: #b4564f; }
+.painel-next .convite-card__rotulo--pend { color: #8a6112; }
+.painel-next .convite-card__pessoas { display: flex; flex-wrap: wrap; gap: 5px; }
+.painel-next .pessoa-chip {
+  font-size: 0.8rem; padding: 3px 9px; border-radius: 999px;
+  border: 1px solid transparent; line-height: 1.35;
+}
+.painel-next .pessoa-chip--vai { background: #eaf6ee; color: #1f6d3f; border-color: #cbe8d5; }
+.painel-next .pessoa-chip--nao { background: #fbeaea; color: #9d3b35; border-color: #f0cfcd; }
+.painel-next .pessoa-chip--pend { background: #fcf3dd; color: #7a5510; border-color: #efe0bb; }
+
+/* ---------- Expandir linha da lista de convidados ---------- */
+.painel-next .btn-expandir {
+  border: 0; background: transparent; cursor: pointer;
+  color: var(--cor-secundaria); font-size: 0.9rem; line-height: 1;
+  padding: 2px 7px 2px 0; margin-right: 2px;
+}
+.painel-next .btn-expandir:hover { color: var(--cor-primaria); }
+.painel-next .linha-convidado--aberta > td { background: rgba(194, 168, 120, 0.06); }
+.painel-next .linha-detalhe > td { background: rgba(194, 168, 120, 0.06); padding: 0 14px 14px; }
+.painel-next .convite-detalhe { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+.painel-next .convite-detalhe__vazio { margin: 0; color: var(--text-muted, #8a827a); font-size: 0.85rem; }
 
 .painel-next .wa-card__actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .painel-next .wa-card__numero { margin: 0; font-size: 0.9rem; color: var(--text-main); }

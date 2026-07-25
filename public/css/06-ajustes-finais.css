@@ -113,9 +113,17 @@
     color: var(--cor-primaria);
     margin: 16px 0 8px;
     min-height: 78px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /* Teto de 4 linhas com reticências. O cartão tem altura fixa (420px logo
+       acima), então um nome muito longo empurrava o preço e o botão para fora e
+       o `overflow: clip` do cartão os cortava.
+       `-webkit-box` é obrigatório para o line-clamp funcionar — antes havia um
+       `display: flex` aqui, que anulava qualquer tentativa de recorte. */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    overflow: hidden;
+    text-align: center;
   }
 
   .cartao-presente .card-presente__preco,

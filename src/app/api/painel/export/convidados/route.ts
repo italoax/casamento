@@ -14,7 +14,11 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const busca = url.searchParams.get("busca") || "";
   const ordem = url.searchParams.get("ordem") || "az";
-  const data = await listarConvidados(busca, ordem, 1, 10000);
+  const presenca = url.searchParams.get("presenca_convidado") || "";
+  const lista = url.searchParams.get("lista_convidado") || "";
+  const comCrianca = url.searchParams.get("com_crianca") === "1";
+  // A exportação respeita os filtros ativos na tela (mesmos parâmetros).
+  const data = await listarConvidados(busca, ordem, 1, 10000, { presenca, lista, comCrianca });
 
   const header = [
     "Nome",
