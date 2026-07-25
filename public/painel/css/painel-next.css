@@ -85,6 +85,11 @@
   position: sticky;
   top: 20px;
   z-index: 10;
+  /* Rola por conta própria quando os itens passam da altura da tela, para o
+     último botão ("Sair") nunca ficar inacessível abaixo da viewport. */
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .painel-next .sidebar-header {
@@ -147,6 +152,7 @@
   font-size: 0.92rem;
   text-decoration: none;
   box-shadow: 0 8px 18px rgba(0,0,0,0.04);
+  flex-shrink: 0;
 }
 
 .painel-next .sidebar-btn:hover {

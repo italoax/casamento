@@ -13,8 +13,10 @@ export async function GET(request: Request) {
   if (!(await requirePainelRole("admin"))) return errorJson("Acesso negado.", 403);
 
   // Resolve o domínio público (atrás do Cloudflare/Passenger o request.url pode vir
-  // com host interno). Prioridade: SITE_URL -> x-forwarded-host/host -> request.url.
-  let base = process.env.SITE_URL?.trim() || "";
+  // com host interno). Prioridade: SITE_URL -> BASE_URL (origem confiável e fixa) ->
+  // x-forwarded-host/host -> request.url. Usar BASE_URL evita confiar no host header
+  // do cliente (que, sem proxy pinado, poderia forjar o destino embutido no QR).
+  let base = process.env.SITE_URL?.trim() || process.env.BASE_URL?.trim() || "";
   if (!base) {
     const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "";
     if (host && !/^(localhost|127\.0\.0\.1|0\.0\.0\.0)/.test(host)) {
