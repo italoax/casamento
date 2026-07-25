@@ -1,6 +1,6 @@
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import * as path from "node:path";
-import sharp from "sharp";
+import sharp from "@/lib/sharp-safe";
 import { errorJson, json, cleanText } from "@/lib/http";
 import { requirePainelPermission } from "@/lib/painel-auth";
 import { columnExists, db, queryOne, tableExists } from "@/lib/db";

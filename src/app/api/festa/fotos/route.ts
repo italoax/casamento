@@ -14,7 +14,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
-import sharp from "sharp";
+import sharp from "@/lib/sharp-safe";
 import { NextRequest } from "next/server";
 import { execute, queryRows } from "@/lib/db";
 import { cleanText } from "@/lib/http";
