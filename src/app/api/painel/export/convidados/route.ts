@@ -10,12 +10,12 @@ export async function GET(request: Request) {
   if (!(await requirePainelPermission("export_data"))) return NextResponse.json({ erro: "Acesso negado." }, { status: 403 });
   const url = new URL(request.url);
   const busca = url.searchParams.get("busca") || "";
-  const ordem = url.searchParams.get("ordem") || "az";
   const presenca = url.searchParams.get("presenca_convidado") || "";
   const lista = url.searchParams.get("lista_convidado") || "";
   const comCrianca = url.searchParams.get("com_crianca") === "1";
-  // A exportação respeita os filtros ativos na tela (mesmos parâmetros).
-  const data = await listarConvidados(busca, ordem, 1, 10000, { presenca, lista, comCrianca });
+  // A planilha respeita os filtros ativos (quais linhas), mas sai SEMPRE em
+  // ordem alfabética por nome (A-Z), independente da ordenação da tela.
+  const data = await listarConvidados(busca, "az", 1, 10000, { presenca, lista, comCrianca });
 
   const header = [
     "Nome",
