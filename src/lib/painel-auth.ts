@@ -17,6 +17,7 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import { env } from "./env";
+import { registrarLogSeguranca } from "./security-log";
 
 export const PAINEL_COOKIE = "painel_session";
 
@@ -150,7 +151,11 @@ export async function getPainelSession() {
 export async function requirePainelPermission(permission: PainelPermission): Promise<PainelSession | null> {
   const session = await getPainelSession();
   if (!session) return null;
-  if (!session.permissoes.includes(permission)) return null;
+  if (!session.permissoes.includes(permission)) {
+    // Sessão válida tentando ação sem permissão = escalonamento; vale registrar.
+    await registrarLogSeguranca({ status: "alerta", mensagem: `Acesso negado no painel: sem a permissão "${permission}"`, usuario: session.usuario });
+    return null;
+  }
   return session;
 }
 
@@ -161,6 +166,9 @@ export async function requirePainelPermission(permission: PainelPermission): Pro
 export async function requirePainelRole(...roles: PainelRole[]): Promise<PainelSession | null> {
   const session = await getPainelSession();
   if (!session) return null;
-  if (!roles.includes(session.role)) return null;
+  if (!roles.includes(session.role)) {
+    await registrarLogSeguranca({ status: "alerta", mensagem: `Acesso negado no painel: papel "${session.role}" sem autorização`, usuario: session.usuario });
+    return null;
+  }
   return session;
 }
