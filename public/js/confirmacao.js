@@ -315,6 +315,9 @@ function iniciarConfirmacao() {
   }
   function exibirResultados(convidados) {
     if (!listaResultados) return;
+    // Fecha o teclado no mobile (sem rolar a tela) para os resultados, que
+    // aparecem logo abaixo da caixa de busca, não ficarem cobertos.
+    if (inputNome && typeof inputNome.blur === "function") inputNome.blur();
     listaResultados.classList.remove("oculto");
     listaResultados.innerHTML = "";
     // Mantém o campo de busca visível para o convidado refinar enquanto digita.
@@ -362,8 +365,8 @@ function iniciarConfirmacao() {
       li.appendChild(btn);
       listaResultados.appendChild(li);
     });
-    // Com o teclado já fechado, desce suavemente até a lista de resultados.
-    rolarParaElemento(listaResultados, "smooth");
+    // Sem rolar a tela ao pesquisar: os resultados aparecem logo abaixo da caixa
+    // de busca e a página fica parada onde o usuário está (no PC e no mobile).
   }
   function rolarParaElemento(el, behavior = "smooth") {
     if (!el) return;
