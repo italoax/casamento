@@ -237,25 +237,21 @@ export async function GET(request: Request) {
       const visibility = await hasVisibility();
       const whereVisibility = visibility ? " AND (visibilidade IS NULL OR visibilidade = '' OR visibilidade = 'disponivel')" : "";
 
-      // Busca por PONTUAÇÃO: cada palavra digitada vale 1 ponto se aparecer no
-      // nome do convite OU na lista de acompanhantes (nomes_lista). Somamos os
-      // pontos e trazemos primeiro quem mais bateu, em vez de exigir que TODAS
-      // as palavras apareçam (o antigo AND dava "zero" quando uma palavra a mais
-      // — um sobrenome, um acompanhante — não batia). Assim "Lazaro Rivera Valido"
-      // ainda encontra "Lázaro Rivera" (2 de 3 palavras). Limita a 4 palavras para
-      // não montar uma query gigante; cada termo é escapado para o LIKE e a query
-      // é sempre parametrizada (sem SQL injection).
+      // Busca por PONTUAÇÃO no NOME DO CONVITE apenas: cada palavra digitada vale
+      // 1 ponto se aparecer no nome do convite. Somamos os pontos e trazemos
+      // primeiro quem mais bateu, em vez de exigir que TODAS as palavras apareçam
+      // (o antigo AND dava "zero" quando uma palavra a mais, um sobrenome, não
+      // batia). Assim "Lazaro Rivera Valido" ainda encontra "Lázaro Rivera" (2 de
+      // 3 palavras). NÃO casa mais com a lista de acompanhantes (nomes_lista): a
+      // busca é só pelo título do convite. Limita a 4 palavras para não montar uma
+      // query gigante; cada termo é escapado para o LIKE e a query é parametrizada.
       const palavras = nome.split(/\s+/).map((p) => p.trim()).filter((p) => p.length > 0).slice(0, 4);
       const termos = palavras.length > 0 ? palavras : [nome];
-      // Uma parcela por palavra: (bate no nome OU na lista) → 1, senão 0.
+      // Uma parcela por palavra: bate no nome do convite → 1, senão 0.
       const scoreExpr = termos
-        .map(() => "(nome LIKE ? ESCAPE '\\\\' OR COALESCE(nomes_lista, '') LIKE ? ESCAPE '\\\\')")
+        .map(() => "(nome LIKE ? ESCAPE '\\\\')")
         .join(" + ");
-      // Dois params por palavra (nome e nomes_lista), ambos com o mesmo curinga %...%.
-      const params = termos.flatMap((p) => {
-        const like = `%${escapeLikeTerm(p)}%`;
-        return [like, like];
-      });
+      const params = termos.map((p) => `%${escapeLikeTerm(p)}%`);
       const convidados = await queryRows<Convidado>(
         `SELECT id, nome, status, convites_disponiveis, telefone, (${scoreExpr}) AS score
            FROM convidados
