@@ -109,7 +109,7 @@ export function Usuarios({ onToast, meuId }: { onToast: (m: string) => void; meu
                       <button type="button" className="toolbar-btn" onClick={() => { setModalSenha(u.id); setResetSenha(""); }} disabled={ocupado}>Resetar senha</button>
                       <button type="button" className="toolbar-btn" style={{ background: "#9b2f3d", borderColor: "#9b2f3d", color: "#fff" }} onClick={() => confirm(`Excluir o usuário "${u.usuario}"?`) && void acao({ acao: "excluir", id: u.id }, "Usuário excluído.")} disabled={ocupado}>Excluir</button>
                     </div>
-                  ) : <span style={{ opacity: 0.5 }}>—</span>}
+                  ) : <span style={{ opacity: 0.5 }}>-</span>}
                 </td>
               </tr>
             )) : (

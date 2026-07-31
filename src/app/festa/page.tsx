@@ -12,7 +12,7 @@ import "./festa.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Mural de Fotos — Emanuelle & Ítalo",
+  title: "Mural de Fotos · Emanuelle & Ítalo",
   description: "Envie suas fotos da festa e veja os momentos compartilhados por todos.",
   robots: { index: false, follow: false },
 };

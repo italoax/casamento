@@ -29,7 +29,7 @@ export default function PoliticaDePrivacidadePage() {
           <p className="legal-intro">
             Esta Política de Privacidade explica, de forma clara e transparente, como tratamos os
             dados pessoais coletados neste site de casamento, em conformidade com a Lei Geral de
-            Proteção de Dados Pessoais (Lei nº 13.709/2018 — LGPD). Ao utilizar o site, você concorda
+            Proteção de Dados Pessoais (Lei nº 13.709/2018, a LGPD). Ao utilizar o site, você concorda
             com as práticas aqui descritas.
           </p>
 
@@ -121,7 +121,7 @@ export default function PoliticaDePrivacidadePage() {
             <h2><span className="legal-num">7.</span> Segurança dos dados</h2>
             <p>
               Adotamos medidas técnicas e organizacionais para proteger seus dados contra acessos não
-              autorizados, perda ou alteração — incluindo conexão criptografada (HTTPS), controles de
+              autorizados, perda ou alteração, incluindo conexão criptografada (HTTPS), controles de
               acesso e validações de segurança. Nenhum sistema é totalmente infalível, mas trabalhamos
               continuamente para reduzir riscos.
             </p>

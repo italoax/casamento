@@ -282,7 +282,7 @@ export async function enviarPixExpirado(data: { email: string; nome: string; ite
       ${selo("Nenhuma cobrança foi feita")}
       ${paragrafo("O prazo para pagamento do Pix terminou antes da confirmação. Fique tranquilo(a): <strong>nada foi cobrado</strong>.")}
       ${data.total ? caixa(`<div style="font-family:${FONTE_SERIFA};font-weight:bold;color:${COR.marrom};text-align:center;margin-bottom:10px;">Presente escolhido</div>${itensHtml(data.itens)}${totalHtml(Number(data.total))}`) : ""}
-      ${paragrafo("Se ainda quiser nos presentear, é só gerar um novo Pix no site — leva menos de um minuto. 💛")}
+      ${paragrafo("Se ainda quiser nos presentear, é só gerar um novo Pix no site, leva menos de um minuto. 💛")}
       ${botaoCta(siteUrl() + "/#presentes", "Gerar um novo Pix")}`),
   }));
 }

@@ -243,7 +243,7 @@ window.siteConfig = {
     formas: [ {
       id: "pix",
       label: "Pague com Pix",
-      subtitle: "Aprovação na hora — a forma mais rápida e prática.",
+      subtitle: "Aprovação na hora, a forma mais rápida e prática.",
       detail: "Aprovação em segundos e confirmação rápida.",
       badge: "Recomendado",
       recomendado: true

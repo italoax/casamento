@@ -300,7 +300,7 @@ function gerarMensagemTemplateLocal() {
     `${noivos}, que felicidade imensa ver vocês começando essa história juntos!`,
     `Que alegria enorme celebrar o amor de ${noivos}!`,
     `${noivos}, votos de uma vida repleta de amor e cumplicidade!`,
-    `Hoje o amor de ${noivos} está em festa — e eu celebro junto!`,
+    `Hoje o amor de ${noivos} está em festa, e eu celebro junto!`,
     `${noivos}, que Deus abençoe grandemente essa união!`,
     `Felicidades, ${noivos}! O grande dia de vocês finalmente chegou!`,
     `${noivos}, é lindo demais ver dois corações se tornando um só.`,
@@ -326,7 +326,7 @@ function gerarMensagemTemplateLocal() {
     "Que essa história seja linda em cada detalhe.",
     "Muitas bênçãos e felicidade nessa jornada.",
     "Contem sempre comigo nessa torcida.",
-    "Que seja para sempre — e mais bonito a cada dia.",
+    "Que seja para sempre, e mais bonito a cada dia.",
     "Sejam muito, muito felizes!",
   ];
   const despedidas = ["Com carinho", "Com amor", "Com todo o carinho", "Com muito carinho e admiração", "Um abraço carinhoso"];

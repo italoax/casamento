@@ -61,7 +61,7 @@ export function TabelaRecados({ recados, api }: { recados: Row[]; api: any }) {
                       <button type="button" className={`status-badge ${visivel ? "confirmado" : "oculto-badge"}`} style={{ border: 0, cursor: "pointer" }} title={visivel ? "Clique para ocultar do site" : "Clique para mostrar no site"} onClick={() => alternarVisibilidade(r)}>
                         {visivel ? "Visível" : "Oculto"}
                       </button>
-                    ) : <span className="status-badge oculto-badge">—</span>}
+                    ) : <span className="status-badge oculto-badge">-</span>}
                   </td>
                   <td data-label="Ações">
                     <div className="acoes-btn">

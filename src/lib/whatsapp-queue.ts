@@ -275,7 +275,7 @@ async function recuperarItensOrfaos() {
     // Marca como falha p/ revisão manual; o usuário reenvia só os que não chegaram.
     await exec(
       "UPDATE whatsapp_fila SET status='falha', erro=? WHERE status='enviando'",
-      ["Interrompido durante o envio — verifique se chegou (não reenviado para evitar duplicado)."],
+      ["Interrompido durante o envio, verifique se chegou (não reenviado para evitar duplicado)."],
     );
   } catch (error) {
     SafeLog.error("whatsapp-queue recuperarItensOrfaos", error);
@@ -408,7 +408,7 @@ async function enviarItem(job: FilaJob, item: FilaItem) {
     // mensagem DUPLICADA. Marca como falha (entrega incerta) e segue; o usuário
     // reenvia manualmente só para quem realmente não recebeu.
     const tentativas = item.tentativas + 1;
-    const erroIncerto = `${msg} (não reenviado p/ evitar duplicado — confira se chegou)`;
+    const erroIncerto = `${msg} (não reenviado p/ evitar duplicado, confira se chegou)`;
     await exec("UPDATE whatsapp_fila SET status='falha', tentativas=?, erro=? WHERE id=?", [
       tentativas, erroIncerto.slice(0, 255), item.id,
     ]);

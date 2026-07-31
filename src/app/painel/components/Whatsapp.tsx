@@ -376,7 +376,7 @@ export function Whatsapp({ onToast }: { onToast: (m: string) => void }) {
       });
       const body = await res.json().catch(() => ({}));
       if (res.ok && body?.sucesso) {
-        onToast("Disparo iniciado. Pode fechar a aba — ele continua no servidor.");
+        onToast("Disparo iniciado. Pode fechar a aba, ele continua no servidor.");
         setSelecionados(new Set());
         await carregarJob();
       } else {
@@ -425,7 +425,7 @@ export function Whatsapp({ onToast }: { onToast: (m: string) => void }) {
       const semWa = new Set<number>();
       destinatarios.forEach((c, i) => { if (results[i] && results[i].exists === false) semWa.add(c.id); });
       setSemWhatsapp(semWa);
-      onToast(semWa.size > 0 ? `${semWa.size} número(s) sem WhatsApp — confira na lista.` : "Todos os selecionados têm WhatsApp.");
+      onToast(semWa.size > 0 ? `${semWa.size} número(s) sem WhatsApp, confira na lista.` : "Todos os selecionados têm WhatsApp.");
     } catch {
       onToast("Falha ao verificar os números.");
     } finally {
@@ -463,7 +463,7 @@ export function Whatsapp({ onToast }: { onToast: (m: string) => void }) {
 
   return (
     <div id="tab-whatsapp" className="tab-conteudo ativo wa">
-      <div className="painel-header compact"><h3 className="painel-subtitulo">WhatsApp — Disparo de Mensagens</h3></div>
+      <div className="painel-header compact"><h3 className="painel-subtitulo">WhatsApp: Disparo de Mensagens</h3></div>
 
       {!configurado ? (
         <div className="wa-aviso">
@@ -596,7 +596,7 @@ export function Whatsapp({ onToast }: { onToast: (m: string) => void }) {
                         <td><input type="checkbox" checked={selecionados.has(c.id)} disabled={!c.telefoneValido} onChange={() => toggle(c.id)} /></td>
                         <td data-label="Nome">{c.nome}{semWhatsapp.has(c.id) ? <span className="wa-tag wa-tag--off" style={{ marginLeft: 8 }}>sem WhatsApp</span> : null}</td>
                         <td data-label="Telefone">{c.telefoneValido ? formatPhone(c.telefone) : <em>sem telefone</em>}</td>
-                        <td data-label="Lista">{lst ? lst.label : <span style={{ opacity: 0.5 }}>—</span>}</td>
+                        <td data-label="Lista">{lst ? lst.label : <span style={{ opacity: 0.5 }}>-</span>}</td>
                         <td data-label="Status"><span className={`wa-tag wa-tag--${c.status === "confirmado" ? "ok" : "wait"}`}>{c.status === "confirmado" ? "Confirmado" : "Pendente"}</span></td>
                       </tr>
                     );
@@ -693,7 +693,7 @@ export function Whatsapp({ onToast }: { onToast: (m: string) => void }) {
                         <td data-label="Data">{fmtData(e.criado_em)}</td>
                         <td data-label="Nome">{e.nome}</td>
                         <td data-label="Telefone">{formatPhone(e.telefone)}</td>
-                        <td data-label="Lista">{lst ? lst.label : <span style={{ opacity: 0.5 }}>—</span>}</td>
+                        <td data-label="Lista">{lst ? lst.label : <span style={{ opacity: 0.5 }}>-</span>}</td>
                         <td data-label="Resultado">{e.sucesso ? <span className="wa-tag wa-tag--ok">Enviado</span> : <span className="wa-tag wa-tag--off" title={e.erro || ""}>Falhou</span>}</td>
                       </tr>
                     );

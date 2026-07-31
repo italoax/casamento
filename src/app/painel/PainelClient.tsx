@@ -306,7 +306,7 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
               <div className="card-info"><h3>{dashboard.presentes?.total_presentes || 0}</h3><p>Total na Lista</p></div>
             </div>
             {dashboard.convites?.length ? <>
-              <div className="painel-header compact"><h3 className="painel-subtitulo">Controle por Convite — quem vai e quem não vai</h3></div>
+              <div className="painel-header compact"><h3 className="painel-subtitulo">Controle por Convite: quem vai e quem não vai</h3></div>
               <ControleConvites convites={dashboard.convites} />
             </> : null}
           </div>;

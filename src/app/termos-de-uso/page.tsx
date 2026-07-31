@@ -28,8 +28,8 @@ export default function TermosDeUsoPage() {
         <article className="legal-conteudo">
           <p className="legal-intro">
             Bem-vindo(a)! Este site foi criado para celebrar o casamento de Emanuelle e Ítalo. Ao
-            acessá-lo e utilizar suas funcionalidades — como a lista de presentes, a confirmação de
-            presença e o mural de recados — você concorda com os termos descritos abaixo. Leia com
+            acessá-lo e utilizar suas funcionalidades (como a lista de presentes, a confirmação de
+            presença e o mural de recados), você concorda com os termos descritos abaixo. Leia com
             atenção; caso não concorde, pedimos que não utilize o site.
           </p>
 
@@ -108,8 +108,8 @@ export default function TermosDeUsoPage() {
             <p>
               Por se tratar de uma contribuição voluntária e de caráter pessoal aos noivos,{" "}
               <strong>as contribuições realizadas são, em regra, não reembolsáveis</strong>. Em
-              situações excepcionais — como cobrança em duplicidade ou erro comprovado no
-              processamento — entre em contato pelo e-mail informado ao final destes termos para que
+              situações excepcionais (como cobrança em duplicidade ou erro comprovado no
+              processamento), entre em contato pelo e-mail informado ao final destes termos para que
               possamos avaliar o caso.
             </p>
           </section>
@@ -150,7 +150,7 @@ export default function TermosDeUsoPage() {
           <section className="legal-secao">
             <h2><span className="legal-num">10.</span> Propriedade intelectual</h2>
             <p>
-              Todo o conteúdo do site — textos, imagens, fotografias, identidade visual e layout — é
+              Todo o conteúdo do site (textos, imagens, fotografias, identidade visual e layout) é
               de uso pessoal dos noivos e protegido pela legislação aplicável. É vedada a reprodução,
               distribuição ou utilização para fins comerciais sem autorização prévia.
             </p>

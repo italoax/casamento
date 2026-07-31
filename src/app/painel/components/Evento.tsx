@@ -120,41 +120,41 @@ export function Evento({ onToast }: { onToast: (mensagem: string) => void }) {
           </p>
 
           <label className="rsvp-date-field">
-            <span>Início — quando a contagem vira &quot;acontecendo&quot;</span>
+            <span>Início: quando a contagem vira &quot;acontecendo&quot;</span>
             <input type="datetime-local" name="inicio" defaultValue={config.inicio} required />
           </label>
 
           <label className="rsvp-date-field">
-            <span>Término — quando vira &quot;agradecimento&quot;</span>
+            <span>Término: quando vira &quot;agradecimento&quot;</span>
             <input type="datetime-local" name="fim" defaultValue={config.fim} required />
           </label>
 
           <label className="rsvp-date-field">
-            <span>Encerramento — quando o site inteiro vira a página de agradecimento</span>
+            <span>Encerramento: quando o site inteiro vira a página de agradecimento</span>
             <input type="datetime-local" name="encerramento" defaultValue={config.encerramento} required />
           </label>
           <p className="painel-ajuda">
             A partir desta data, quem acessar o site vê <strong>apenas</strong> a mensagem de
-            agradecimento — presentes, confirmação e recados deixam de aparecer.
+            agradecimento: presentes, confirmação e recados deixam de aparecer.
           </p>
 
           <label className="rsvp-date-field">
-            <span>Título — acontecendo agora</span>
+            <span>Título: acontecendo agora</span>
             <input type="text" name="acontecendoTitulo" defaultValue={config.acontecendoTitulo} maxLength={120} required />
           </label>
 
           <label className="rsvp-date-field">
-            <span>Mensagem — acontecendo agora</span>
+            <span>Mensagem: acontecendo agora</span>
             <textarea name="acontecendoMensagem" defaultValue={config.acontecendoMensagem} rows={3} maxLength={600} required />
           </label>
 
           <label className="rsvp-date-field">
-            <span>Título — agradecimento</span>
+            <span>Título: agradecimento</span>
             <input type="text" name="agradecimentoTitulo" defaultValue={config.agradecimentoTitulo} maxLength={120} required />
           </label>
 
           <label className="rsvp-date-field">
-            <span>Mensagem — agradecimento</span>
+            <span>Mensagem: agradecimento</span>
             <textarea name="agradecimentoMensagem" defaultValue={config.agradecimentoMensagem} rows={3} maxLength={600} required />
           </label>
 

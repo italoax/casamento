@@ -98,7 +98,7 @@ function scheduleSearchLog(ip: string, data: Omit<PendingSearchLog, "timer">) {
     void logPayment({
       tipo: "busca",
       status: "info",
-      mensagem: `Busca na lista de convidados: "${pend.nome}" — ${pend.resultados} resultado(s) — IP ${ip}`,
+      mensagem: `Busca na lista de convidados: "${pend.nome}" · ${pend.resultados} resultado(s) · IP ${ip}`,
       nome_comprador: pend.nome,
       itens: pend.itens || "Nenhum resultado",
       payload: {
@@ -376,7 +376,7 @@ export async function POST(request: Request) {
     void logPayment({
       tipo: "confirmacao",
       status: "sucesso",
-      mensagem: `Confirmação de presença: "${convidado.nome}" — ${qtd} lugar(es) confirmado(s)`,
+      mensagem: `Confirmação de presença: "${convidado.nome}" · ${qtd} lugar(es) confirmado(s)`,
       nome_comprador: String(convidado.nome || "Convidado"),
       email: email || null,
       itens: nomes || `${qtd} lugar(es) confirmado(s)`,

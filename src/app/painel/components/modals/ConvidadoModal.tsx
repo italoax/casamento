@@ -30,7 +30,7 @@ export function ConvidadoModal({ row, hasVisibilidade, onSubmit, onCancel }: { r
       </div>
       <div className="linha-form">
         <div className="grupo-input"><label>E-mail</label><input type="email" name="email" placeholder="email@exemplo.com" defaultValue={row?.email || ""} /><small className="form-hint">Deixe em branco para remover o e-mail do convidado.</small></div>
-        <div className="grupo-input"><label>Lista (quem convida)</label><select name="lista" defaultValue={String(row?.lista || "")}><option value="">— Sem lista —</option>{LISTAS.map((l) => <option key={l.key} value={l.key}>{l.label}</option>)}</select><small className="form-hint">Define por qual WhatsApp o convite é enviado.</small></div>
+        <div className="grupo-input"><label>Lista (quem convida)</label><select name="lista" defaultValue={String(row?.lista || "")}><option value="">Sem lista</option>{LISTAS.map((l) => <option key={l.key} value={l.key}>{l.label}</option>)}</select><small className="form-hint">Define por qual WhatsApp o convite é enviado.</small></div>
       </div>
     </div>
 
