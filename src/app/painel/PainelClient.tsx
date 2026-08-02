@@ -255,6 +255,8 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
             const adConf = dashboard.idadesConfirmados?.adulto || 0;
             const c05Conf = dashboard.idadesConfirmados?.c0_5 || 0;
             const c610Conf = dashboard.idadesConfirmados?.c6_10 || 0;
+            const adPend = dashboard.idadesPendentes?.adulto || 0;
+            const c610Pend = dashboard.idadesPendentes?.c6_10 || 0;
             const adTotal = dashboard.idades?.adulto || 0;
             const c05Total = dashboard.idades?.c0_5 || 0;
             const c610Total = dashboard.idades?.c6_10 || 0;
@@ -299,6 +301,8 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
               meta={dashboard.metaConvidados || 0}
               adultosConf={adConf}
               criancas610Conf={c610Conf}
+              adultosPend={adPend}
+              criancas610Pend={c610Pend}
               onSalvar={(m) => api("/api/painel/meta", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ meta: m }) }, "Meta salva.")}
             />
             <div className="painel-header compact"><h3 className="painel-subtitulo">Resumo Financeiro</h3></div>

@@ -52,6 +52,7 @@ export type Dashboard = {
   convidados?: DashboardConvidados;
   idades?: DashboardIdades;
   idadesConfirmados?: DashboardIdades;
+  idadesPendentes?: DashboardIdades;
   convites?: ConviteControle[];
   pessoas?: DashboardPessoas;
   grupos?: DashboardGrupos;

@@ -345,6 +345,26 @@
 .painel-next .dash-progresso__fill--vai { background: linear-gradient(90deg, #2f9e58, #52c07d); }
 .painel-next .dash-progresso__fill--grupo { background: linear-gradient(90deg, #c2a878, #d9be92); }
 
+/* Barra empilhada da meta: confirmados (verde) + aguardando (dourado). */
+.painel-next .dash-meta__barra {
+  display: flex;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(84, 75, 69, 0.1);
+}
+.painel-next .dash-meta__seg { display: block; height: 100%; transition: width 0.4s ease; }
+.painel-next .dash-meta__seg--conf { background: linear-gradient(90deg, #2f9e58, #52c07d); }
+.painel-next .dash-meta__seg--pend { background: linear-gradient(90deg, #c2a878, #d9be92); }
+.painel-next .dash-meta__legenda {
+  display: flex; gap: 16px; margin-top: 8px;
+  font-size: 0.8rem; color: var(--text-muted);
+}
+.painel-next .dash-meta__legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.painel-next .dash-meta__ponto { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.painel-next .dash-meta__ponto--conf { background: #2f9e58; }
+.painel-next .dash-meta__ponto--pend { background: #c2a878; }
+
 .painel-next .btn-acao {
   border: 0;
   display: inline-flex;

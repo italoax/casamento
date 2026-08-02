@@ -102,6 +102,7 @@ export async function getDashboardData() {
 
   const idades = { adulto: 0, c0_5: 0, c6_10: 0 };
   const idadesConfirmados = { adulto: 0, c0_5: 0, c6_10: 0 };
+  const idadesPendentes = { adulto: 0, c0_5: 0, c6_10: 0 };
   const pessoas = { total: 0, vao: 0, naoVao: 0, pendentes: 0 };
   const grupos = { total: convites.length, respondidos: 0, pendentes: 0 };
   const somaIdades = (alvo: typeof idades, nomes: string[]) => {
@@ -116,6 +117,7 @@ export async function getDashboardData() {
     if (cv.status === "pendente") grupos.pendentes++; else grupos.respondidos++;
     somaIdades(idades, [...cv.vao, ...cv.naoVao, ...cv.pendentes]);
     somaIdades(idadesConfirmados, cv.vao);
+    somaIdades(idadesPendentes, cv.pendentes);
   }
 
   const presentesExiste = await tableExists("presentes");
@@ -165,7 +167,7 @@ export async function getDashboardData() {
     metaConvidados = Math.max(0, Number(m?.valor ?? 0)) || 0;
   }
 
-  return { convidados: kpisConv || {}, idades, idadesConfirmados, convites, pessoas, grupos, presentes: kpiPresentes, categoriasPresentes, metaConvidados };
+  return { convidados: kpisConv || {}, idades, idadesConfirmados, idadesPendentes, convites, pessoas, grupos, presentes: kpiPresentes, categoriasPresentes, metaConvidados };
 }
 
 export type FiltrosConvidados = { presenca?: string; lista?: string; comCrianca?: boolean };
