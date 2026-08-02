@@ -157,17 +157,20 @@ export async function getDashboardData() {
     kpiPresentes.qtd_pendente = Number(v?.qtd_pendente || 0);
   }
 
-  // Meta de convidados (em porções de adulto), definida no painel e salva em
-  // rsvp_config. O card do dashboard compara com o consumo confirmado.
+  // Meta de convidados (porções de adulto) + margem de folga (%), definidas no
+  // painel e salvas em rsvp_config. O card do dashboard compara com o consumo.
   let metaConvidados = 0;
+  let margemConvidados = 0;
   if (await tableExists("rsvp_config").catch(() => false)) {
-    const [m] = await queryRows<{ valor: string }>(
-      "SELECT valor FROM rsvp_config WHERE chave = 'meta_convidados' LIMIT 1",
+    const linhas = await queryRows<{ chave: string; valor: string }>(
+      "SELECT chave, valor FROM rsvp_config WHERE chave IN ('meta_convidados', 'margem_convidados')",
     ).catch(() => []);
-    metaConvidados = Math.max(0, Number(m?.valor ?? 0)) || 0;
+    const cfg = new Map(linhas.map((l) => [String(l.chave), String(l.valor ?? "")]));
+    metaConvidados = Math.max(0, Number(cfg.get("meta_convidados") ?? 0)) || 0;
+    margemConvidados = Math.min(100, Math.max(0, Number(cfg.get("margem_convidados") ?? 0))) || 0;
   }
 
-  return { convidados: kpisConv || {}, idades, idadesConfirmados, idadesPendentes, convites, pessoas, grupos, presentes: kpiPresentes, categoriasPresentes, metaConvidados };
+  return { convidados: kpisConv || {}, idades, idadesConfirmados, idadesPendentes, convites, pessoas, grupos, presentes: kpiPresentes, categoriasPresentes, metaConvidados, margemConvidados };
 }
 
 export type FiltrosConvidados = { presenca?: string; lista?: string; comCrianca?: boolean };

@@ -299,11 +299,12 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
             <div className="painel-header compact"><h3 className="painel-subtitulo">Meta de convidados</h3></div>
             <MetaConvidados
               meta={dashboard.metaConvidados || 0}
+              margem={dashboard.margemConvidados || 0}
               adultosConf={adConf}
               criancas610Conf={c610Conf}
               adultosPend={adPend}
               criancas610Pend={c610Pend}
-              onSalvar={(m) => api("/api/painel/meta", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ meta: m }) }, "Meta salva.")}
+              onSalvar={(m, mg) => api("/api/painel/meta", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ meta: m, margem: mg }) }, "Meta salva.")}
             />
             <div className="painel-header compact"><h3 className="painel-subtitulo">Resumo Financeiro</h3></div>
             <div className="resumo-grid resumo-grid--financeiro">

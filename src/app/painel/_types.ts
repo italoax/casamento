@@ -59,6 +59,7 @@ export type Dashboard = {
   presentes?: DashboardPresentes;
   categoriasPresentes?: string[];
   metaConvidados?: number;
+  margemConvidados?: number;
 };
 
 export type PainelData = {
