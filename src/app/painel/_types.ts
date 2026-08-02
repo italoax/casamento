@@ -57,6 +57,7 @@ export type Dashboard = {
   grupos?: DashboardGrupos;
   presentes?: DashboardPresentes;
   categoriasPresentes?: string[];
+  metaConvidados?: number;
 };
 
 export type PainelData = {

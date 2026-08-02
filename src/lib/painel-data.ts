@@ -155,7 +155,17 @@ export async function getDashboardData() {
     kpiPresentes.qtd_pendente = Number(v?.qtd_pendente || 0);
   }
 
-  return { convidados: kpisConv || {}, idades, idadesConfirmados, convites, pessoas, grupos, presentes: kpiPresentes, categoriasPresentes };
+  // Meta de convidados (em porções de adulto), definida no painel e salva em
+  // rsvp_config. O card do dashboard compara com o consumo confirmado.
+  let metaConvidados = 0;
+  if (await tableExists("rsvp_config").catch(() => false)) {
+    const [m] = await queryRows<{ valor: string }>(
+      "SELECT valor FROM rsvp_config WHERE chave = 'meta_convidados' LIMIT 1",
+    ).catch(() => []);
+    metaConvidados = Math.max(0, Number(m?.valor ?? 0)) || 0;
+  }
+
+  return { convidados: kpisConv || {}, idades, idadesConfirmados, convites, pessoas, grupos, presentes: kpiPresentes, categoriasPresentes, metaConvidados };
 }
 
 export type FiltrosConvidados = { presenca?: string; lista?: string; comCrianca?: boolean };

@@ -11,6 +11,7 @@ import { Seguranca } from "./components/Seguranca";
 import { Backups } from "./components/Backups";
 import { Evento } from "./components/Evento";
 import { ControleConvites } from "./components/ControleConvites";
+import { MetaConvidados } from "./components/MetaConvidados";
 import { Usuarios } from "./components/Usuarios";
 import { FestaFotos } from "./components/FestaFotos";
 import { Whatsapp } from "./components/Whatsapp";
@@ -293,6 +294,13 @@ export default function PainelClient({ initialData, initialAba }: { initialData:
                 <p>Crianças 6-10</p>
               </div>
             </div>
+            <div className="painel-header compact"><h3 className="painel-subtitulo">Meta de convidados</h3></div>
+            <MetaConvidados
+              meta={dashboard.metaConvidados || 0}
+              adultosConf={adConf}
+              criancas610Conf={c610Conf}
+              onSalvar={(m) => api("/api/painel/meta", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ meta: m }) }, "Meta salva.")}
+            />
             <div className="painel-header compact"><h3 className="painel-subtitulo">Resumo Financeiro</h3></div>
             <div className="resumo-grid resumo-grid--financeiro">
               <div className="card-info"><h3>{money(dashboard.presentes?.total_vendido)}</h3><p>Total Recebido</p></div>

@@ -299,6 +299,39 @@
   padding: 14px 16px;
   margin-top: 12px;
 }
+
+/* Card "Meta de convidados": formulário para definir a meta. */
+.painel-next .dash-meta__form {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.painel-next .dash-meta__form label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+.painel-next .dash-meta__linha {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.painel-next .dash-meta__linha input {
+  flex: 0 1 170px;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 1rem;
+  background: #fff;
+  color: var(--text-main);
+}
+@media (max-width: 600px) {
+  .painel-next .dash-meta__linha input { flex: 1 1 100%; }
+  .painel-next .dash-meta__linha .toolbar-btn { width: 100%; }
+}
 .painel-next .dash-progresso__cabecalho {
   display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
   font-size: 0.86rem; color: var(--text-main); margin-bottom: 6px;
