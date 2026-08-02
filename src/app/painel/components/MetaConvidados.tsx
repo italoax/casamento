@@ -11,8 +11,8 @@ import { useEffect, useState } from "react";
  * Cenários mostrados:
  *   - Confirmado: só quem já disse que vai.
  *   - Potencial: confirmados + quem ainda aguarda resposta (se todos vierem).
- *   - Com folga: potencial acrescido de uma margem (%) de segurança (ex.: para
- *     preparar o buffet com sobra). "Faltam" usa o potencial (sem a folga).
+ *   - Com folga: a META acrescida de uma margem (%) de segurança, arredondada
+ *     para cima (ex.: preparar o buffet com sobra). "Faltam" usa o potencial.
  */
 export function MetaConvidados({
   meta,
@@ -51,7 +51,8 @@ export function MetaConvidados({
 
   const metaNum = Math.max(0, Math.round(Number(valor) || 0));
   const margemNum = Math.min(100, Math.max(0, Math.round(Number(margemValor) || 0)));
-  const comMargem = Math.ceil(potencial * (1 + margemNum / 100));
+  // Folga sobre a META (alvo), arredondada para cima: 250 + 5% = 262,5 -> 263.
+  const comMargem = Math.ceil(metaNum * (1 + margemNum / 100));
 
   const faltam = Math.max(0, metaNum - potencial);
   const bateu = metaNum > 0 && potencial >= metaNum;
@@ -92,10 +93,10 @@ export function MetaConvidados({
           <h3>{bateu ? "0" : fmt(faltam)}</h3>
           <p>{bateu ? "Meta atingida" : "Faltam para a meta"}</p>
         </div>
-        {margemNum > 0 ? (
+        {margemNum > 0 && metaNum > 0 ? (
           <div className="card-info">
             <h3>{comMargem}</h3>
-            <p>Com folga (+{margemNum}%)</p>
+            <p>Meta com folga (+{margemNum}%)</p>
           </div>
         ) : null}
       </div>
@@ -160,7 +161,7 @@ export function MetaConvidados({
         <small className="form-hint">
           Consumo = adultos + metade das crianças de 6 a 10 (0 a 5 não contam).
           &quot;Faltam&quot; considera os pendentes como se todos viessem; a folga (%) é uma
-          margem de segurança aplicada sobre o potencial (ex.: preparar o buffet com sobra).
+          margem de segurança aplicada sobre a meta e arredondada para cima (ex.: 250 + 5% = 263).
         </small>
       </div>
     </div>
