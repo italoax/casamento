@@ -191,7 +191,11 @@ async function createToken(id: number) {
   return new SignJWT({ id })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("15m")
+    // 60 min (era 15): famílias grandes no celular passavam dos 15 min preenchendo
+    // o formulário e o "Confirmar" falhava com "Validação expirada" (o convidado
+    // achava que tinha confirmado). O token é por convite e só é emitido após
+    // validar o telefone daquele convite, então um prazo maior é seguro.
+    .setExpirationTime("60m")
     .sign(getRsvpSecret());
 }
 
