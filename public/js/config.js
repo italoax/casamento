@@ -3,7 +3,7 @@ window.siteConfig = {
   apiLogToken: "",
   
   meta: {
-    title: "Casamento Emanuelle & Ítalo",
+    title: "Emanuelle & Ítalo | Casamento",
     description: "Confirme sua presença e veja a lista de presentes para o casamento de Emanuelle e Ítalo.",
     ogImage: "https://emanuelleitalo.com/img/noivos/og-image-img2-1200x630.webp"
   },

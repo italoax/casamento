@@ -32,7 +32,9 @@ function aplicarConteudoSite() {
 }
 
 function atualizarMetadados() {
-  document.title = siteConfig.meta.title;
+  if (typeof siteConfig.meta.title === "string" && siteConfig.meta.title.trim()) {
+    document.title = siteConfig.meta.title;
+  }
   atualizarMetaTag('meta[name="description"]', siteConfig.meta.description);
   atualizarMetaTag('meta[property="og:title"]', siteConfig.meta.ogTitle);
   atualizarMetaTag('meta[property="og:description"]', siteConfig.meta.ogDescription);
@@ -40,6 +42,7 @@ function atualizarMetadados() {
 }
 
 function atualizarMetaTag(selector, content) {
+  if (typeof content !== "string" || !content.trim()) return;
   const el = document.querySelector(selector);
   if (el) el.setAttribute("content", content);
 }
