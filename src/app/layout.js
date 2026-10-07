@@ -51,6 +51,13 @@ export default async function RootLayout({ children }) {
     const configEnvOverrides = `window.siteConfig = window.siteConfig || {}; window.siteConfig.checkout = window.siteConfig.checkout || {}; window.siteConfig.checkout.valorCartao = ${JSON.stringify(valorCartao)};`;
     return (<html lang="pt-BR" className="pagina-carregando">
       <head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-R02R0P2KT8"></script>
+        <script id="google-analytics" dangerouslySetInnerHTML={{ __html: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-R02R0P2KT8');
+        ` }}></script>
         <meta name="theme-color" content="#f7f4ef"/>
         <meta name="color-scheme" content="only light"/>
         <meta name="mobile-web-app-capable" content="yes"/>

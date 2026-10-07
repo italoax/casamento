@@ -23,6 +23,7 @@ const scriptSrc = [
     "script-src 'self' 'unsafe-inline'",
     isDev ? "'unsafe-eval'" : "",
     "https://www.google.com https://www.gstatic.com https://maps.google.com https://cdn.jsdelivr.net",
+    "https://www.googletagmanager.com",
 ]
     .filter(Boolean)
     .join(" ");
@@ -75,7 +76,7 @@ const securityHeaders = [
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // CSS
             "img-src 'self' data: https:", // Imagens (permite data: para inline)
             "font-src 'self' https://fonts.gstatic.com", // Fontes
-            "connect-src 'self' https://www.google.com https://www.gstatic.com https://www.openstreetmap.org https://*.tile.openstreetmap.org", // Requisições AJAX/fetch
+            "connect-src 'self' https://www.google.com https://www.gstatic.com https://www.openstreetmap.org https://*.tile.openstreetmap.org https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com", // Requisições AJAX/fetch
             "frame-src https://www.google.com https://www.openstreetmap.org", // Iframes
             "base-uri 'self'", // Base URL para <base> tags
             "form-action 'self'", // Ações de formulário
