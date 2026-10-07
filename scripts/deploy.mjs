@@ -6,7 +6,7 @@
  * NÃO inclui `.next` nem `node_modules`.
  *
  * Estrutura do ZIP (tudo na raiz, sem pasta dentro de pasta):
- *   package.json, package-lock.json, next.config.ts, tsconfig.json, next-env.d.ts,
+ *   package.json, package-lock.json, next.config.mjs, jsconfig.json,
  *   server.js, src/, public/
  * NÃO incluso: node_modules/, .next/, .git/, .env, certificates/, scripts/
  *
@@ -91,7 +91,7 @@ function shouldSkip(rel) {
   if (p.endsWith(".log") || p === "server.log") return true;
   if (name.endsWith(".zip")) return true;
   if (name === ".deploy-version.json") return true;
-  if (name === "tsconfig.tsbuildinfo") return true;
+  if (name.endsWith(".tsbuildinfo")) return true;
   if (name === ".gitignore" || name === ".gitattributes") return true;
   if (name === "README.md") return true;
   // Exports com dados pessoais de convidados (LGPD) — nunca enviar no deploy.
@@ -187,10 +187,10 @@ const files = collectFiles().sort();
 for (const required of [
   "package.json",
   "package-lock.json",
-  "next.config.ts",
-  "tsconfig.json",
+  "next.config.mjs",
+  "jsconfig.json",
   "server.js",
-  "public/painel/css/painel.css",
+  "public/css/painel/painel.css",
 ]) {
   if (!files.includes(required)) throw new Error(`Arquivo obrigatorio ausente no ZIP: ${required}`);
 }

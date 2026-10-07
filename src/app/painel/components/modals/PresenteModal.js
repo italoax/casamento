@@ -1,0 +1,93 @@
+"use client";
+import { useState } from "react";
+import { money, imagemPresente } from "../../utils/formatting";
+const categoriasPresentes = ["Cama, mesa e banho", "Cartões presente", "Contribuição", "Cozinha", "Decoração", "Divertidos", "Eletrodomésticos", "Eletrônicos", "Lua de mel e experiências", "Móveis", "Outros"];
+function nomeBonitoDeArquivoPresente(valor = "") {
+    const raw = String(valor || "").trim();
+    if (!raw)
+        return "";
+    const arquivo = raw.split(/[\\/]/).pop() || raw;
+    const semExtensao = arquivo.replace(/\.(jpe?g|png|webp|gif)$/i, "");
+    const limpo = semExtensao
+        .replace(/-?\d{10,}$/g, "")
+        .replace(/_[a-z]{2}(?:_[a-z0-9]+)+/gi, " ")
+        .replace(/\b(?:ac|sl|ul|sx|sy|sr|uf|fmwebp|ql\d+|ss\d+|v1|v2)\b/gi, " ")
+        .replace(/\b\d{3,5}\b/g, " ")
+        .replace(/^[a-z0-9]{6,}\b[\s_-]*/i, "")
+        .replace(/[-_]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    if (!limpo || limpo.length < 3)
+        return "";
+    return limpo.toLowerCase().replace(/\b([a-záàâãéèêíïóôõöúçñ])/gi, letra => letra.toUpperCase());
+}
+function aplicarTaxaPreview(valor, taxaPercentual) {
+    // Com vírgula = formato BR ("1.234,56"): pontos são milhar, vírgula é decimal.
+    // Sem vírgula, o ponto JÁ é o separador decimal ("144.23" vindo do banco) — não remover,
+    // senão "144.23" virava 14423 e o preço do preview estourava (~100x maior).
+    const limpo = String(valor ?? "").trim();
+    const normalizado = limpo.includes(",") ? limpo.replace(/\./g, "").replace(",", ".") : limpo;
+    const base = Number(normalizado);
+    if (!Number.isFinite(base))
+        return 0;
+    return Math.round(base * (1 + Math.max(0, Number(taxaPercentual) || 0) / 100) * 100) / 100;
+}
+export function PresenteModal({ row, onSubmit, onCancel, ordem, busca, taxaPercentual = 0 }) {
+    const qtd = row?.quantidade_disponivel;
+    const sugerirCotas = row?.modo_exibicao === "cotas" || (!row?.modo_exibicao && qtd !== undefined && qtd !== null && qtd !== "" && Number(qtd) > 1);
+    const previewAtual = imagemPresente(row?.imagem_thumb || row?.imagem);
+    // O campo de preço é o VALOR BASE (sem taxa) — a taxa é aplicada pelo backend
+    // e mostrada no preview. Carregar row.preco (que JÁ inclui a taxa) fazia o
+    // backend reaplicar a taxa a cada edição, inflando o preço a cada save.
+    // Para cotas, o campo é o valor base TOTAL = base por cota × nº de cotas.
+    const precoBaseNum = row?.preco_base != null && String(row?.preco_base) !== "" ? Number(row.preco_base) : Number(row?.preco || 0);
+    const precoInicial = !row
+        ? ""
+        : sugerirCotas && qtd != null && Number(qtd) > 0
+            ? String(Math.round(precoBaseNum * Number(qtd) * 100) / 100)
+            : (precoBaseNum ? String(precoBaseNum) : "");
+    const [modo, setModo] = useState(sugerirCotas ? "cotas" : "padrao");
+    const [nome, setNome] = useState(String(row?.nome || ""));
+    const [preco, setPreco] = useState(precoInicial);
+    const [preview, setPreview] = useState(previewAtual);
+    function atualizarPreviewArquivo(file) {
+        if (!file) {
+            setPreview(previewAtual);
+            return;
+        }
+        if (!nome.trim()) {
+            const sugestao = nomeBonitoDeArquivoPresente(file.name);
+            if (sugestao)
+                setNome(sugestao);
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            setPreview(typeof reader.result === "string" ? reader.result : "");
+        };
+        reader.onerror = () => setPreview(previewAtual);
+        reader.readAsDataURL(file);
+    }
+    return <form method="POST" className="form-modal" encType="multipart/form-data" onSubmit={onSubmit}>
+    <input type="hidden" name="id_presente" defaultValue={row?.id || ""}/>
+    <input type="hidden" name="id" defaultValue={row?.id || ""}/>
+    <input type="hidden" name="imagem_atual" defaultValue={row?.imagem || ""}/>
+    <input type="hidden" name="ordem_presente" defaultValue={ordem || "recentes"}/>
+    <input type="hidden" name="busca_presente" defaultValue={busca || ""}/>
+    <input type="hidden" name="modo_exibicao" value={modo}/>
+    <div className="presente-modal__header"><div><span className="presente-modal__eyebrow">Lista de presentes</span><h3 className="modal-title">{row ? "Editar Presente" : "Adicionar Presente"}</h3></div></div>
+    <div className="presente-modal__layout">
+      <div className="presente-modal__main">
+        <div className="grupo-input"><label>Nome do presente</label><input type="text" name="nome_presente" value={nome} onChange={(e) => setNome(e.target.value)} required/></div>
+        <div className="grupo-input"><label>Categoria</label><select name="categoria" defaultValue={row?.categoria || ""} required><option value="" disabled>Selecione uma categoria</option>{categoriasPresentes.map((c) => <option key={c} value={c}>{c}</option>)}</select></div>
+        <div className="grupo-input"><label>Modelo do presente</label><div className="presente-modo-toggle" role="group" aria-label="Modelo do presente"><button type="button" className={`presente-modo-toggle__btn ${modo === "padrao" ? "presente-modo-toggle__btn--ativo" : ""}`} aria-pressed={modo === "padrao"} onClick={() => setModo("padrao")}>Presente normal</button><button type="button" className={`presente-modo-toggle__btn ${modo === "cotas" ? "presente-modo-toggle__btn--ativo" : ""}`} aria-pressed={modo === "cotas"} onClick={() => setModo("cotas")}>Presente por cotas</button></div></div>
+        <div className="linha-form"><div className="grupo-input"><label>{modo === "cotas" ? "Valor base total (R$)" : "Valor base (R$)"}</label><input type="text" name="preco" placeholder="0,00" value={preco} onChange={(e) => setPreco(e.target.value)} required/></div><div className="grupo-input"><label>Visibilidade no site</label><select name="visibilidade" defaultValue={row?.status || "disponivel"}><option value="disponivel">Mostrar no site</option><option value="oculto">Ocultar</option></select></div></div>
+        {modo === "padrao"
+            ? <div className="grupo-input"><label>Limite de presentes</label><input type="number" name="quantidade_disponivel" min={row ? Number(row.quantidade_vendida || 0) + Number(row.quantidade_reservada || 0) : 0} placeholder="Sem limite" defaultValue={!sugerirCotas ? (row?.quantidade_disponivel || "") : ""}/><small className="form-hint">1 = único · em branco = sem limite</small></div>
+            : <div className="grupo-input"><label>Quantidade de cotas</label><input type="number" name="quantidade_cotas" min="1" placeholder="Ex: 3" defaultValue={sugerirCotas ? (row?.quantidade_disponivel || "") : ""} required/></div>}
+        <div className="grupo-input grupo-input--file"><label>Imagem do presente</label><input type="file" name="imagem_arquivo" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" onChange={(e) => atualizarPreviewArquivo(e.target.files?.[0])}/></div>
+      </div>
+      <aside className="presente-modal__aside"><div className="grupo-input"><label>Preview no site</label><div className="preview-card"><div className="preview-card__media">{preview ? <img id="preview-presente-imagem" src={preview} alt="Preview do presente" style={{ display: "block" }}/> : <span id="preview-presente-sem-imagem">Sem imagem</span>}</div><div className="preview-card__body"><h4 id="preview-presente-nome">{nome || "Nome do presente"}</h4><p id="preview-presente-preco">{preco ? money(aplicarTaxaPreview(preco, taxaPercentual)) : "R$ 0,00"}</p>{taxaPercentual > 0 ? <small className="form-hint">Taxa de {taxaPercentual.toLocaleString("pt-BR")}% já aplicada</small> : null}<button type="button" className="preview-card__botao" disabled id="preview-presente-botao">Presentear</button></div></div></div></aside>
+    </div>
+    <div className="modal-actions"><button type="button" className="botao botao-secundario" onClick={onCancel}>Cancelar</button><button type="submit" className="botao botao-primario">Salvar Presente</button></div>
+  </form>;
+}

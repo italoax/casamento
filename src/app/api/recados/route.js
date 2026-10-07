@@ -1,0 +1,159 @@
+import { queryRows, execute, columnExists } from "@/lib/db";
+import { cleanText } from "@/lib/http";
+import { validateCaptcha } from "@/lib/auth/captcha";
+import { json, erro, validacaoErro } from "@/app/api/_middleware/responses";
+import { validarCamposObrigatorios, validarComSchema, } from "@/app/api/_middleware/validation";
+import { validarEmail, validarNomeCompleto } from "@/lib/utils/validation";
+import { logPayment } from "@/lib/payment";
+import { Security, SafeLog } from "@/lib/security";
+import { enviarAgradecimentoRecado, enviarNotificacaoRecado } from "@/lib/email/site-emails";
+export const runtime = "nodejs";
+async function ensureRecadosTable() {
+    await execute(`CREATE TABLE IF NOT EXISTS recados (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    nome VARCHAR(80) NOT NULL,
+    email VARCHAR(120) NOT NULL,
+    mensagem TEXT NOT NULL,
+    aprovado TINYINT(1) NOT NULL DEFAULT 0,
+    ip VARCHAR(64) NULL,
+    INDEX idx_created_at (created_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+    // "visivel" controla a exibição no mural independentemente da aprovação.
+    if (!(await columnExists("recados", "visivel"))) {
+        await execute("ALTER TABLE recados ADD COLUMN visivel TINYINT(1) NOT NULL DEFAULT 1").catch(() => undefined);
+    }
+}
+/**
+ * GET /api/recados - Lista recados aprovados
+ */
+export async function GET(request) {
+    const origin = request.headers.get("origin");
+    const corsHeaders = Security.corsHeaders(origin, request.url);
+    try {
+        await ensureRecadosTable();
+        const recados = (await queryRows("SELECT id, nome, mensagem, created_at FROM recados WHERE aprovado = 1 AND visivel = 1 ORDER BY created_at DESC LIMIT 50"));
+        return json({
+            sucesso: true,
+            recados,
+        }, { status: 200, headers: corsHeaders });
+    }
+    catch (error) {
+        SafeLog.error("GET /api/recados", error);
+        return erro("Falha temporária ao listar recados.", {
+            status: 500,
+            code: "LIST_ERROR",
+            headers: corsHeaders,
+        });
+    }
+}
+export async function OPTIONS(request) {
+    const origin = request.headers.get("origin");
+    return new Response(null, {
+        status: 204,
+        headers: Security.corsHeaders(origin, request.url),
+    });
+}
+/**
+ * POST /api/recados - Criar novo recado
+ */
+export async function POST(request) {
+    const origin = request.headers.get("origin");
+    const corsHeaders = Security.corsHeaders(origin, request.url);
+    if (!Security.isAllowedOrigin(origin, request.url)) {
+        return erro("Origem não autorizada.", {
+            status: 403,
+            code: "ORIGIN_NOT_ALLOWED",
+            headers: corsHeaders,
+        });
+    }
+    try {
+        // Rate limiting: máx 10 requisições por 5 minutos
+        const ip = Security.clientIp(request);
+        if (!Security.checkRateLimit(`POST:recados:${ip}`, 10, 300)) {
+            return erro("Muitas submissões. Aguarde alguns minutos.", {
+                status: 429,
+                code: "RATE_LIMITED",
+                headers: corsHeaders,
+            });
+        }
+        await ensureRecadosTable();
+        // Parse e validação de dados
+        const data = await request.json().catch(() => ({}));
+        const errosValidacao = validarCamposObrigatorios(data, [
+            "nome",
+            "email",
+            "mensagem",
+            "recaptchaToken",
+        ]);
+        if (errosValidacao.length > 0) {
+            return validacaoErro(Object.fromEntries(errosValidacao.map((e) => [e.field, e.message])), { headers: corsHeaders });
+        }
+        // Validação de schema
+        const validacaoSchema = validarComSchema(data, {
+            nome: (valor) => {
+                const limpo = cleanText(valor, 80);
+                return validarNomeCompleto(limpo)
+                    ? true
+                    : "Informe seu nome completo (nome e sobrenome).";
+            },
+            email: (valor) => {
+                const limpo = cleanText(valor, 120);
+                return validarEmail(limpo) ? true : "E-mail inválido.";
+            },
+            mensagem: (valor) => {
+                const limpo = cleanText(valor, 600);
+                return limpo.length >= 5
+                    ? true
+                    : "Escreva um recado com pelo menos 5 caracteres.";
+            },
+            recaptchaToken: (valor) => {
+                return typeof valor === "string" && valor.length > 0
+                    ? true
+                    : "Token do reCAPTCHA inválido.";
+            },
+        });
+        if (!validacaoSchema.valid) {
+            return validacaoErro(Object.fromEntries(validacaoSchema.errors.map((e) => [e.field, e.message])), { headers: corsHeaders });
+        }
+        // Validar captcha (Cloudflare Turnstile)
+        if (!(await validateCaptcha(data.recaptchaToken, request, "recado"))) {
+            return erro("Falha na verificação de segurança.", {
+                status: 422,
+                code: "CAPTCHA_FAILED",
+            });
+        }
+        // Limpar dados
+        const nome = cleanText(data.nome, 80);
+        const email = cleanText(data.email, 120);
+        const mensagem = cleanText(data.mensagem, 600);
+        // Inserir no banco
+        const [result] = await execute("INSERT INTO recados (nome, email, mensagem, aprovado, ip) VALUES (?, ?, ?, 0, ?)", [nome, email, mensagem, ip]);
+        const id = Number(result.insertId || 0);
+        // Registra nos logs do painel (aba "Logs"). Fica pendente de aprovação.
+        void logPayment({
+            tipo: "recado",
+            status: "sucesso",
+            mensagem,
+            nome_comprador: nome,
+            email,
+            payload: { origem: "site", recado_id: id, ip, userAgent: request.headers.get("user-agent") || null },
+        }).catch(() => undefined);
+        void enviarNotificacaoRecado({ nome, email, mensagem });
+        // Agradecimento ao convidado que deixou o recado.
+        void enviarAgradecimentoRecado({ email, nome });
+        return json({
+            sucesso: true,
+            id: String(id),
+            mensagem: "Recado enviado com sucesso! Aguarde aprovação.",
+        }, { status: 201, headers: corsHeaders });
+    }
+    catch (error) {
+        SafeLog.error("POST /api/recados", error);
+        return erro("Não foi possível salvar o recado.", {
+            status: 500,
+            code: "INSERT_ERROR",
+            headers: corsHeaders,
+        });
+    }
+}
