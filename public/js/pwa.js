@@ -9,7 +9,9 @@
   if (location.protocol !== "https:" && !ehLocal) return;
 
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(function (e) {
+    navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" }).then(function (registro) {
+      return registro.update();
+    }).catch(function (e) {
       console.warn("[pwa] falha ao registrar service worker:", e);
     });
   });

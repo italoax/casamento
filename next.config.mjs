@@ -112,12 +112,10 @@ const nextConfig = {
                 headers: securityHeaders,
             },
             {
-                // Mídia e fontes: conteúdo estável. Cache longo (1 ano) para performance.
-                // Cobre /img, /video e os assets internos /_next/static/media.
-                // Para ATUALIZAR uma mídia, troque o NOME do arquivo (ex.: video1-web.mp4),
-                // que é o cache busting já adotado no projeto.
+                // Revalida midia e fontes para detectar arquivos substituidos
+                // mesmo quando o nome continua igual.
                 source: "/:path*.(mp4|webm|webp|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|otf|avif)",
-                headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+                headers: [{ key: "Cache-Control", value: "public, no-cache" }],
             },
             // CSS/JS PRÓPRIOS do projeto (em /public, nome de arquivo fixo): o navegador
             // poderia servir uma versão antiga em cache — o problema clássico no mobile de

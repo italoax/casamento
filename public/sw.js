@@ -6,13 +6,13 @@
  *  - NUNCA toca em /api, /painel, /admin, /img/festa (uploads dinâmicos) nem em
  *    requisições com query de pagamento — essas vão SEMPRE pra rede.
  *  - Navegação (HTML): network-first. Se estiver offline, mostra /offline.html.
- *  - Assets estáticos (img/css/js/_next/fontes): stale-while-revalidate
- *    (responde do cache na hora e atualiza em segundo plano).
+ *  - Assets estaticos: network-first com revalidacao HTTP.
+ *    O cache local serve como alternativa quando a rede falha.
  *
  * Para forçar atualização do SW em todos os dispositivos, troque CACHE_VERSION.
  */
 
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const STATIC_CACHE = `casamento-static-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline.html";
 
@@ -70,23 +70,24 @@ self.addEventListener("fetch", (event) => {
   // Navegação (abrir uma página): network-first com fallback offline.
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req).catch(() => caches.match(OFFLINE_URL).then((r) => r || Response.error()))
+      fetch(req, { cache: "no-cache" }).catch(() => caches.match(OFFLINE_URL).then((r) => r || Response.error()))
     );
     return;
   }
 
-  // Assets estáticos: stale-while-revalidate.
+  // Consulta a rede antes do cache para evitar servir arquivos de outra versao.
   if (ehAsset(url)) {
     event.respondWith(
       caches.open(STATIC_CACHE).then(async (cache) => {
-        const cacheado = await cache.match(req);
-        const rede = fetch(req)
-          .then((resp) => {
-            if (resp && resp.status === 200 && resp.type === "basic") cache.put(req, resp.clone());
-            return resp;
-          })
-          .catch(() => cacheado);
-        return cacheado || rede;
+        try {
+          const resposta = await fetch(req, { cache: "no-cache" });
+          if (resposta.status === 200 && resposta.type === "basic") {
+            await cache.put(req, resposta.clone()).catch(() => {});
+          }
+          return resposta;
+        } catch {
+          return (await cache.match(req)) || Response.error();
+        }
       })
     );
   }

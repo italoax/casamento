@@ -592,10 +592,17 @@ p.intro-secao {
   animation: aparecerSubindo 1s ease-out forwards;
 }
 .agradecimento-monograma {
+  /* Reserva espaço para o acento e os traços da fonte cursiva no Safari. */
+  display: inline-block;
+  flex-shrink: 0;
   font-family: var(--fonte-cursiva);
   font-size: clamp(2rem, 5vw, 2.6rem);
-  color: var(--cor-secundaria);
-  line-height: 1;
+  color: #947744;
+  -webkit-text-fill-color: currentColor;
+  -webkit-text-stroke: 0.3px currentColor;
+  line-height: 1.5;
+  padding: 0.15em 0.4em;
+  overflow: visible;
   margin-bottom: 1.4rem;
   animation-delay: 0.1s;
 }
