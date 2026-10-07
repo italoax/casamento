@@ -5,7 +5,7 @@
  * Sheets abrem como planilha nativa — cabeçalho em negrito, números como
  * números e larguras de coluna. Evita bibliotecas como SheetJS (histórico de
  * CVEs). O ZIP usa o método "stored" (sem compressão), que é válido e o Excel
- * aceita; a mesma técnica de zip do scripts/deploy.mjs.
+ * aceita.
  */
 /** Escapa texto para dentro de XML. */
 function xmlEscape(value) {
@@ -85,7 +85,7 @@ function workbookXml(nomeAba) {
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${xmlEscape(nomeAba)}" sheetId="1" r:id="rId1"/></sheets></workbook>`;
 }
-/* ---- ZIP "stored" (sem compressão), igual em espírito ao deploy.mjs ---- */
+/* ---- ZIP "stored" (sem compressão) ---- */
 function crc32(buf) {
     let crc = 0xffffffff;
     for (let i = 0; i < buf.length; i++) {

@@ -3,9 +3,9 @@
  *
  * PROBLEMA que isto resolve:
  * A cada deploy na Hostinger, os arquivos do app são substituídos pelo conteúdo
- * do ZIP. Se as imagens enviadas pelo painel ficarem em public/img/presentes
- * (DENTRO da pasta do deploy), todo deploy apaga as imagens — porque o ZIP só
- * contém as imagens que existem no projeto local. Guardando-as FORA da pasta do
+ * do repositório. Se as imagens enviadas pelo painel ficarem em public/img/presentes
+ * (DENTRO da pasta do deploy), uma publicação pode substituir as imagens pelos
+ * arquivos que existem no repositório. Guardando-as FORA da pasta do
  * deploy, elas sobrevivem aos deploys.
  *
  * Configuração:
