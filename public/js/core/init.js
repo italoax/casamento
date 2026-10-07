@@ -33,9 +33,7 @@ function iniciar() {
   configurarScrollHashSync();
   preencherDadosEvento();
   iniciarContagem();
-  // Assíncrono de propósito: não seguramos a home esperando a API. Consulta ao
-  // abrir e a cada minuto, então a virada aparece sozinha para quem já está com
-  // o site aberto — sem precisar recarregar.
+  // Consulta a fase manual sem bloquear a renderizacao inicial.
   iniciarAtualizacaoFaseEvento();
   iniciarCarrossel();
   iniciarVideoCasal();

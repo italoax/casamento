@@ -34,10 +34,13 @@ export function Evento({ onToast }) {
     useEffect(() => { void carregar(); }, []);
     async function salvar(event) {
         event.preventDefault();
+        const payload = Object.fromEntries(new FormData(event.currentTarget).entries());
+        await salvarDados(payload);
+    }
+    async function salvarDados(payload) {
         if (salvando)
             return;
         setSalvando(true);
-        const payload = Object.fromEntries(new FormData(event.currentTarget).entries());
         try {
             const res = await fetch("/api/painel/evento", {
                 method: "POST",
@@ -48,7 +51,12 @@ export function Evento({ onToast }) {
             if (res.ok) {
                 setConfig(body.config);
                 setFaseAtual(body.faseAtual);
-                onToast("Fases do evento salvas.");
+                onToast("Fase do evento atualizada.");
+                if ("BroadcastChannel" in window) {
+                    const canal = new BroadcastChannel("evento-fase");
+                    canal.postMessage({ fase: body.faseAtual });
+                    canal.close();
+                }
             }
             else {
                 onToast(body.erro || "Não foi possível salvar.");
@@ -78,46 +86,16 @@ export function Evento({ onToast }) {
           <strong>{ROTULO_FASE[faseAtual]}</strong>
         </div>
 
-        <p className="painel-ajuda">
-          O bloco do contador na home muda sozinho conforme o horário: a contagem regressiva vira
-          <strong> Acontecendo agora</strong> no início, e <strong>Agradecimento</strong> no término.
-          O restante do site não é afetado.
-        </p>
-
         <form className="form-modal rsvp-deadline-form" onSubmit={salvar}>
           <label className="rsvp-date-field">
-            <span>Modo</span>
-            <select name="modo" defaultValue={config.modo}>
-              <option value="auto">Automático (pelo horário)</option>
-              <option value="contagem">Forçar: contagem regressiva</option>
-              <option value="acontecendo">Forçar: acontecendo agora</option>
-              <option value="agradecimento">Forçar: agradecimento</option>
-              <option value="encerrado">Forçar: encerrado (site inteiro)</option>
+            <span>Fase do evento</span>
+            <select name="modo" value={config.modo} disabled={salvando} onChange={event => void salvarDados({ modo: event.target.value })}>
+              <option value="contagem">Contagem regressiva</option>
+              <option value="acontecendo">Acontecendo agora</option>
+              <option value="agradecimento">Agradecimento</option>
+              <option value="encerrado">Encerrado (site inteiro)</option>
             </select>
           </label>
-          <p className="painel-ajuda">
-            Use &quot;Forçar&quot; para testar antes ou corrigir na hora (se a cerimônia atrasar, por exemplo).
-            Deixe em <strong>Automático</strong> no dia a dia.
-          </p>
-
-          <label className="rsvp-date-field">
-            <span>Início: quando a contagem vira &quot;acontecendo&quot;</span>
-            <input type="datetime-local" name="inicio" defaultValue={config.inicio} required/>
-          </label>
-
-          <label className="rsvp-date-field">
-            <span>Término: quando vira &quot;agradecimento&quot;</span>
-            <input type="datetime-local" name="fim" defaultValue={config.fim} required/>
-          </label>
-
-          <label className="rsvp-date-field">
-            <span>Encerramento: quando o site inteiro vira a página de agradecimento</span>
-            <input type="datetime-local" name="encerramento" defaultValue={config.encerramento} required/>
-          </label>
-          <p className="painel-ajuda">
-            A partir desta data, quem acessar o site vê <strong>apenas</strong> a mensagem de
-            agradecimento: presentes, confirmação e recados deixam de aparecer.
-          </p>
 
           <label className="rsvp-date-field">
             <span>Título: acontecendo agora</span>
@@ -141,7 +119,7 @@ export function Evento({ onToast }) {
 
           <div className="rsvp-actions">
             <button className="toolbar-btn toolbar-btn--primary" type="submit" disabled={salvando}>
-              {salvando ? "Salvando..." : "Salvar fases"}
+              {salvando ? "Salvando..." : "Salvar textos"}
             </button>
           </div>
         </form>

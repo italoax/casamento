@@ -1,4 +1,5 @@
 import { errorJson, json } from "@/lib/http";
+import { revalidatePath } from "next/cache";
 import { requirePainelPermission } from "@/lib/auth/painel-auth";
 import { calcularFase, getEventoConfig, setEventoConfig, validarEventoConfig } from "@/lib/site/evento-fases";
 export const runtime = "nodejs";
@@ -17,14 +18,7 @@ export async function POST(request) {
         return errorJson(erros.join(" "), 400);
     if (!Object.keys(dados).length)
         return errorJson("Nada para salvar.", 400);
-    // Datas parciais: se só uma vier no corpo, compara com a que já está salva
-    // para não gravar um intervalo invertido (término antes do início).
-    if (dados.inicio === undefined || dados.fim === undefined) {
-        const atual = await getEventoConfig();
-        const { erros: errosMesclados } = validarEventoConfig({ ...atual, ...dados });
-        if (errosMesclados.length)
-            return errorJson(errosMesclados.join(" "), 400);
-    }
     const config = await setEventoConfig(dados);
+    revalidatePath("/");
     return json({ sucesso: true, config, faseAtual: calcularFase(config) });
 }

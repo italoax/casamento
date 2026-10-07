@@ -371,7 +371,8 @@ async function aplicarFaseEvento() {
   const mensagem = document.getElementById("fase-evento-mensagem");
   const contador = document.getElementById("contagem-regressiva");
   const tituloContador = document.getElementById("titulo-contagem-hero");
-  if (!titulo || !mensagem || !contador) return;
+  const agradecimento = document.querySelector(".pagina-agradecimento");
+  if (!agradecimento && (!titulo || !mensagem || !contador)) return;
 
   let dados = null;
   try {
@@ -382,20 +383,27 @@ async function aplicarFaseEvento() {
     return;
   }
   if (!dados || !dados.fase) return;
-
-  // Na primeira execução o HTML já veio do servidor na fase certa: só guardamos
-  // qual é, sem refazer o DOM (o que mataria a animação da cascata).
-  if (faseAplicada === null) {
-    faseAplicada = titulo.hidden ? "contagem" : dados.fase;
-    if (faseAplicada === dados.fase) return;
+  if (agradecimento) {
+    if (dados.fase !== "encerrado") {
+      window.location.reload();
+      return;
+    }
+    const tituloFinal = agradecimento.querySelector(".agradecimento-titulo");
+    const mensagemFinal = agradecimento.querySelector(".agradecimento-mensagem");
+    if (tituloFinal) tituloFinal.textContent = dados.titulo || "";
+    if (mensagemFinal) mensagemFinal.textContent = dados.mensagem || "";
+    return;
   }
-  if (dados.fase === faseAplicada) return;
+
+  // Compara com a fase renderizada pelo servidor antes de alterar o DOM.
+  if (faseAplicada === null) {
+    faseAplicada = titulo.hidden ? "contagem" : titulo.dataset.fase;
+  }
+  if (dados.fase === faseAplicada && (dados.fase === "contagem" ||
+      (titulo.textContent === dados.titulo && mensagem.textContent === dados.mensagem))) return;
   faseAplicada = dados.fase;
 
-  // "encerrado" troca a página inteira, não só o topo — quem monta isso é o
-  // servidor. Recarregamos para buscar a versão nova. Sem risco de laço: na
-  // página de agradecimento os elementos do hero não existem e a função para
-  // logo no início.
+  // O servidor monta a pagina completa da fase encerrada.
   if (dados.fase === "encerrado") {
     window.location.reload();
     return;
@@ -403,7 +411,7 @@ async function aplicarFaseEvento() {
 
   const daFase = [ titulo, mensagem ];
 
-  // Volta para a contagem (fase forçada no painel, ou correção de horário).
+  // Volta para a contagem selecionada no painel.
   if (dados.fase === "contagem") {
     daFase.forEach(el => {
       el.hidden = true;
@@ -435,17 +443,20 @@ async function aplicarFaseEvento() {
 /**
  * Mantém a fase em dia sem recarregar a página.
  *
- * Consulta a cada minuto, para que a virada (contagem -> acontecendo ->
- * agradecimento) apareça sozinha em quem estiver com o site aberto — cenário
- * provável no dia, às 15:30 e à meia-noite.
+ * Consulta a cada cinco segundos para refletir a selecao feita no painel.
  *
  * Só consulta com a aba em primeiro plano: aba esquecida em segundo plano não
  * fica batendo no servidor (a hospedagem é compartilhada). Ao voltar para a aba,
  * consulta na hora, cobrindo o tempo em que ficou parada.
  */
-const INTERVALO_FASE_MS = 60 * 1e3;
+const INTERVALO_FASE_MS = 5 * 1e3;
 
 function iniciarAtualizacaoFaseEvento() {
+  if (!(document.querySelector(".pagina-agradecimento") || document.getElementById("fase-evento-titulo"))) return;
+  if ("BroadcastChannel" in window) {
+    const canal = new BroadcastChannel("evento-fase");
+    canal.onmessage = () => { void aplicarFaseEvento(); };
+  }
   void aplicarFaseEvento();
   setInterval(() => {
     if (document.hidden) return;

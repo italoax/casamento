@@ -16,7 +16,7 @@ export async function OPTIONS(request) {
     });
 }
 export async function GET(request) {
-    const corsHeaders = Security.corsHeaders(request.headers.get("origin"), request.url);
+    const corsHeaders = { ...Security.corsHeaders(request.headers.get("origin"), request.url), "Cache-Control": "no-store" };
     try {
         const config = await getEventoConfig();
         const fase = calcularFase(config);
