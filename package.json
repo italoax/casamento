@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "dev:https": "next dev --experimental-https",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "dev:https": "next dev --webpack --experimental-https",
+    "build": "next build --webpack",
     "start": "node server.js",
     "backup": "node scripts/backup-db.mjs"
   },
