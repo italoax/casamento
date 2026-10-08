@@ -8,6 +8,8 @@ Se os arquivos não mudam, as URLs permanecem iguais, inclusive após reiniciar 
 
 Publique `.next` e a pasta `public` completa, incluindo `public/_assets`. Essas cópias são geradas pelo build e não entram no Git. Se a hospedagem executa `npm run build`, elas são criadas automaticamente.
 
+Para a Hostinger com aplicação Next.js, o build também gera `.next/standalone/server.js`. O passo final copia `public` (incluindo `_assets`) e `.next/static` para esse pacote. Mantenha o comando de construção `npm run build` e o diretório de saída `.next`. Para executar o pacote manualmente: `node .next/standalone/server.js`.
+
 Mantenha as pastas de versões anteriores ao atualizar um servidor existente: páginas que já estavam abertas ainda podem solicitar seus módulos. O gerador preserva essas pastas e nunca sobrescreve um arquivo imutável com conteúdo diferente.
 
 ## Políticas

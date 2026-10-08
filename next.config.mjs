@@ -9,6 +9,7 @@
  * Documentação: https://nextjs.org/docs/app/api-reference/config/next-config-js
  */
 import { prepararAssets } from "./scripts/static-assets.mjs";
+import { fileURLToPath } from "node:url";
 const isDev = process.env.NODE_ENV !== "production";
 const baseUrlHost = process.env.BASE_URL ? new URL(process.env.BASE_URL).hostname : "";
 const allowedDevOrigins = [baseUrlHost].filter(Boolean);
@@ -90,6 +91,8 @@ const securityHeaders = [
  * Configuração final do Next.js
  */
 const nextConfig = {
+    output: "standalone",
+    outputFileTracingRoot: fileURLToPath(new URL(".", import.meta.url)),
     poweredByHeader: false, // Não expõe qual framework está sendo usado
     ...(allowedDevOrigins.length > 0 ? { allowedDevOrigins } : {}),
     // Mantém compatibilidade com QR Codes antigos que apontam para /padrinhos/index.html
