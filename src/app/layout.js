@@ -9,6 +9,7 @@
  * - Scripts do cliente
  */
 import Script from "next/script";
+import { assetUrl, assetRelease } from "@/lib/site/assets";
 import { getCartaoValor } from "@/lib/site/cartao-config";
 // Metadados para SEO e redes sociais
 export const metadata = {
@@ -39,15 +40,9 @@ export const metadata = {
         apple: [{ url: "/img/favicon/favicon-180x180.png", sizes: "180x180", type: "image/png" }],
     },
 };
-// Versão dos assets estáticos (CSS/JS) para cache-busting. Muda a cada deploy
-// (ou reinício do servidor na Hostinger), forçando navegadores e o Cloudflare a
-// baixarem a versão nova — a URL muda, então o cache antigo é ignorado.
-// Pode ser fixada via env ASSET_VERSION; senão usa o instante de inicialização.
-const ASSET_VERSION = process.env.ASSET_VERSION || String(Date.now());
 export default async function RootLayout({ children }) {
     // Valor do cartão postal: banco (editável no painel) -> env -> padrão.
     const valorCartao = await getCartaoValor();
-    const v = `?v=${ASSET_VERSION}`;
     const configEnvOverrides = `window.siteConfig = window.siteConfig || {}; window.siteConfig.checkout = window.siteConfig.checkout || {}; window.siteConfig.checkout.valorCartao = ${JSON.stringify(valorCartao)};`;
     return (<html lang="pt-BR" className="pagina-carregando">
       <head>
@@ -69,18 +64,18 @@ export default async function RootLayout({ children }) {
         <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Great+Vibes&family=Playfair+Display:wght@700&family=Quicksand:wght@300;400;600&display=swap"/>
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Great+Vibes&family=Playfair+Display:wght@700&family=Quicksand:wght@300;400;600&display=swap" rel="stylesheet"/>
         {/* CSS modularizado por tópico (com versão para cache-busting) */}
-        <link rel="stylesheet" href={`/css/01-fundamentos.css${v}`}/>
-        <link rel="stylesheet" href={`/css/02-secoes.css${v}`}/>
-        <link rel="stylesheet" href={`/css/03-rodape-responsivo-animacoes.css${v}`}/>
-        <link rel="stylesheet" href={`/css/04-compras-checkout-login.css${v}`}/>
-        <link rel="stylesheet" href={`/css/05-ajustes-mobile.css${v}`}/>
-        <link rel="stylesheet" href={`/css/06-ajustes-finais.css${v}`}/>
+        <link rel="stylesheet" href={assetUrl("/css/01-fundamentos.css")}/>
+        <link rel="stylesheet" href={assetUrl("/css/02-secoes.css")}/>
+        <link rel="stylesheet" href={assetUrl("/css/03-rodape-responsivo-animacoes.css")}/>
+        <link rel="stylesheet" href={assetUrl("/css/04-compras-checkout-login.css")}/>
+        <link rel="stylesheet" href={assetUrl("/css/05-ajustes-mobile.css")}/>
+        <link rel="stylesheet" href={assetUrl("/css/06-ajustes-finais.css")}/>
       </head>
       <body className="pagina-carregando" suppressHydrationWarning>
         {children}
         {/* Scripts carregados em ordem específica */}
         {/* beforeInteractive: carregado antes do React, bloqueante */}
-        <Script src={`/js/config.js${v}`} strategy="beforeInteractive"/>
+        <Script src={assetUrl("/js/config.js")} strategy="beforeInteractive"/>
         <Script id="config-env-overrides" strategy="beforeInteractive">
           {/* Injeta config de cartão do servidor para o cliente */}
           {configEnvOverrides}
@@ -90,11 +85,11 @@ export default async function RootLayout({ children }) {
           {`if (typeof window.hashInicialTravado === "undefined") window.hashInicialTravado = false; var hashInicialTravado = window.hashInicialTravado;`}
         </Script>
         {/* afterInteractive: carregado depois do React */}
-        <Script src={`/js/index.js${v}`} type="module" strategy="afterInteractive"/>
-        <Script src={`/js/confirmacao.js${v}`} type="module" strategy="afterInteractive"/>
-        <Script src={`/js/preloader.js${v}`} strategy="afterInteractive"/>
+        <Script src={assetUrl("/js/index.js")} type="module" strategy="afterInteractive"/>
+        <Script src={assetUrl("/js/confirmacao.js")} type="module" strategy="afterInteractive"/>
+        <Script src={assetUrl("/js/preloader.js")} strategy="afterInteractive"/>
         {/* Registra o Service Worker (PWA / instalável / offline) */}
-        <Script src={`/js/pwa.js${v}`} strategy="afterInteractive"/>
+        <Script src={assetUrl("/js/pwa.js")} data-asset-release={assetRelease} data-cache-mode={process.env.NODE_ENV} strategy="afterInteractive"/>
       </body>
     </html>);
 }

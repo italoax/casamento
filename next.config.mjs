@@ -8,6 +8,7 @@
  *
  * Documentação: https://nextjs.org/docs/app/api-reference/config/next-config-js
  */
+import { prepararAssets } from "./scripts/static-assets.mjs";
 const isDev = process.env.NODE_ENV !== "production";
 const baseUrlHost = process.env.BASE_URL ? new URL(process.env.BASE_URL).hostname : "";
 const allowedDevOrigins = [baseUrlHost].filter(Boolean);
@@ -128,6 +129,11 @@ const nextConfig = {
             // têm hash no nome e mantêm o cache longo "immutable" padrão do Next).
             { source: "/js/:path*", headers: [{ key: "Cache-Control", value: "no-cache" }] },
             { source: "/css/:path*", headers: [{ key: "Cache-Control", value: "no-cache" }] },
+            // Apenas cópias com hash no caminho recebem cache longo.
+            {
+                source: "/_assets/:grupo(css|js)/:hash([a-f0-9]{20})/:path*",
+                headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+            },
             // PWA: o service worker e o manifest precisam revalidar sempre, senão um SW
             // antigo fica preso no cache do navegador/Cloudflare e nunca atualiza.
             { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache" }] },
@@ -136,4 +142,10 @@ const nextConfig = {
         ];
     },
 };
-export default nextConfig;
+export default function config(phase) {
+    if (phase === "phase-production-build") {
+        const manifest = prepararAssets();
+        return { ...nextConfig, env: { SITE_ASSET_MANIFEST: JSON.stringify(manifest) } };
+    }
+    return nextConfig;
+}

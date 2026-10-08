@@ -49,9 +49,12 @@ export async function sendEmail(options) {
         port: Number(env("SMTP_PORT", "587")),
         secure: envBool("SMTP_SECURE", false), // true = TLS, false = STARTTLS
         auth: { user: account.user, pass: account.pass },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 30000,
     });
     // Envia o e-mail
-    await transporter.sendMail({
+    return await transporter.sendMail({
         from: account.from,
         to: options.to,
         subject: options.subject,
@@ -59,5 +62,6 @@ export async function sendEmail(options) {
         text: options.text,
         replyTo: options.replyTo,
         attachments: options.attachments,
+        messageId: options.messageId,
     });
 }

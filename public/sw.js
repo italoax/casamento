@@ -6,13 +6,13 @@
  *  - NUNCA toca em /api, /painel, /admin, /img/festa (uploads dinâmicos) nem em
  *    requisições com query de pagamento — essas vão SEMPRE pra rede.
  *  - Navegação (HTML): network-first. Se estiver offline, mostra /offline.html.
- *  - Assets estaticos: network-first com revalidacao HTTP.
- *    O cache local serve como alternativa quando a rede falha.
+ *  - Assets com hash: cache-first. A URL muda quando o conteúdo muda.
+ *  - Assets com nome fixo: network-first com revalidação HTTP.
  *
  * Para forçar atualização do SW em todos os dispositivos, troque CACHE_VERSION.
  */
 
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = `v3-${new URL(self.location.href).searchParams.get("v") || "fixed"}`;
 const STATIC_CACHE = `casamento-static-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline.html";
 
@@ -28,7 +28,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((nomes) =>
-      Promise.all(nomes.filter((n) => n !== STATIC_CACHE).map((n) => caches.delete(n)))
+      Promise.all(nomes.filter((n) => n.startsWith("casamento-static-") && n !== STATIC_CACHE).map((n) => caches.delete(n)))
     ).then(() => self.clients.claim())
   );
 });
@@ -49,6 +49,7 @@ function ehAsset(url) {
   const p = url.pathname;
   return (
     p.startsWith("/_next/static/") ||
+    p.startsWith("/_assets/") ||
     p.startsWith("/css/") ||
     p.startsWith("/js/") ||
     p.startsWith("/img/") ||
@@ -75,14 +76,22 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Consulta a rede antes do cache para evitar servir arquivos de outra versao.
+  // Arquivos com hash são imutáveis; nomes fixos sempre consultam a rede.
   if (ehAsset(url)) {
     event.respondWith(
       caches.open(STATIC_CACHE).then(async (cache) => {
+        const imutavel = /^\/_assets\/(css|js)\/[a-f0-9]{20}\//.test(url.pathname) || url.pathname.startsWith("/_next/static/");
+        if (imutavel) {
+          const existente = await cache.match(req);
+          if (existente) return existente;
+        }
         try {
-          const resposta = await fetch(req, { cache: "no-cache" });
+          const resposta = await fetch(req, { cache: imutavel ? "default" : "no-cache" });
           if (resposta.status === 200 && resposta.type === "basic") {
             await cache.put(req, resposta.clone()).catch(() => {});
+            // Limita o espaço usado, mesmo em visitas longas ou muitas páginas.
+            const entradas = await cache.keys();
+            await Promise.all(entradas.filter(entry => !PRECACHE.includes(new URL(entry.url).pathname)).slice(0, Math.max(0, entradas.length - 120)).map(entry => cache.delete(entry)));
           }
           return resposta;
         } catch {

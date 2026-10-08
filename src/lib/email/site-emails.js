@@ -103,6 +103,16 @@ function itensHtml(itens) {
 function totalHtml(total) {
     return `<div style="border-top:2px solid ${COR.borda};margin-top:12px;padding-top:12px;font-family:${FONTE_SERIFA};font-size:16px;font-weight:bold;color:${COR.marrom};text-align:right;">Total: ${money(total)}</div>`;
 }
+export function montarAvisoFotos({ nome, email, assunto, mensagem, url }) {
+    return {
+        to: email,
+        subject: assunto,
+        text: `Olá, ${nome}!\n\n${mensagem}\n\nVeja as fotos: ${url}`,
+        html: emailShell(assunto, `${saudacao(nome)}${titulo("Nosso dia, para sempre")}
+          ${paragrafo(esc(mensagem).replace(/\r?\n/g, "<br>"))}
+          ${botaoCta(esc(url), "Ver as fotos do casamento")}`),
+    };
+}
 async function sendSafe(label, fn) {
     try {
         await fn();

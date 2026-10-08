@@ -1,3 +1,4 @@
+import { assetUrl } from "@/lib/site/assets";
 import Script from "next/script";
 export const metadata = {
     title: "Manual dos Padrinhos | Emanuelle & Ítalo",
@@ -6,8 +7,8 @@ export const metadata = {
 export default function ManualDosPadrinhosPage() {
     return (<>
       <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Playfair+Display:wght@500;600&family=Inter:wght@400;500;600&family=Great+Vibes&display=swap" rel="stylesheet"/>
-      <link rel="stylesheet" href="/css/padrinhos.css"/>
-      <link rel="stylesheet" href="/css/03-rodape-responsivo-animacoes.css"/>
+      <link rel="stylesheet" href={assetUrl("/css/padrinhos.css")}/>
+      <link rel="stylesheet" href={assetUrl("/css/03-rodape-responsivo-animacoes.css")}/>
       <div id="pre-carregamento">
       <div className="coracao-pre-carregamento"></div>
       </div>
@@ -245,6 +246,6 @@ export default function ManualDosPadrinhosPage() {
       </div>
       </div>
       </footer>
-      <Script src="/js/padrinhos.js" strategy="afterInteractive"/>
+      <Script src={assetUrl("/js/padrinhos.js")} strategy="afterInteractive"/>
     </>);
 }

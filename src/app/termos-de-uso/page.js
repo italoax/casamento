@@ -1,3 +1,4 @@
+import { assetUrl } from "@/lib/site/assets";
 import { Footer } from "@/components/Footer";
 import { env } from "@/lib/env";
 export const metadata = {
@@ -9,7 +10,7 @@ export default function TermosDeUsoPage() {
     const CONTATO_EMAIL = env("LEGAL_CONTATO_EMAIL", "suporte@emanuelleitalo.com");
     const ULTIMA_ATUALIZACAO = env("LEGAL_ATUALIZACAO", "7 de junho de 2026");
     return (<>
-      <link rel="stylesheet" href="/css/paginas-legais.css"/>
+      <link rel="stylesheet" href={assetUrl("/css/paginas-legais.css")}/>
 
       <main className="legal-pagina">
         <header className="legal-hero">

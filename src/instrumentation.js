@@ -7,5 +7,7 @@ export async function register() {
     if (process.env.NEXT_RUNTIME === "nodejs") {
         const { iniciarWorkerFila } = await import("@/lib/whatsapp/whatsapp-queue");
         iniciarWorkerFila();
+        const { iniciarWorkerEmailsFotos } = await import("@/lib/email/fotos-queue");
+        iniciarWorkerEmailsFotos();
     }
 }
