@@ -56,7 +56,7 @@ export default async function Home() {
     if (calcularFase(config) === "encerrado") {
         return <>{websiteSchema}<ThanksPage titulo={config.agradecimentoTitulo} mensagem={config.agradecimentoMensagem}/></>;
     }
-    return (<div id="site-root">
+    return (<div id="site-root" className="site-entrada">
       {websiteSchema}
       <Preloader />
       <Header />

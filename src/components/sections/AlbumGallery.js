@@ -9,6 +9,7 @@ function Icon({ tipo }) {
 }
 
 export function AlbumGallery() {
+    const [entradaPronta, setEntradaPronta] = useState(false);
     const [fotos, setFotos] = useState([]);
     const [visiveis, setVisiveis] = useState(24);
     const [proxima, setProxima] = useState("");
@@ -54,6 +55,17 @@ export function AlbumGallery() {
         // Sem abortar a primeira chamada na repetição de efeitos do modo Strict.
         carregar("");
     }, [carregar]);
+
+    useEffect(() => {
+        let ativo = true;
+        // As fotos só começam a entrar depois da sequência do topo e do álbum.
+        const instrucao = document.querySelector(".agradecimento-album-instrucao");
+        const animacoes = instrucao?.getAnimations?.() || [];
+        Promise.all(animacoes.map(animacao => animacao.finished.catch(() => undefined))).then(() => {
+            if (ativo) setEntradaPronta(true);
+        });
+        return () => { ativo = false; };
+    }, []);
 
     useEffect(() => {
         // Uma página da Adobe pode não conter nenhuma das fotos selecionadas.
@@ -139,9 +151,10 @@ export function AlbumGallery() {
     }
 
     return <>
-      <div className="album-grade" aria-busy={carregando}>
+      <div className={`album-grade${entradaPronta ? " album-entrada-pronta" : ""}`} aria-busy={carregando}>
         {fotos.slice(0, visiveis).map((item, posicao) => <button
           className="album-miniatura" key={item.id} type="button"
+          style={{ "--entrada-foto-delay": `${(posicao % 24) * 0.1}s` }} disabled={!entradaPronta}
           aria-label={`Ampliar foto ${posicao + 1}`} onClick={() => setIndice(posicao)}
         >
           <img src={item.thumbnail || item.src} alt={`Foto ${posicao + 1} do casamento`} loading="lazy" decoding="async" />
@@ -151,7 +164,7 @@ export function AlbumGallery() {
       {erro && <p className="album-aviso" role="status">{erro}</p>}
       {!carregando && !erro && !fotos.length && proxima === null && <p className="album-aviso">Nenhuma foto disponível no momento.</p>}
       {(visiveis < fotos.length || proxima !== null) && <div className="album-fim-grade" ref={fimDaGrade}>
-        {carregando && <p className="album-aviso" role="status">Carregando fotos…</p>}
+        {carregando && entradaPronta && !aberto && <span className="album-carregando" role="status" aria-label="Carregando fotos" />}
         {erro && <button className="album-carregar" type="button" onClick={maisFotos} disabled={carregando}>Tentar novamente</button>}
       </div>}
       <dialog className="album-visualizador" ref={dialog} aria-labelledby="album-foto-titulo"
@@ -182,7 +195,9 @@ export function AlbumGallery() {
             <img key={foto.id} src={foto.src} alt={`Foto ${indice + 1} do casamento de Emanuelle e Ítalo`}
               className={`album-foto-principal${fotoCarregada === foto.id ? " is-loaded" : ""}`}
               onLoad={() => setFotoCarregada(foto.id)} onError={() => setErroFoto(foto.id)} draggable="false" />
-            {fotoCarregada !== foto.id && <p role="status">{erroFoto === foto.id ? "Esta foto não carregou. Tente a próxima." : "Carregando foto…"}</p>}
+            {fotoCarregada !== foto.id && <div className="album-foto-status">
+              {erroFoto === foto.id ? <p role="alert">Esta foto não carregou. Tente a próxima.</p> : <span className="album-carregando" role="status" aria-label="Carregando foto" />}
+            </div>}
           </div>
           <footer className="album-visualizador-rodape">
             <div className="album-navegacao">

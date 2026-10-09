@@ -11,7 +11,7 @@
 import { AlbumGallery } from "./AlbumGallery";
 
 export function ThanksPage({ titulo, mensagem }) {
-    return (<div id="site-root" className="pagina-agradecimento">
+    return (<div id="site-root" className="pagina-agradecimento site-entrada">
       <main className="agradecimento-conteudo">
         <div className="agradecimento-moldura">
           <span className="agradecimento-monograma" aria-hidden="true">E &amp; Í</span>

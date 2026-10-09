@@ -122,6 +122,26 @@ body.pagina-carregando {
   flex-direction: column;
   background-color: var(--cor-fundo);
 }
+/* Abertura suave da home, inclusive na fase de agradecimento. */
+.site-entrada::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, #fffaf2 0%, var(--cor-fundo) 75%);
+  animation: revelar-site 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes revelar-site {
+  from { opacity: 1; }
+  to { opacity: 0; visibility: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-entrada::after { display: none; animation: none; }
+}
+@media print {
+  .site-entrada::after { display: none; }
+}
 main {
   flex: 1 0 auto;
   overflow: visible;
@@ -565,6 +585,14 @@ p.intro-secao {
 }
 /* Galeria do álbum público, com miniaturas e visualização ampliada. */
 .agradecimento-album { width: 100%; min-width: 0; }
+.agradecimento-album-rotulo,
+.agradecimento-album-titulo,
+.agradecimento-album-instrucao {
+  animation: aparecerSubindo 1s ease-out both;
+}
+.agradecimento-album-rotulo { animation-delay: 2s; }
+.agradecimento-album-titulo { animation-delay: 2.18s; }
+.agradecimento-album-instrucao { animation-delay: 2.36s; }
 .agradecimento-album-rotulo {
   margin: 0 0 0.7rem; color: #947744; font-size: 0.65rem;
   letter-spacing: 0.28em; text-transform: uppercase;
@@ -577,11 +605,18 @@ p.intro-secao {
   margin: 0 0 2rem; color: var(--cor-texto-clara); font-size: 0.85rem; line-height: 1.7;
 }
 .album-grade { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.album-grade:not(.album-entrada-pronta) .album-miniatura {
+  opacity: 0;
+  animation: none;
+  pointer-events: none;
+}
 .album-miniatura {
   position: relative; display: block; aspect-ratio: 4 / 5; overflow: hidden;
   padding: 0; border: 6px solid #fffcf7; border-radius: 3px;
   outline: 1px solid rgba(194, 168, 120, 0.25); background: #e9e2d6;
   box-shadow: 0 8px 24px -12px rgba(73, 59, 39, 0.2); cursor: zoom-in;
+  animation: aparecerSubindo 1s ease-out both;
+  animation-delay: var(--entrada-foto-delay, 0s);
 }
 .album-miniatura img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s ease; }
 .album-miniatura:hover img { transform: scale(1.04); }
@@ -596,7 +631,9 @@ p.intro-secao {
   border-radius: 2px; font: inherit; font-size: 0.8rem; letter-spacing: 0.06em; cursor: pointer;
 }
 .album-carregar:hover { background: rgba(194, 168, 120, 0.1); }
-.album-fim-grade { min-height: 48px; margin-top: 1rem; }
+.album-fim-grade { min-height: 48px; margin-top: 1rem; display: flex; justify-content: center; align-items: center; }
+.album-carregando { display: inline-block; width: 24px; height: 24px; flex-shrink: 0; border: 2px solid rgba(194,168,120,0.25); border-top-color: #947744; border-radius: 50%; animation: album-carregando-girar 0.8s linear infinite; }
+@keyframes album-carregando-girar { to { transform: rotate(360deg); } }
 .album-aviso { margin: 1rem 0; font-size: 0.85rem; color: var(--cor-primaria); text-align: center; }
 .album-visualizador {
   width: min(1440px, calc(100vw - 40px)); max-width: none; height: calc(100dvh - 40px);
@@ -630,7 +667,8 @@ p.intro-secao {
 .album-foto-ampliada { position: relative; flex: 1; min-height: 0; overflow: hidden; padding: 100px 32px 104px; touch-action: pan-y; }
 .album-foto-ampliada img { display: block; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 0.3s ease; filter: drop-shadow(0 12px 28px rgba(0,0,0,0.3)); }
 .album-foto-ampliada img.is-loaded { opacity: 1; }
-.album-foto-ampliada > p { position: absolute; inset: 0; display: grid; place-items: center; padding: 1rem; margin: 0; font-size: 0.85rem; }
+.album-foto-status { position: absolute; inset: 0; display: grid; place-items: center; padding: 1rem; font-size: 0.85rem; pointer-events: none; }
+.album-foto-status p { margin: 0; text-align: center; }
 .album-visualizador-rodape {
   position: absolute; inset: auto 0 0; z-index: 2;
   display: flex; justify-content: space-between; align-items: center;
@@ -658,7 +696,14 @@ p.intro-secao {
   .album-navegacao span { min-width: 36px; }
   .album-visualizador .album-baixar { padding-inline: 0.9rem; font-size: 0.7rem; }
 }
-@media (prefers-reduced-motion: reduce) { .album-miniatura img, .album-foto-ampliada img { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .album-carregando { animation: none; }
+  .album-miniatura img, .album-foto-ampliada img { transition: none; }
+  .album-miniatura,
+  .agradecimento-album-rotulo,
+  .agradecimento-album-titulo,
+  .agradecimento-album-instrucao { animation: none; }
+}
 /* Moldura fina dourada, no espírito de um convite impresso. */
 .agradecimento-moldura {
   position: relative;
