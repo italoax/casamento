@@ -17,7 +17,7 @@ Mantenha as pastas de versões anteriores ao atualizar um servidor existente: p�
 - `/_assets/…` e arquivos com hash do Next: cache longo e imutável. O navegador pode reutilizá-los sem consultar o servidor.
 - `/css`, `/js`, imagens e fontes de nome fixo: revalidação HTTP com `no-cache`, para detectar substituições.
 - Service worker, manifest e página offline: revalidação obrigatória.
-- A home e os metadados do álbum mantêm seus prazos de 5 minutos. APIs privadas e downloads conservam suas políticas próprias.
+- A home e a consulta de metadados à Adobe mantêm seus prazos de 5 minutos. A resposta de `/api/album` usa `no-store` e consulta a seleção salva no painel a cada requisição. APIs privadas e downloads conservam suas políticas próprias.
 
 O service worker usa cache primeiro para URLs imutáveis e rede primeiro para arquivos de nome fixo. A versão da PWA acompanha os hashes dos arquivos e do próprio worker; ao ativar uma versão nova, remove somente caches antigos do site. O cache local tem limite de entradas. Em desenvolvimento, o registro é desativado para não interferir nas alterações locais.
 

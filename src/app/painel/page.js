@@ -26,6 +26,7 @@ import PainelClient from "./PainelClient";
 // aparecia gigante (sem estilo) ao logar e só "encolhia" no primeiro clique.
 import "../../../public/css/painel/painel.css";
 import "../../../public/css/painel/painel-next.css";
+import "../../../public/css/painel/album-fotos.css";
 // Force dynamic - não cachear (dados mudam com frequência)
 export const dynamic = "force-dynamic";
 export default async function PainelPage({ searchParams }) {

@@ -10,6 +10,7 @@ import { Seguranca } from "./components/Seguranca";
 import { Backups } from "./components/Backups";
 import { Evento } from "./components/Evento";
 import { EmailFotos } from "./components/EmailFotos";
+import { AlbumFotos } from "./components/AlbumFotos";
 import { ControleConvites } from "./components/ControleConvites";
 import { MetaConvidados } from "./components/MetaConvidados";
 import { Usuarios } from "./components/Usuarios";
@@ -46,7 +47,7 @@ function nomePresenteExibicao(presente) {
         return nome;
     return nomeBonitoDeArquivoPresente(nome || presente.imagem_thumb || presente.imagem);
 }
-const ABAS_VALIDAS = new Set(["dashboard", "convidados", "presentes", "vendas", "recados", "logs", "confirmacao", "evento", "email-fotos", "whatsapp", "festa", "seguranca", "usuarios", "backups"]);
+const ABAS_VALIDAS = new Set(["dashboard", "convidados", "presentes", "vendas", "recados", "logs", "confirmacao", "evento", "album-fotos", "email-fotos", "whatsapp", "festa", "seguranca", "usuarios", "backups"]);
 export default function PainelClient({ initialData, initialAba }) {
     // A aba inicial vem do servidor (?aba=... na URL), então o HTML já nasce na aba
     // certa — sem "piscar" o dashboard ao recarregar a página.
@@ -206,6 +207,7 @@ export default function PainelClient({ initialData, initialAba }) {
         ["confirmacao", "Configuração RSVP", ["admin", "gerente"]],
         ["evento", "Fases do Evento", ["admin", "gerente"]],
         ["email-fotos", "E-mail das fotos", ["admin", "gerente"]],
+        ["album-fotos", "Fotos do álbum", ["admin", "gerente"]],
         ["whatsapp", "WhatsApp", ["admin", "gerente"]],
         ["festa", "Fotos da Festa", ["admin", "gerente"]],
         ["seguranca", "Segurança", ["admin"]],
@@ -441,6 +443,7 @@ export default function PainelClient({ initialData, initialAba }) {
           {aba === "confirmacao" ? <Rsvp data={data} api={api}/> : null}
           {aba === "evento" ? <Evento onToast={setToast}/> : null}
           {aba === "email-fotos" && ["admin", "gerente"].includes(role) ? <EmailFotos onToast={setToast}/> : null}
+          {aba === "album-fotos" && ["admin", "gerente"].includes(role) ? <AlbumFotos onToast={setToast}/> : null}
           {aba === "whatsapp" ? <Whatsapp onToast={setToast}/> : null}
           {aba === "festa" ? <FestaFotos onToast={setToast}/> : null}
           {aba === "seguranca" ? <Seguranca onToast={setToast}/> : null}

@@ -56,6 +56,12 @@ export function AlbumGallery() {
     }, [carregar]);
 
     useEffect(() => {
+        // Uma página da Adobe pode não conter nenhuma das fotos selecionadas.
+        // Avança até encontrar fotos, sem interromper a primeira carga.
+        if (!carregando && !erro && !fotos.length && proxima) carregar(proxima);
+    }, [carregando, erro, fotos.length, proxima, carregar]);
+
+    useEffect(() => {
         if (!aberto) return;
         const element = dialog.current;
         const overflowAnterior = document.body.style.overflow;
@@ -143,6 +149,7 @@ export function AlbumGallery() {
         </button>)}
       </div>
       {erro && <p className="album-aviso" role="status">{erro}</p>}
+      {!carregando && !erro && !fotos.length && proxima === null && <p className="album-aviso">Nenhuma foto disponível no momento.</p>}
       {(visiveis < fotos.length || proxima !== null) && <div className="album-fim-grade" ref={fimDaGrade}>
         {carregando && <p className="album-aviso" role="status">Carregando fotos…</p>}
         {erro && <button className="album-carregar" type="button" onClick={maisFotos} disabled={carregando}>Tentar novamente</button>}

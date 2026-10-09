@@ -1,0 +1,15 @@
+.album-painel-controles { position: static; background: var(--cor-fundo, #fff); }
+.album-painel { padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)); }
+.album-painel-salvar-flutuante { position: fixed; right: 24px; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 20; max-width: calc(100vw - 48px); padding: 14px 22px; border: 1px solid #79614b; border-radius: 999px; background: #79614b; color: #fff; font: inherit; font-weight: 600; cursor: pointer; box-shadow: 0 4px 18px #0003; }
+.album-painel-salvar-flutuante:hover:not(:disabled) { background: #604b39; }
+.album-painel-salvar-flutuante:focus-visible { outline: 3px solid #453e38; outline-offset: 3px; }
+.album-painel-salvar-flutuante:disabled { background: #eee5d8; color: #604b39; cursor: default; box-shadow: none; }
+.album-painel-controles label { display: block; margin-bottom: 12px; }
+.album-painel-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 12px 0; }
+.album-painel-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin: 20px 0; }
+.album-painel-foto { border: 2px solid #ddd; border-radius: 10px; overflow: hidden; background: #fff; color: #453e38; }
+.album-painel-foto.escolhida { border-color: #79614b; background: #f3ede5; }
+.album-painel-foto img { display: block; width: 100%; height: 180px; object-fit: cover; }
+.album-painel-foto label { display: block; padding: 10px; cursor: pointer; }
+.album-painel-foto small { display: block; padding: 0 10px 10px; overflow-wrap: anywhere; font-size: 11px; }
+@media (max-width: 600px) { .album-painel-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .album-painel-foto img { height: 150px; } }
