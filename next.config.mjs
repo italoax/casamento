@@ -13,6 +13,11 @@ import { fileURLToPath } from "node:url";
 const isDev = process.env.NODE_ENV !== "production";
 const baseUrlHost = process.env.BASE_URL ? new URL(process.env.BASE_URL).hostname : "";
 const allowedDevOrigins = [baseUrlHost].filter(Boolean);
+// A hospedagem expõe muitos CPUs, mas o build compartilha memória e processos.
+// Em Linux com GLIBC antiga, prioriza o compilador WebAssembly compatível.
+const glibcVersion = process.platform === "linux" ? process.report?.getReport()?.header?.glibcVersionRuntime : undefined;
+const [glibcMajor, glibcMinor] = (glibcVersion || "").split(".").map(Number);
+const legacyGlibc = Boolean(glibcVersion) && (glibcMajor < 2 || (glibcMajor === 2 && glibcMinor < 29));
 /**
  * Script-src do CSP (Content Security Policy)
  * Controla quais scripts podem ser executados
@@ -92,6 +97,7 @@ const securityHeaders = [
  */
 const nextConfig = {
     output: "standalone",
+    experimental: { cpus: 2, ...(legacyGlibc ? { useWasmBinary: true } : {}) },
     outputFileTracingRoot: fileURLToPath(new URL(".", import.meta.url)),
     poweredByHeader: false, // Não expõe qual framework está sendo usado
     ...(allowedDevOrigins.length > 0 ? { allowedDevOrigins } : {}),
