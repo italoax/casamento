@@ -20,7 +20,12 @@ export function prepararRemetente(from, user) {
         if (!address) throw new Error("SMTP_USER precisa ser um endereço válido sem acentos antes do @.");
         return { name: from.trim(), address };
     }
-    const remetentes = prepararEnderecos(from || user, "SMTP_FROM");
+    const remetentes = addressparser(from || user).flatMap(item => item.group || [item]);
     if (remetentes.length !== 1) throw new Error("SMTP_FROM deve conter apenas um remetente.");
-    return remetentes[0];
+    const remetente = remetentes[0];
+    // O site usa uma única conta SMTP. Um SMTP_FROM malformado não deve
+    // impedir o envio se o endereço dessa conta já está configurado corretamente.
+    const address = normalizarEmail(remetente.address) || normalizarEmail(user);
+    if (!address) throw new Error("SMTP_USER precisa ser um endereço válido sem acentos antes do @.");
+    return { name: remetente.name || "", address };
 }

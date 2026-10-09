@@ -41,8 +41,16 @@ test("nome do remetente pode conter acentos sem contaminar o envelope SMTP", asy
     }
 });
 
-test("rejeita remetente inválido, destinatário Unicode e injeção de cabeçalho", () => {
-    assert.throws(() => prepararRemetente("Ítalo <ítalo@example.com>", "suporte@example.com"), /SMTP_FROM/);
+test("remetente malformado usa a conta SMTP sem alterar o nome de exibição", () => {
+    for (const valor of ["Emanuelle & Ítalo <ítalo@example.com>", "Emanuelle & Ítalo <suporte\u200b@example.com>", "Emanuelle & Ítalo <suporte@>"]) {
+        assert.deepEqual(prepararRemetente(valor, "suporte@example.com"), { name: "Emanuelle & Ítalo", address: "suporte@example.com" });
+    }
+    assert.deepEqual(prepararRemetente("Nome <outro@example.com>", "suporte@example.com"), { name: "Nome", address: "outro@example.com" });
+    assert.deepEqual(prepararRemetente("", "suporte@example.com"), { name: "", address: "suporte@example.com" });
+    assert.throws(() => prepararRemetente("Ítalo <ítalo@example.com>", "ítalo@example.com"), /SMTP_USER/);
+});
+
+test("rejeita destinatário Unicode e injeção de cabeçalho", () => {
     assert.throws(() => prepararEnderecos("ítalo@example.com", "destinatário"), /sem acentos/);
     assert.throws(() => prepararRemetente("Nome\r\nBcc: outro@example.com", "suporte@example.com"));
     assert.throws(() => prepararRemetente("a@example.com,b@example.com", "suporte@example.com"));
