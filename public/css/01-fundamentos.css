@@ -598,12 +598,6 @@ p.intro-secao {
 .album-carregar:hover { background: rgba(194, 168, 120, 0.1); }
 .album-fim-grade { min-height: 48px; margin-top: 1rem; }
 .album-aviso { margin: 1rem 0; font-size: 0.85rem; color: var(--cor-primaria); text-align: center; }
-.agradecimento-album-link {
-  display: inline-block; margin-top: 1.5rem; color: var(--cor-primaria); font-size: 0.7rem;
-  letter-spacing: 0.12em; text-transform: uppercase; text-decoration-color: var(--cor-secundaria);
-  text-underline-offset: 0.25em;
-}
-.agradecimento-album-link span { margin-left: 0.5rem; font-size: 1rem; }
 .album-visualizador {
   width: min(1440px, calc(100vw - 40px)); max-width: none; height: calc(100dvh - 40px);
   max-height: none; padding: 0; overflow: hidden;

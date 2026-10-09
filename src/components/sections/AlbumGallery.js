@@ -42,7 +42,7 @@ export function AlbumGallery() {
             setProxima(data.proxima || null);
             return data.fotos;
         } catch (error) {
-            if (error.name !== "AbortError") setErro("Não foi possível carregar as fotos. Tente novamente ou abra o álbum completo.");
+            if (error.name !== "AbortError") setErro("Não foi possível carregar as fotos. Tente novamente.");
             return [];
         } finally {
             emCarga.current = false;

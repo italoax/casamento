@@ -26,9 +26,6 @@ export function ThanksPage({ titulo, mensagem }) {
           <h2 id="agradecimento-album-titulo" className="agradecimento-album-titulo">Memórias que ficam</h2>
           <p className="agradecimento-album-instrucao">Cada foto, um pedacinho desse dia. Toque para ver de perto.</p>
           <AlbumGallery />
-          <a className="agradecimento-album-link" href="https://adobe.ly/4dAcyd1" target="_blank" rel="noopener noreferrer">
-            Ver todas as fotos <span aria-hidden="true">↗</span>
-          </a>
         </section>
       </main>
     </div>);

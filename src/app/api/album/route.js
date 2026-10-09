@@ -12,6 +12,6 @@ export async function GET(request) {
         const selecionadas = ids === null ? null : new Set(ids);
         return Response.json({ ...pagina, fotos: selecionadas ? pagina.fotos.filter(foto => selecionadas.has(foto.id)) : pagina.fotos }, { headers });
     } catch (error) {
-        return Response.json({ erro: error.status === 400 ? "Página inválida." : "Não foi possível carregar as fotos. Abra o álbum completo abaixo." }, { status: error.status || 502, headers });
+        return Response.json({ erro: error.status === 400 ? "Página inválida." : "Não foi possível carregar as fotos. Tente novamente." }, { status: error.status || 502, headers });
     }
 }

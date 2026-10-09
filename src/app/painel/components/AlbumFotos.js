@@ -70,7 +70,6 @@ export function AlbumFotos({ onToast }) {
     return <div className="tab-conteudo ativo album-painel">
       <div className="painel-header compact"><h3 className="painel-subtitulo">Fotos do álbum</h3></div>
       <p>Escolha as fotos que aparecem na galeria do site. Clique na imagem para ver de perto e marque as desejadas.</p>
-      <p className="form-hint">O botão “Ver todas as fotos” continua abrindo o álbum completo na Adobe.</p>
       <div className="painel-card-form album-painel-controles">
         <label><input type="checkbox" checked={completo} disabled={!iniciado || salvando} onChange={event => { setCompleto(event.target.checked); setAlterado(true); }} /> Mostrar o álbum completo</label>
         {!completo && <>
