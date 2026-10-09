@@ -61,7 +61,7 @@ async function workerFixture({ falhar = false, status = "pendente", lock = 1 } =
         if (query.startsWith("UPDATE email_fotos_jobs SET status='concluido'")) { job.status = "concluido"; return [{}]; }
         if (query.startsWith("UPDATE email_fotos_fila SET status='enviando'")) { const claimed = item.status === "pendente"; if (claimed) item.status = "enviando"; return [{ affectedRows: claimed ? 1 : 0 }]; }
         if (query.startsWith("UPDATE email_fotos_fila SET status='enviado'")) { item.status = "enviado"; return [{}]; }
-        if (query.startsWith("UPDATE email_fotos_fila SET status='falha'")) { item.status = "falha"; return [{}]; }
+        if (query.startsWith("UPDATE email_fotos_fila SET status='falha'")) { item.status = "falha"; item.erro = params[0]; return [{}]; }
         if (query.startsWith("UPDATE email_fotos_jobs SET falhas_seguidas")) return [{}];
         throw new Error(`SQL inesperado no teste: ${query}`);
     }

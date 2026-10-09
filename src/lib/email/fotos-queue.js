@@ -134,7 +134,11 @@ async function tick() {
             await connection.execute("UPDATE email_fotos_jobs SET falhas_seguidas=0 WHERE id=?", [job.id]);
         } catch (error) {
             SafeLog.error("Envio de aviso das fotos", error);
-            await connection.execute("UPDATE email_fotos_fila SET status='falha', erro='Falha no envio; confira se chegou antes de reenviar.' WHERE id=?", [item.id]);
+            const erroEndereco = error.responseCode === 553 || /sem acentos antes do @|SMTP_FROM|SMTP_USER precisa/.test(error.message || "");
+            const mensagemErro = erroEndereco
+                ? "Endereço incompatível com o servidor de e-mail. Confira SMTP_FROM e o e-mail do convidado antes de reenviar."
+                : "Falha no envio; confira se chegou antes de reenviar.";
+            await connection.execute("UPDATE email_fotos_fila SET status='falha', erro=? WHERE id=?", [mensagemErro, item.id]);
             await connection.execute("UPDATE email_fotos_jobs SET falhas_seguidas=falhas_seguidas+1, status=IF(falhas_seguidas>=5,'pausado',status) WHERE id=?", [job.id]);
         }
     } catch (error) { SafeLog.error("Fila de e-mail das fotos", error); }

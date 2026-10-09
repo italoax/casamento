@@ -85,8 +85,8 @@ export default async function RootLayout({ children }) {
           {`if (typeof window.hashInicialTravado === "undefined") window.hashInicialTravado = false; var hashInicialTravado = window.hashInicialTravado;`}
         </Script>
         {/* afterInteractive: carregado depois do React */}
-        <Script src={assetUrl("/js/index.js")} type="module" strategy="afterInteractive"/>
-        <Script src={assetUrl("/js/confirmacao.js")} type="module" strategy="afterInteractive"/>
+        <Script src={assetUrl("/js/index.js")} type="module" crossOrigin="anonymous" strategy="afterInteractive"/>
+        <Script src={assetUrl("/js/confirmacao.js")} type="module" crossOrigin="anonymous" strategy="afterInteractive"/>
         <Script src={assetUrl("/js/preloader.js")} strategy="afterInteractive"/>
         {/* Registra o Service Worker (PWA / instalável / offline) */}
         <Script src={assetUrl("/js/pwa.js")} data-asset-release={assetRelease} data-cache-mode={process.env.NODE_ENV} strategy="afterInteractive"/>

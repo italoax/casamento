@@ -1,3 +1,5 @@
+import { normalizarEmail } from "./email-address.mjs";
+
 export const FOTOS_EMAIL_DEFAULTS = {
     assunto: "As fotos do nosso casamento já estão disponíveis!",
     mensagem: "Que alegria reviver esse dia com vocês!\n\nAs fotos do nosso casamento já estão disponíveis no site. Você pode ver o álbum e baixar suas fotos favoritas.\n\nObrigado por fazer parte da nossa história.\n\nCom carinho,\nEmanuelle e Ítalo",
@@ -5,7 +7,7 @@ export const FOTOS_EMAIL_DEFAULTS = {
 };
 
 export function emailValido(valor) {
-    return typeof valor === "string" && valor.length <= 150 && /^[^\s<>@,;()"\\\x00-\x1f]+@[^\s<>@,;()"\\]+\.[^\s<>@,;()"\\]+$/.test(valor);
+    return normalizarEmail(valor) !== null;
 }
 
 export function prepararDestinatarios(linhas) {
@@ -13,8 +15,8 @@ export function prepararDestinatarios(linhas) {
     let invalidos = 0, repetidos = 0;
     const destinatarios = [];
     for (const linha of linhas) {
-        const email = String(linha.email || "").trim().toLowerCase();
-        if (!emailValido(email)) { invalidos++; continue; }
+        const email = normalizarEmail(String(linha.email || "").trim().toLowerCase());
+        if (!email) { invalidos++; continue; }
         if (emails.has(email)) { repetidos++; continue; }
         emails.add(email);
         destinatarios.push({ id: Number(linha.id), nome: String(linha.nome), email });

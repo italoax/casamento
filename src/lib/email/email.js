@@ -12,6 +12,7 @@
  */
 import * as nodemailer from "nodemailer";
 import { env, envBool } from "../env";
+import { prepararEnderecos, prepararRemetente } from "./smtp-addresses.mjs";
 /**
  * Defesa em profundidade contra injeção de cabeçalho (CRLF).
  * Rejeita CR/LF em valores que viram cabeçalhos de e-mail (to, subject, etc.).
@@ -43,6 +44,9 @@ export async function sendEmail(options) {
     assertSemCRLF("subject", options.subject);
     assertSemCRLF("replyTo", options.replyTo);
     assertSemCRLF("from", account.from);
+    const from = prepararRemetente(account.from, account.user);
+    const to = prepararEnderecos(options.to, "destinatário");
+    const replyTo = options.replyTo ? prepararEnderecos(options.replyTo, "resposta") : undefined;
     // Cria transportador (conexão SMTP reutilizável)
     const transporter = nodemailer.createTransport({
         host: env("SMTP_HOST"),
@@ -55,12 +59,13 @@ export async function sendEmail(options) {
     });
     // Envia o e-mail
     return await transporter.sendMail({
-        from: account.from,
-        to: options.to,
+        from,
+        to,
+        envelope: { from: from.address, to: to.map(item => item.address) },
         subject: options.subject,
         html: options.html,
         text: options.text,
-        replyTo: options.replyTo,
+        replyTo,
         attachments: options.attachments,
         messageId: options.messageId,
     });
