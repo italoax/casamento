@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { notificarAlbumAtualizado } from "@/lib/site/album-atualizacao.mjs";
 
 export function AlbumFotos({ onToast }) {
     const [fotos, setFotos] = useState([]);
@@ -62,6 +63,7 @@ export function AlbumFotos({ onToast }) {
             const data = await response.json();
             if (!response.ok) throw new Error(data.erro || "Não foi possível salvar a seleção.");
             setAlterado(false);
+            notificarAlbumAtualizado();
             onToast("Seleção salva. A galeria já usa as fotos escolhidas.");
         } catch (error) { onToast(error.message || "Não foi possível salvar a seleção."); }
         finally { setSalvando(false); }

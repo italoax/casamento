@@ -16,6 +16,10 @@ test("valida IDs, deduplica e distingue álbum completo de seleção vazia", () 
 
 test("consulta Adobe com cursor, trata XSSI e ignora imagens com caminho inválido", async () => {
     const original = globalThis.fetch;
+    const chaveOriginal = process.env.ENCRYPTION_KEY;
+    const origemOriginal = process.env.ALBUM_ADOBE_URL;
+    process.env.ALBUM_ADOBE_URL = `https://lightroom.adobe.com/v2/spaces/${a}/albums/${b}/assets`;
+    process.env.ENCRYPTION_KEY = "ab".repeat(32);
     let consulta;
     globalThis.fetch = async url => {
         consulta = new URL(url);
@@ -29,9 +33,19 @@ test("consulta Adobe com cursor, trata XSSI e ignora imagens com caminho inváli
         assert.equal(consulta.searchParams.get("order_after"), "segunda");
         assert.equal(consulta.searchParams.get("embed"), "asset");
         assert.deepEqual(pagina.fotos.map(foto => foto.id), [a]);
+        for (const campo of ["src", "thumbnail", "download"]) {
+            assert.ok(pagina.fotos[0][campo].startsWith("/api/album/"));
+            assert.doesNotMatch(pagina.fotos[0][campo], /adobe|spaces|assets|revisions|renditions/);
+        }
         assert.equal(pagina.proxima, "order_after=seguinte");
         await assert.rejects(carregarPaginaAlbum("url=externo"), error => error.status === 400);
-    } finally { globalThis.fetch = original; }
+    } finally {
+        globalThis.fetch = original;
+        if (chaveOriginal === undefined) delete process.env.ENCRYPTION_KEY;
+        else process.env.ENCRYPTION_KEY = chaveOriginal;
+        if (origemOriginal === undefined) delete process.env.ALBUM_ADOBE_URL;
+        else process.env.ALBUM_ADOBE_URL = origemOriginal;
+    }
 });
 
 test("salva no banco, mantém seleção vazia e não exibe todas em falha no banco", async () => {

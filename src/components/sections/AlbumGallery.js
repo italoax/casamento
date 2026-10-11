@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { observarAlbumAtualizado } from "@/lib/site/album-atualizacao.mjs";
 
 function Icon({ tipo }) {
     return <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -22,19 +23,30 @@ export function AlbumGallery() {
     const [erroDownload, setErroDownload] = useState("");
     const dialog = useRef(null);
     const emCarga = useRef(false);
+    const requisicao = useRef(null);
     const toque = useRef(null);
     const fimDaGrade = useRef(null);
     const aberto = indice !== null;
     const foto = aberto ? fotos[indice] : null;
 
-    const carregar = useCallback(async (cursor, signal) => {
-        if (emCarga.current || cursor === null) return [];
+    const carregar = useCallback(async (cursor, reiniciar = false) => {
+        if ((!reiniciar && emCarga.current) || cursor === null) return [];
+        if (reiniciar) {
+            requisicao.current?.abort();
+            setIndice(null);
+            setFotos([]);
+            setVisiveis(24);
+            setProxima("");
+        }
+        const controle = new AbortController();
+        requisicao.current = controle;
         emCarga.current = true;
         setCarregando(true);
         setErro("");
         try {
-            const response = await fetch(`/api/album${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`, { signal });
+            const response = await fetch(`/api/album${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`, { signal: controle.signal, cache: "no-store" });
             const data = await response.json();
+            if (requisicao.current !== controle) return [];
             if (!response.ok || !Array.isArray(data.fotos)) throw new Error("Álbum indisponível");
             setFotos(atual => {
                 const ids = new Set(atual.map(item => item.id));
@@ -43,11 +55,13 @@ export function AlbumGallery() {
             setProxima(data.proxima || null);
             return data.fotos;
         } catch (error) {
-            if (error.name !== "AbortError") setErro("Não foi possível carregar as fotos. Tente novamente.");
+            if (requisicao.current === controle && error.name !== "AbortError") setErro("Não foi possível carregar as fotos. Tente novamente.");
             return [];
         } finally {
-            emCarga.current = false;
-            setCarregando(false);
+            if (requisicao.current === controle) {
+                emCarga.current = false;
+                setCarregando(false);
+            }
         }
     }, []);
 
@@ -55,6 +69,8 @@ export function AlbumGallery() {
         // Sem abortar a primeira chamada na repetição de efeitos do modo Strict.
         carregar("");
     }, [carregar]);
+
+    useEffect(() => observarAlbumAtualizado(() => { void carregar("", true); }), [carregar]);
 
     useEffect(() => {
         let ativo = true;

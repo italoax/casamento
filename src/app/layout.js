@@ -85,6 +85,7 @@ export default async function RootLayout({ children }) {
           {`if (typeof window.hashInicialTravado === "undefined") window.hashInicialTravado = false; var hashInicialTravado = window.hashInicialTravado;`}
         </Script>
         {/* afterInteractive: carregado depois do React */}
+        <Script src={assetUrl("/js/atualizacao-site.js")} data-site-version={process.env.SITE_BUILD_VERSION || ""} strategy="afterInteractive"/>
         <Script src={assetUrl("/js/index.js")} type="module" crossOrigin="anonymous" strategy="afterInteractive"/>
         <Script src={assetUrl("/js/confirmacao.js")} type="module" crossOrigin="anonymous" strategy="afterInteractive"/>
         <Script src={assetUrl("/js/preloader.js")} strategy="afterInteractive"/>

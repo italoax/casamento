@@ -10,6 +10,7 @@
  */
 import { prepararAssets } from "./scripts/static-assets.mjs";
 import { fileURLToPath } from "node:url";
+import { randomUUID } from "node:crypto";
 const isDev = process.env.NODE_ENV !== "production";
 const baseUrlHost = process.env.BASE_URL ? new URL(process.env.BASE_URL).hostname : "";
 const allowedDevOrigins = [baseUrlHost].filter(Boolean);
@@ -155,7 +156,10 @@ const nextConfig = {
 export default function config(phase) {
     if (phase === "phase-production-build") {
         const manifest = prepararAssets();
-        return { ...nextConfig, env: { SITE_ASSET_MANIFEST: JSON.stringify(manifest) } };
+        const version = randomUUID();
+        return { ...nextConfig, generateBuildId: async () => version, env: {
+            SITE_ASSET_MANIFEST: JSON.stringify(manifest), SITE_BUILD_VERSION: version,
+        } };
     }
     return nextConfig;
 }
