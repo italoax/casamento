@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { emailValido, prepararDestinatarios, validarAvisoFotos, FOTOS_EMAIL_DEFAULTS } from "../src/lib/email/fotos-mail.mjs";
+import { descreverErroSmtp } from "../src/lib/email/smtp-errors.mjs";
 
 test("destinatários inválidos e repetidos ficam fora do envio", () => {
     const data = prepararDestinatarios([
@@ -52,7 +53,7 @@ async function workerFixture({ falhar = false, status = "pendente", lock = 1 } =
     const item = { id: 1, job_id: 1, nome: "Convidado", email: "teste@example.com", status };
     const job = { id: 1, status: "processando", assunto: "Fotos", mensagem: "Mensagem", url: "https://example.com", falhas_seguidas: 0 };
     let envios = 0;
-    async function sql(query) {
+    async function sql(query, params = []) {
         if (query.includes("GET_LOCK")) return [[{ adquirido: lock }]];
         if (query.includes("RELEASE_LOCK")) return [[{ released: 1 }]];
         if (query.startsWith("UPDATE email_fotos_fila SET status='incerto'")) { if (item.status === "enviando") item.status = "incerto"; return [{}]; }
@@ -71,9 +72,10 @@ async function workerFixture({ falhar = false, status = "pendente", lock = 1 } =
         "@/lib/db": { db: () => ({ getConnection: async () => connection }), queryOne() {}, queryRows() {}, tableExists: async () => true },
         "@/lib/env": { env: () => "test" },
         "@/lib/security": { SafeLog: { error() {} } },
-        "./email": { sendEmail: async () => { envios++; if (falhar) throw new Error("SMTP indisponível"); return { accepted: [item.email] }; } },
+        "./email": { sendEmail: async () => { envios++; if (falhar) throw (falhar instanceof Error ? falhar : new Error("SMTP indisponível")); return { accepted: [item.email] }; } },
         "./site-emails": { montarAvisoFotos: data => ({ to: data.email, subject: data.assunto }) },
         "./fotos-mail.mjs": { prepararDestinatarios },
+        "./smtp-errors.mjs": { descreverErroSmtp },
     };
     const source = readFileSync(new URL("../src/lib/email/fotos-queue.js", import.meta.url), "utf8");
     const mod = new vm.SourceTextModule(`${source}\nexport { tick as testTick };`, { context });
@@ -98,6 +100,7 @@ test("falhas e envios interrompidos não são reenviados automaticamente", async
     const falha = await workerFixture({ falhar: true });
     await falha.tick(); await falha.tick();
     assert.equal(falha.item.status, "falha");
+    assert.equal(falha.item.erro, "SMTP indisponível");
     assert.equal(falha.envios(), 1);
     const incerto = await workerFixture({ status: "enviando" });
     await incerto.tick();
@@ -110,4 +113,24 @@ test("worker concorrente sem lock não envia", async () => {
     await fixture.tick();
     assert.equal(fixture.envios(), 0);
     assert.equal(fixture.item.status, "pendente");
+});
+
+test("recusa SMTP 553 preserva o motivo real na fila", async () => {
+    const error = Object.assign(new Error("Message failed"), {
+        code: "EMESSAGE", command: "DATA", responseCode: 553,
+        response: "553 5.7.1 Sending limit exceeded",
+    });
+    const fixture = await workerFixture({ falhar: error });
+    await fixture.tick();
+    assert.equal(fixture.item.erro, "SMTP (EMESSAGE / 553 / DATA): 553 5.7.1 Sending limit exceeded");
+    assert.doesNotMatch(fixture.item.erro, /Endereço incompatível/);
+});
+
+test("diagnóstico SMTP remove credenciais, endereços e limita o texto salvo", () => {
+    const error = { code: "EAUTH", command: "AUTH PLAIN", responseCode: 535,
+        response: "535 senha-secreta suporte@example.com token=abc123\r\nAuthentication failed" };
+    const result = descreverErroSmtp(error, ["senha-secreta"]);
+    assert.match(result, /535.*Authentication failed/);
+    assert.doesNotMatch(result, /senha-secreta|suporte@example.com|abc123|\r|\n/);
+    assert.equal(descreverErroSmtp({ message: "x".repeat(500) }).length, 255);
 });
