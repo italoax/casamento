@@ -8,6 +8,7 @@ import { encryptCPF, encryptEmail, encryptPhone, decryptEmail } from "../auth/en
 import { normalizeStatus } from "./payment-utils";
 import { settleStockForPayment } from "./payment-stock";
 import { enviarPixExpirado } from "../email/site-emails";
+import { atualizarAgendamentoPix } from "./pix-expiration";
 const SALE_COLUMNS = [
     "id",
     "ids_produtos",
@@ -94,6 +95,7 @@ export async function insertSale(sale) {
         sale.paymentMethod,
         sale.externalReference,
     ]);
+    if (sale.paymentMethod === "pix") atualizarAgendamentoPix();
 }
 export async function logPayment(data) {
     // Grava em site_logs (a tabela que o painel exibe na aba "Logs").
@@ -152,6 +154,7 @@ export async function updateSaleStatusByPayment(paymentId, status, statusDetail)
         // (apenas na transição a partir de um estado pendente).
         void notificarPixExpirado(anterior, normalized);
     }
+    if (anterior && (!anterior.payment_method || anterior.payment_method === "pix")) atualizarAgendamentoPix();
     return queryOne(`SELECT ${SALE_COLUMNS} FROM vendas WHERE gateway_payment_id = ? LIMIT 1`, [paymentId]);
 }
 /**
@@ -194,7 +197,7 @@ async function notificarPixExpirado(anterior, novoStatus) {
 }
 /**
  * IDs de cobranças (gateway_payment_id) de Pix ainda pendentes e já vencidos,
- * para apagá-las no Asaas (o cron de expiração faz a limpeza). Limita o lote.
+ * para apagá-las no Asaas (o temporizador interno faz a limpeza). Limita o lote.
  */
 export async function pendingExpiredPixPaymentIds(limite = 200) {
     await ensureSalesTable();
@@ -202,10 +205,10 @@ export async function pendingExpiredPixPaymentIds(limite = 200) {
     const rows = await queryRows(`SELECT gateway_payment_id FROM vendas
      WHERE (status IS NULL OR status = '' OR status = 'pending' OR status = 'in_process')
        AND date_of_expiration IS NOT NULL
-       AND date_of_expiration < NOW()
+       AND date_of_expiration <= UTC_TIMESTAMP()
        AND payment_method = 'pix'
        AND gateway_payment_id IS NOT NULL AND gateway_payment_id <> ''
-     LIMIT ${lim}`).catch(() => []);
+     LIMIT ${lim}`);
     return rows.map((r) => String(r.gateway_payment_id)).filter(Boolean);
 }
 export async function parseIds(value) {

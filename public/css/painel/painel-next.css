@@ -2557,7 +2557,7 @@
 }
 
 /* Resumos de estatística do painel (Convidados, Presentes, Vendas, Logs,
-   Usuários, Backups) em grade de cards: colunas auto-ajustáveis (1, 2 ou 3
+   Usuários) em grade de cards: colunas auto-ajustáveis (1, 2 ou 3
    conforme a quantidade), cantos arredondados (não pílula) e rótulo em cima
    com o número em destaque embaixo. Vale inclusive no mobile, onde antes
    empilhava em coluna única. Regra ao fim do arquivo → prioridade sobre o

@@ -4,10 +4,12 @@
  * do Next (que é onde o DB e as libs estão). Só no runtime Node (não em edge/build).
  */
 export async function register() {
-    if (process.env.NEXT_RUNTIME === "nodejs") {
+    if (process.env.NEXT_RUNTIME === "nodejs" && process.env.NEXT_PHASE !== "phase-production-build") {
         const { iniciarWorkerFila } = await import("@/lib/whatsapp/whatsapp-queue");
         iniciarWorkerFila();
         const { iniciarWorkerEmailsFotos } = await import("@/lib/email/fotos-queue");
         iniciarWorkerEmailsFotos();
+        const { iniciarExpiracaoPix } = await import("@/lib/payment/pix-expiration");
+        iniciarExpiracaoPix();
     }
 }

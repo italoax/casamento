@@ -7,7 +7,6 @@ import { TabelaRecados } from "./components/tables/TabelaRecados";
 import { TabelaLogs } from "./components/tables/TabelaLogs";
 import { Rsvp } from "./components/Rsvp";
 import { Seguranca } from "./components/Seguranca";
-import { Backups } from "./components/Backups";
 import { Evento } from "./components/Evento";
 import { EmailFotos } from "./components/EmailFotos";
 import { AlbumFotos } from "./components/AlbumFotos";
@@ -47,7 +46,7 @@ function nomePresenteExibicao(presente) {
         return nome;
     return nomeBonitoDeArquivoPresente(nome || presente.imagem_thumb || presente.imagem);
 }
-const ABAS_VALIDAS = new Set(["dashboard", "convidados", "presentes", "vendas", "recados", "logs", "confirmacao", "evento", "album-fotos", "email-fotos", "whatsapp", "festa", "seguranca", "usuarios", "backups"]);
+const ABAS_VALIDAS = new Set(["dashboard", "convidados", "presentes", "vendas", "recados", "logs", "confirmacao", "evento", "album-fotos", "email-fotos", "whatsapp", "festa", "seguranca", "usuarios"]);
 export default function PainelClient({ initialData, initialAba }) {
     // A aba inicial vem do servidor (?aba=... na URL), então o HTML já nasce na aba
     // certa — sem "piscar" o dashboard ao recarregar a página.
@@ -212,7 +211,6 @@ export default function PainelClient({ initialData, initialAba }) {
         ["festa", "Fotos da Festa", ["admin", "gerente"]],
         ["seguranca", "Segurança", ["admin"]],
         ["usuarios", "Usuários", ["admin"]],
-        ["backups", "Backups", ["admin"]],
     ];
     const nav = allNav.filter(([, , roles]) => roles.includes(role));
     return (<div className="painel-container painel-next">
@@ -448,7 +446,6 @@ export default function PainelClient({ initialData, initialAba }) {
           {aba === "festa" ? <FestaFotos onToast={setToast}/> : null}
           {aba === "seguranca" ? <Seguranca onToast={setToast}/> : null}
           {aba === "usuarios" && role === "admin" ? <Usuarios onToast={setToast} meuId={data.session?.id || 0}/> : null}
-          {aba === "backups" ? <Backups onToast={setToast}/> : null}
         </main>
       </div>
 

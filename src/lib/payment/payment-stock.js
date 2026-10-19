@@ -156,7 +156,7 @@ export async function releaseExpiredReservations() {
      WHERE stock_settled = 0
        AND (status IS NULL OR status = '' OR status = 'pending' OR status = 'in_process')
        AND date_of_expiration IS NOT NULL
-       AND date_of_expiration < NOW()
+       AND date_of_expiration <= UTC_TIMESTAMP()
        AND (payment_method IS NULL OR payment_method = '' OR payment_method = 'pix')
      LIMIT 200`).catch(() => []);
     let liberadas = 0;

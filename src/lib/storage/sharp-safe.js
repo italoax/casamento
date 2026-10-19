@@ -9,5 +9,7 @@
  * inteiro, por isso é aplicado aqui uma vez e reexportado.
  */
 import sharp from "sharp";
+// Cada imagem usa uma thread nativa; a libuv limita imagens simultâneas.
+sharp.concurrency(1);
 sharp.block({ operation: ["VipsForeignLoadNsgif", "VipsForeignLoadTiff", "VipsForeignLoadVips"] });
 export default sharp;

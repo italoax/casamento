@@ -99,7 +99,7 @@ const securityHeaders = [
  */
 const nextConfig = {
     output: "standalone",
-    experimental: { cpus: 2, ...(legacyGlibc ? { useWasmBinary: true } : {}) },
+    experimental: { cpus: 2, imgOptConcurrency: 1, ...(legacyGlibc ? { useWasmBinary: true } : {}) },
     outputFileTracingRoot: fileURLToPath(new URL(".", import.meta.url)),
     poweredByHeader: false, // Não expõe qual framework está sendo usado
     ...(allowedDevOrigins.length > 0 ? { allowedDevOrigins } : {}),

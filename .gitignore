@@ -23,8 +23,5 @@ certificates
 lista_convidados*.csv
 *.csv
 
-# Backups do banco de dados (dados pessoais + vendas) — nunca versionar
-backups/
-
 # Listas de convidados por pessoa (dados pessoais, LGPD) — nunca versionar
 scripts/listas/*.txt

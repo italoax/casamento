@@ -3,6 +3,7 @@ import { requirePainelPermission } from "@/lib/auth/painel-auth";
 import { db, queryRows, tableExists } from "@/lib/db";
 import { condicaoVendasPendentes } from "@/lib/painel/painel-data";
 import { fetchAsaasPayment, normalizeStatus, settleStockForSale } from "@/lib/payment";
+import { atualizarAgendamentoPix } from "@/lib/payment/pix-expiration";
 export const runtime = "nodejs";
 export async function POST() {
     if (!(await requirePainelPermission("sync_vendas")))
@@ -39,6 +40,7 @@ export async function POST() {
             erros++;
         }
     }
+    atualizarAgendamentoPix();
     const rest = await queryRows(`SELECT COUNT(*) total FROM vendas WHERE ${condicaoVendasPendentes()}`);
     return json({ sucesso: true, atualizados, aprovados, pendentes: Number(rest[0]?.total || 0), erros, expirados_liberados: 0 });
 }

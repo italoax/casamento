@@ -6,8 +6,7 @@
     "dev": "next dev --webpack",
     "dev:https": "next dev --webpack --experimental-https",
     "build": "next build --webpack && node scripts/prepare-standalone.mjs",
-    "start": "node server.js",
-    "backup": "node scripts/backup-db.mjs"
+    "start": "node server.js"
   },
   "engines": {
     "node": ">=20 <23"

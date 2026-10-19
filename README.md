@@ -39,11 +39,15 @@ O painel tem acesso restrito e reúne as ferramentas de organização do casamen
 - Gestão da lista de presentes, pedidos e pagamentos.
 - Revisão de recados e seleção das fotos do álbum.
 - Ajuste das fases do evento e das mensagens de agradecimento.
-- Controle dos usuários com acesso ao painel e dos backups.
+- Controle dos usuários com acesso ao painel.
 
 ## Antes e depois do casamento
 
 O conteúdo acompanha as fases configuradas pelos noivos. Antes do evento, o site ajuda os convidados a se prepararem e confirmarem sua presença. Durante e após a festa, permite compartilhar os momentos registrados. Ao encerrar essa etapa, a página principal passa a exibir uma mensagem de agradecimento do casal.
+
+## Operação do Pix
+
+A expiração usa um temporizador interno, reagendado ao criar um Pix ou atualizar seu status. Sem pendências, essa rotina fica sem temporizador e sem consultas periódicas. Ao iniciar, o servidor consulta o banco uma vez para recuperar pendências e tratar cobranças vencidas. Se a hospedagem interromper ou pausar o processo, o tratamento será retomado quando a aplicação voltar a executar; o temporizador não garante execução durante essa pausa.
 
 ## Acesso pelo celular
 

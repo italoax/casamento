@@ -137,19 +137,22 @@ async function pausarJob(jobId, motivo) {
     ]);
 }
 // ─────────────────────────── Worker ───────────────────────────
-let timer = null;
-let proximoEnvioMs = 0; // não enviar antes deste instante (intervalo + jitter)
-let falhasSeguidas = 0;
-let aguardandoConexaoDesde = 0; // quando começou a esperar uma reconexão (0 = não espera)
+// Next pode carregar esta fila em bundles diferentes no mesmo processo.
+// Todos precisam compartilhar o timer, a trava e o intervalo entre mensagens.
+const estado = globalThis.__casamentoWaQueue ||= {
+    timer: null, iniciado: false, ocupado: false, acordar: false,
+    proximoEnvioMs: 0, falhasSeguidas: 0, aguardandoConexaoDesde: 0,
+};
 function jitter() {
     return Math.floor(Math.random() * JITTER_MAX_MS);
 }
 function agendar(ms) {
-    if (timer)
-        clearTimeout(timer);
-    timer = setTimeout(() => void tick(), Math.max(0, ms));
+    clearTimeout(estado.timer);
+    estado.timer = setTimeout(() => void tick(), Math.max(0, ms));
+    estado.timer.unref?.();
 }
 function acordarWorker() {
+    if (estado.ocupado) { estado.acordar = true; return; }
     agendar(50);
 }
 function sleep(ms) {
@@ -179,10 +182,9 @@ async function lerConexao(slot) {
 }
 /** Inicia o worker (idempotente por processo). Chamado por instrumentation.js. */
 export function iniciarWorkerFila() {
-    const g = globalThis;
-    if (g.__waQueueWorker)
+    if (estado.iniciado || process.env.NEXT_PHASE === "phase-production-build")
         return;
-    g.__waQueueWorker = true;
+    estado.iniciado = true;
     // Recupera itens órfãos (travados em "enviando" por um restart) e começa.
     void recuperarItensOrfaos().finally(() => agendar(1500));
 }
@@ -199,6 +201,8 @@ async function recuperarItensOrfaos() {
     }
 }
 async function tick() {
+    if (estado.ocupado) return;
+    estado.ocupado = true;
     let proximo = TICK_OCIOSO_MS;
     try {
         proximo = await processar();
@@ -207,7 +211,11 @@ async function tick() {
         SafeLog.error("whatsapp-queue tick", error);
         proximo = TICK_OCIOSO_MS;
     }
-    agendar(proximo);
+    finally {
+        estado.ocupado = false;
+        agendar(estado.acordar ? 50 : proximo);
+        estado.acordar = false;
+    }
 }
 /** Processa um passo. Retorna em quantos ms reavaliar. */
 async function processar() {
@@ -236,25 +244,25 @@ async function processar() {
     // demorar demais.
     const conexao = await lerConexao(job.slot);
     if (conexao.connected) {
-        aguardandoConexaoDesde = 0;
+        estado.aguardandoConexaoDesde = 0;
     }
     else {
         const terminal = STATUS_TERMINAIS.has(conexao.status.toLowerCase());
-        if (!aguardandoConexaoDesde)
-            aguardandoConexaoDesde = Date.now();
-        const esperandoMs = Date.now() - aguardandoConexaoDesde;
+        if (!estado.aguardandoConexaoDesde)
+            estado.aguardandoConexaoDesde = Date.now();
+        const esperandoMs = Date.now() - estado.aguardandoConexaoDesde;
         if (!terminal && esperandoMs < MAX_ESPERA_RECONEXAO_MS) {
             // Reconexão em andamento: aguarda e tenta de novo (NÃO reenvia nada).
             return 4000;
         }
-        aguardandoConexaoDesde = 0;
+        estado.aguardandoConexaoDesde = 0;
         await pausarJob(job.id, "WhatsApp desconectado. Reconecte o aparelho e clique em Retomar.");
         return TICK_OCIOSO_MS;
     }
     // Respeita o intervalo entre envios.
     const agora = Date.now();
-    if (proximoEnvioMs > agora)
-        return Math.min(proximoEnvioMs - agora, 5000);
+    if (estado.proximoEnvioMs > agora)
+        return Math.min(estado.proximoEnvioMs - agora, 5000);
     // Reivindica o item de forma atômica (protege contra concorrência).
     const claim = await exec("UPDATE whatsapp_fila SET status='enviando' WHERE id=? AND status='pendente'", [pend.id]);
     if (claim.affectedRows !== 1)
@@ -263,7 +271,7 @@ async function processar() {
     if (!item)
         return 200;
     await enviarItem(job, item);
-    proximoEnvioMs = Date.now() + (job.intervalo > 0 ? job.intervalo * 1000 + jitter() : 0);
+    estado.proximoEnvioMs = Date.now() + (job.intervalo > 0 ? job.intervalo * 1000 + jitter() : 0);
     return 200;
 }
 async function enviarItem(job, item) {
@@ -302,7 +310,7 @@ async function enviarItem(job, item) {
             sucesso: true,
             anexouPdf,
         });
-        falhasSeguidas = 0;
+        estado.falhasSeguidas = 0;
     }
     catch (error) {
         const msg = error?.message || "Falha ao enviar.";
@@ -313,7 +321,7 @@ async function enviarItem(job, item) {
             await registrarEnvio({
                 convidadoId: item.convidado_id, nome: item.nome, telefone: item.telefone, lista: item.lista, sucesso: false, erro: msg,
             });
-            falhasSeguidas = 0;
+            estado.falhasSeguidas = 0;
             return;
         }
         // IMPORTANTE: NÃO reenviar automaticamente. O erro pode ter ocorrido DEPOIS
@@ -329,10 +337,10 @@ async function enviarItem(job, item) {
         await registrarEnvio({
             convidadoId: item.convidado_id, nome: item.nome, telefone: item.telefone, lista: item.lista, sucesso: false, erro: msg,
         });
-        falhasSeguidas++;
-        if (falhasSeguidas >= MAX_FALHAS_SEGUIDAS) {
+        estado.falhasSeguidas++;
+        if (estado.falhasSeguidas >= MAX_FALHAS_SEGUIDAS) {
             await pausarJob(job.id, "Muitas falhas seguidas. Verifique a conexão do WhatsApp e clique em Retomar.");
-            falhasSeguidas = 0;
+            estado.falhasSeguidas = 0;
         }
     }
 }

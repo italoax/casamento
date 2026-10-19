@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 const ROLE_LABELS = { admin: "Admin (total)", gerente: "Gerente", assistente: "Assistente" };
 const ROLE_DESC = {
-    admin: "Acesso total ao painel, backups e segurança.",
+    admin: "Acesso total ao painel e à segurança.",
     gerente: "Convidados, presentes, recados, vendas e WhatsApp.",
     assistente: "Apenas convidados e recados.",
 };
